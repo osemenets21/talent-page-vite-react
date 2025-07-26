@@ -107,9 +107,11 @@ export default function TalentForm() {
       formData.append("performerImages[]", file);
     });
 
+
     try {
+      const apiDomain = import.meta.env.VITE_API_DOMAIN;
       const response = await fetch(
-        "https://takeoverpresents.com/takeoverpresents.com/talent_submit.php",
+        `${apiDomain}/talent_submit.php`,
         {
           method: "POST",
           body: formData,

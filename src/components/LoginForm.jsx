@@ -12,7 +12,20 @@ export default function LoginForm() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/register-talent");
+      // Check if user profile exists in backend by email
+      const res = await fetch("/backend/submissions/talent_data.json");
+      if (!res.ok) throw new Error("Failed to fetch profile data");
+      const data = await res.json();
+      const found = data.find((entry) => entry.email && entry.email.toLowerCase() === email.toLowerCase());
+      if (found) {
+        // Store submissionId for MyProfile
+        if (found.submissionId) {
+          localStorage.setItem("submissionId", found.submissionId);
+        }
+        navigate("/my-profile");
+      } else {
+        navigate("/register-talent");
+      }
     } catch (error) {
       alert("Login failed: " + error.message);
     }

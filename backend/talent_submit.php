@@ -12,7 +12,10 @@ if (!$submissionId || !preg_match('/^[a-zA-Z0-9]+$/', $submissionId)) {
 
 // 2. Define folders and paths
 $baseDir = __DIR__;
-$userUploadDir = "$baseDir/uploads/$submissionId";
+$firstName = isset($_POST["firstName"]) ? preg_replace('/[^a-zA-Z0-9]/', '', $_POST["firstName"]) : "unknown";
+$lastName = isset($_POST["lastName"]) ? preg_replace('/[^a-zA-Z0-9]/', '', $_POST["lastName"]) : "unknown";
+$uploadFolder = $firstName . "_" . $lastName;
+$userUploadDir = "$baseDir/uploads/$uploadFolder";
 $submissionsFile = "$baseDir/submissions/talent_data.json";
 
 // 3. Create upload directory if it doesn't exist

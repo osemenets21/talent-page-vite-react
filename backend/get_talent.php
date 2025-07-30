@@ -1,21 +1,45 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
 
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-$email = $_GET['email'] ?? null;
-if (!$email) {
-  echo json_encode(["error" => "Missing email"]);
-  exit;
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
 
-$file = __DIR__ . "/submissions/talent_data.json";
-$lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-foreach ($lines as $line) {
-  $data = json_decode($line, true);
-  if (isset($data['email']) && strtolower($data['email']) === strtolower($email)) {
-    echo json_encode($data);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+$submissionId = $_GET["submissionId"] ?? null;
+if (!$submissionId || !preg_match('/^[a-zA-Z0-9]+$/', $submissionId)) {
+    echo json_encode(["status" => "error", "message" => "Missing or invalid submission ID"]);
     exit;
-  }
 }
-echo json_encode(["error" => "Profile not found"]);
+
+$baseDir = __DIR__;
+$dataFile = "$baseDir/submissions/talent_data.json";
+
+if (!file_exists($dataFile)) {
+    echo json_encode(["status" => "error", "message" => "Data file not found"]);
+    exit;
+}
+
+$json = file_get_contents($dataFile);
+$data = json_decode($json, true);
+if (!is_array($data)) {
+    echo json_encode(["status" => "error", "message" => "Invalid data structure"]);
+    exit;
+}
+
+foreach ($data as $entry) {
+    if (isset($entry["submissionId"]) && $entry["submissionId"] === $submissionId) {
+        echo json_encode($entry);
+        exit;
+    }
+}
+
+echo json_encode(["status" => "error", "message" => "Profile not found"]);
+exit;

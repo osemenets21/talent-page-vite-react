@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import TalentForm from "./components/TalentForm";
-import SignUpForm from "./components/SignUpForm"; 
-import React from 'react'; 
+import SignUpForm from "./components/SignUpForm";
+import React from 'react';
 import ForgotPassword from "./components/ForgotPassword";
 import MyProfile from "./components/MyProfile";
+import NotFound from "./components/NotFound";
 import { auth } from "./firebase";
-
 
 function PrivateRoute({ children }) {
   const [isAuth, setIsAuth] = React.useState(null);
@@ -16,7 +16,7 @@ function PrivateRoute({ children }) {
     });
     return unsubscribe;
   }, []);
-  if (isAuth === null) return null; // or a loading spinner
+  if (isAuth === null) return null;
   return isAuth ? children : <Navigate to="/" replace />;
 }
 
@@ -37,6 +37,7 @@ export default function App() {
             <MyProfile />
           </PrivateRoute>
         } />
+        <Route path="*" element={<NotFound />} /> {/* Catch-all route */}
       </Routes>
     </Router>
   );

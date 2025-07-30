@@ -13,15 +13,15 @@ export default function LoginForm() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // Check if user profile exists in backend by email
-      const res = await fetch("/backend/submissions/talent_data.json");
+
+      const apiDomain = import.meta.env.VITE_API_DOMAIN;
+
+      const res = await fetch(`${apiDomain}/backend/get_talent_by_email.php?email=${email}`);
       if (!res.ok) throw new Error("Failed to fetch profile data");
-      const data = await res.json();
-      const found = data.find((entry) => entry.email && entry.email.toLowerCase() === email.toLowerCase());
-      if (found) {
+      const user = await res.json();
+      if (user.submissionId) {
         // Store submissionId for MyProfile
-        if (found.submissionId) {
-          localStorage.setItem("submissionId", found.submissionId);
-        }
+        localStorage.setItem("submissionId", user.submissionId);
         navigate("/my-profile");
       } else {
         navigate("/register-talent");

@@ -13,9 +13,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$submissionId = $_GET["submissionId"] ?? null;
-if (!$submissionId || !preg_match('/^[a-zA-Z0-9]+$/', $submissionId)) {
-    echo json_encode(["status" => "error", "message" => "Missing or invalid submission ID"]);
+$email = $_GET["email"] ?? null;
+if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(["status" => "error", "message" => "Missing or invalid email"]);
     exit;
 }
 
@@ -35,7 +35,7 @@ if (!is_array($data)) {
 }
 
 foreach ($data as $entry) {
-    if (isset($entry["submissionId"]) && $entry["submissionId"] === $submissionId) {
+    if (isset($entry["email"]) && strtolower($entry["email"]) === strtolower($email)) {
         echo json_encode($entry);
         exit;
     }

@@ -40,6 +40,7 @@ export default function TalentForm() {
   const [taxForm, setTaxForm] = useState(null);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
   const [rawPhotoFile, setRawPhotoFile] = useState(null);
   const [performerImages, setPerformerImages] = useState([]);
@@ -82,14 +83,14 @@ export default function TalentForm() {
       return;
     }
 
-    if (!taxForm || !photo) {
-      setModalTitle("Files Required");
-      setModalMessage(
-        "Upload your profile photo and tax form W9"
-      );
-      setShowModal(true);
-      return;
-    }
+    // if (!taxForm || !photo) {
+    //   setModalTitle("Files Required");
+    //   setModalMessage(
+    //     "Upload your profile photo and tax form W9"
+    //   );
+    //   setShowModal(true);
+    //   return;
+    // }
 
     const formData = new FormData();
 
@@ -111,7 +112,7 @@ export default function TalentForm() {
     try {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
       const response = await fetch(
-        `${apiDomain}/talent_submit.php`,
+        `${apiDomain}/backend/talent_submit.php`,
         {
           method: "POST",
           body: formData,
@@ -123,11 +124,13 @@ export default function TalentForm() {
       if (result.status === "success") {
         setModalTitle("Submission Successful");
         setModalMessage("Your talent profile has been submitted.");
+        setShouldRedirect(true);
+        setShowModal(true);
       } else {
         setModalTitle("Submission Failed");
         setModalMessage(result.message || "Please try again.");
+        setShowModal(true);
       }
-      setShowModal(true);
     } catch (err) {
       alert("Something went wrong: " + err.message);
     }
@@ -136,7 +139,7 @@ export default function TalentForm() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4 mt-4 mb-4">
       <form
-        onSubmit={handleSubmit}
+        
         className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
       >
         <div className="absolute top-3 right-3 z-10">
@@ -198,14 +201,14 @@ export default function TalentForm() {
               id="firstName"
               value={form.firstName}
               onChange={(v) => setForm({ ...form, firstName: v })}
-              required
+              // required
             />
             <Input
               label="Last Name"
               id="lastName"
               value={form.lastName}
               onChange={(v) => setForm({ ...form, lastName: v })}
-              required
+              // required
             />
             <Input
               label="Stage / Performer Name"
@@ -221,7 +224,7 @@ export default function TalentForm() {
                 Your Role<span className="text-red-500 ml-1">*</span>
               </label>
               <select
-                required
+                // required
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
@@ -294,7 +297,7 @@ export default function TalentForm() {
               value={form.city}
               onChange={(v) => setForm({ ...form, city: v })}
               className="sm:col-span-3"
-              required
+              // required
             />
             <Input
               label="Country"
@@ -302,7 +305,7 @@ export default function TalentForm() {
               value={form.country}
               onChange={(v) => setForm({ ...form, country: v })}
               className="sm:col-span-3"
-              required
+              // required
             />
 
             <div className="sm:col-span-6">
@@ -314,7 +317,7 @@ export default function TalentForm() {
               </label>
               <textarea
                 id="bio"
-                required
+                // required
                 rows={3}
                 maxLength={1500}
                 value={form.bio}
@@ -336,14 +339,14 @@ export default function TalentForm() {
               id="phone"
               value={form.phone}
               onChange={(v) => setForm({ ...form, phone: v })}
-              required
+              // required
             />
             <Input
               label="Email"
               id="email"
               value={form.email}
               onChange={(v) => setForm({ ...form, email: v })}
-              required
+              // required
             />
 
             <div className="sm:col-span-3">
@@ -369,7 +372,7 @@ export default function TalentForm() {
                 value={form.venmo}
                 onChange={(v) => setForm({ ...form, venmo: v })}
                 className="sm:col-span-3"
-                required
+                // required
               />
             )}
             {form.paymentMethod === "Zelle" && (
@@ -379,7 +382,7 @@ export default function TalentForm() {
                 value={form.zelle}
                 onChange={(v) => setForm({ ...form, zelle: v })}
                 className="sm:col-span-3"
-                required
+                // required
               />
             )}
           </div>
@@ -401,7 +404,7 @@ export default function TalentForm() {
               label="Upload W9 (PDF)"
               accept=".pdf"
               setFile={setTaxForm}
-              required
+              // required
               renameWithForm={form}
             />
           </div>
@@ -432,7 +435,8 @@ export default function TalentForm() {
 
         <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             className="rounded-md bg-orange-200 px-4 py-2 text-sm font-semibold text-black hover:bg-indigo-500"
           >
             Submit Talent Profile
@@ -447,7 +451,13 @@ export default function TalentForm() {
       </form>
       <Modal
         open={showModal}
-        setOpen={setShowModal}
+        setOpen={(open) => {
+          setShowModal(open);
+          if (!open && shouldRedirect) {
+            setShouldRedirect(false);
+            navigate("/my-profile");
+          }
+        }}
         title={modalTitle}
         message={modalMessage}
       />

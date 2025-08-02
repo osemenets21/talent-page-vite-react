@@ -30,7 +30,7 @@ if (!file_exists($userUploadDir)) {
 
 // 4. Handle file uploads
 $savedFiles = [];
-foreach (["portfolio", "photo", "taxForm"] as $field) {
+foreach (["photo", "taxForm"] as $field) {
     if (isset($_FILES[$field])) {
         $filename = basename($_FILES[$field]["name"]);
         $uniqueName = time() . "_" . $filename;
@@ -44,10 +44,32 @@ foreach (["portfolio", "photo", "taxForm"] as $field) {
     }
 }
 
+// Handle performerImages[] multiple upload
+$performerImages = [];
+if (isset($_FILES["performerImages"])) {
+    $files = $_FILES["performerImages"];
+    $count = is_array($files["name"]) ? count($files["name"]) : 0;
+    for ($i = 0; $i < $count; $i++) {
+        if ($files["error"][$i] === UPLOAD_ERR_OK) {
+            $filename = basename($files["name"][$i]);
+            $uniqueName = time() . "_" . $i . "_" . $filename;
+            $targetPath = $userUploadDir . "/" . $uniqueName;
+            if (move_uploaded_file($files["tmp_name"][$i], $targetPath)) {
+                $performerImages[] = $uniqueName;
+            }
+        }
+    }
+}
+
 // 5. Prepare submission data
 $data = $_POST;
 $data["files"] = $savedFiles;
+if (!empty($performerImages)) {
+    $data["files"]["performerImages"] = $performerImages;
+}
 $data["timestamp"] = date("Y-m-d H:i:s");
+// Always overwrite portfolio field: set to empty string if not uploaded, or filename if uploaded
+// Portfolio removed
 
 // 6. Load existing submissions
 $existingData = [];

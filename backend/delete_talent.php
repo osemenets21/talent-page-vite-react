@@ -30,21 +30,17 @@ if (is_dir($uploadDir)) {
 
 
 // Rewrite JSON file without this entry
+// Remove entry from JSON array
 $sourceFile = __DIR__ . "/submissions/talent_data.json";
 if (!file_exists($sourceFile)) {
   echo json_encode(["status" => "error", "message" => "Data file not found"]);
   exit;
 }
-$lines = file($sourceFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-$updated = array_filter($lines, function($line) use ($submissionId) {
-  $entry = json_decode($line, true);
-  return $entry && $entry['submissionId'] !== $submissionId;
+$json = file_get_contents($sourceFile);
+$data = json_decode($json, true);
+if (!is_array($data)) $data = [];
+$updated = array_filter($data, function($entry) use ($submissionId) {
+  return !(isset($entry["submissionId"]) && $entry["submissionId"] === $submissionId);
 });
-
-if (count($updated) > 0) {
-  file_put_contents($sourceFile, implode("\n", $updated));
-} else {
-  file_put_contents($sourceFile, "");
-}
-
+file_put_contents($sourceFile, json_encode(array_values($updated), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 echo json_encode(["status" => "success"]);

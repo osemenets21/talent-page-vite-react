@@ -35,7 +35,7 @@ export default function TalentForm() {
     submissionId: generateId(),
   });
 
-  const [portfolio, setPortfolio] = useState(null);
+  // Portfolio removed
   const [photo, setPhoto] = useState(null);
   const [taxForm, setTaxForm] = useState(null);
   const navigate = useNavigate();
@@ -71,9 +71,12 @@ export default function TalentForm() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = (e) => {
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+    submitTalentProfile();
+  };
 
+  const submitTalentProfile = async () => {
     if (!agreeTerms) {
       setModalTitle("Terms Required");
       setModalMessage(
@@ -100,14 +103,13 @@ export default function TalentForm() {
     }
 
     // Append files
-    formData.append("portfolio", portfolio);
+    // Portfolio removed
     formData.append("photo", photo);
     formData.append("taxForm", taxForm);
 
     performerImages.forEach((file, index) => {
       formData.append("performerImages[]", file);
     });
-
 
     try {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
@@ -138,10 +140,10 @@ export default function TalentForm() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 mt-4 mb-4">
-      <form
-        
-        className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
-      >
+        <form
+          onSubmit={handleSubmit}
+          className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
+        >
         <div className="absolute top-3 right-3 z-10">
           <button onClick={handleLogout} title="Logout" type="button">
             <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
@@ -435,8 +437,7 @@ export default function TalentForm() {
 
         <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             className="rounded-md bg-orange-200 px-4 py-2 text-sm font-semibold text-black hover:bg-indigo-500"
           >
             Submit Talent Profile

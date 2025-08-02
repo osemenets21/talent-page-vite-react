@@ -152,6 +152,10 @@ export default function MyProfile() {
   const pdfUrl = profile.files?.taxForm
     ? `${backendBase}/backend/uploads/${uploadFolder}/${profile.files.taxForm}`
     : null;
+  const performerImages = Array.isArray(profile.files?.performerImages)
+    ? profile.files.performerImages
+    : [];
+  // Portfolio removed
 
   return (
     <div className="relative max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
@@ -186,17 +190,42 @@ export default function MyProfile() {
         <>
           {/* Profile fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 mb-8">
-            {Object.entries(profile).map(([key, value]) => (
-              key !== "files" && key !== "submissionId" && value ? (
-                <ProfileItem key={key} label={key} value={value} />
-              ) : null
-            ))}
+            {Object.entries(profile).map(([key, value]) => {
+              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio") return null;
+              const displayValue = value === null || value === undefined || value === "" ? "no data" : value;
+              return <ProfileItem key={key} label={key} value={displayValue} />;
+            })}
+            {/* Photo */}
+            {photoUrl && (
+              <div className="sm:col-span-2">
+                <span className="block text-sm font-semibold text-gray-600">Profile Photo:</span>
+                <img
+                  src={photoUrl}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover ring-2 ring-indigo-300 mt-2"
+                />
+              </div>
+            )}
+            {/* Performer Images */}
+            {performerImages.length > 0 && (
+              <div className="sm:col-span-2">
+                <span className="block text-sm font-semibold text-gray-600">Performer Images:</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {performerImages.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={`${backendBase}/backend/uploads/${uploadFolder}/${img}`}
+                      alt={`Performer ${idx + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Tax Form */}
             {pdfUrl && (
               <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">
-                  Tax Form (PDF):
-                </span>
+                <span className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</span>
                 <a
                   href={pdfUrl}
                   target="_blank"
@@ -249,13 +278,13 @@ export default function MyProfile() {
 }
 
 function ProfileItem({ label, value }) {
-  if (!value) return null;
+  const isPlaceholder = value === "no data";
   return (
     <div>
       <span className="block text-sm font-semibold text-gray-600">
         {label}:
       </span>
-      <p className="text-sm text-gray-800">{value}</p>
+      <p className={`text-sm ${isPlaceholder ? "text-gray-400 italic" : "text-gray-800"}`}>{value}</p>
     </div>
   );
 }

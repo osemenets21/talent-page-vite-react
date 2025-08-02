@@ -6,6 +6,7 @@ import React from 'react';
 import ForgotPassword from "./components/ForgotPassword";
 import MyProfile from "./components/MyProfile";
 import NotFound from "./components/NotFound";
+import SupervisorPanel from "./components/SupervisorPanel";
 import { auth } from "./firebase";
 
 function PrivateRoute({ children }) {
@@ -37,6 +38,7 @@ export default function App() {
             <MyProfile />
           </PrivateRoute>
         } />
+        <Route path="/supervisor-panel" element={<SupervisorPanel />} />
         <Route path="*" element={<NotFound />} /> {/* Catch-all route */}
       </Routes>
     </Router>

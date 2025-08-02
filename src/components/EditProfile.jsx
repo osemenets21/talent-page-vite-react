@@ -1,17 +1,20 @@
 import React, { useState, useRef } from "react";
 import FileUpload from "./FileUpload";
+import getCroppedImg from "../utils/cropImage";
+import PhotoCropModal from "./PhotoCropModal";
 
 export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...profile });
   const [fileInputs, setFileInputs] = useState({ photo: null, taxForm: null, performerImages: [] });
-  // Remove unused refs, FileUpload handles file input
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [rawPhotoFile, setRawPhotoFile] = useState(null);
+  const [croppedPhoto, setCroppedPhoto] = useState(null);
+  const [croppedPhotoFile, setCroppedPhotoFile] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  // FileUpload will call setFileInputs directly
 
   // Editable fields config
   const fields = [
@@ -47,13 +50,16 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Build FormData like TalentForm.jsx
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => {
       formData.append(key, value);
     });
     formData.append("submissionId", form.submissionId);
-    if (fileInputs.photo) formData.append("photo", fileInputs.photo);
+    if (croppedPhotoFile) {
+      formData.append("photo", croppedPhotoFile);
+    } else if (fileInputs.photo) {
+      formData.append("photo", fileInputs.photo);
+    }
     if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
     if (fileInputs.performerImages && fileInputs.performerImages.length > 0) {
       fileInputs.performerImages.forEach((file) => {
@@ -85,122 +91,140 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
-        {fields.map((f) => {
-          if (f.name === "venmo" && form.paymentMethod !== "Venmo") return null;
-          if (f.name === "zelle" && form.paymentMethod !== "Zelle") return null;
-          if (f.name === "roleOther" && !form.roleOther) return null;
-          if (f.name === "bio") {
+    <>
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+          {fields.map((f) => {
+            if (f.name === "venmo" && form.paymentMethod !== "Venmo") return null;
+            if (f.name === "zelle" && form.paymentMethod !== "Zelle") return null;
+            if (f.name === "roleOther" && !form.roleOther) return null;
+            if (f.name === "bio") {
+              return (
+                <div key={f.name} className="sm:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-600">
+                    {f.label}:
+                  </label>
+                  <textarea
+                    name={f.name}
+                    value={form[f.name] ?? ""}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-2 py-1 mt-1"
+                    rows={3}
+                  />
+                </div>
+              );
+            }
             return (
-              <div key={f.name} className="sm:col-span-2">
+              <div key={f.name}>
                 <label className="block text-sm font-semibold text-gray-600">
                   {f.label}:
                 </label>
-                <textarea
+                <input
+                  type={f.type || "text"}
                   name={f.name}
                   value={form[f.name] ?? ""}
                   onChange={handleInputChange}
                   className="w-full border rounded px-2 py-1 mt-1"
-                  rows={3}
                 />
               </div>
             );
-          }
-          return (
-            <div key={f.name}>
-              <label className="block text-sm font-semibold text-gray-600">
-                {f.label}:
-              </label>
-              <input
-                type={f.type || "text"}
-                name={f.name}
-                value={form[f.name] ?? ""}
-                onChange={handleInputChange}
-                className="w-full border rounded px-2 py-1 mt-1"
+          })}
+          {/* Photo */}
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-semibold text-gray-600">Photo:</label>
+            {photoUrl && (
+              <img
+                src={photoUrl}
+                alt="Profile"
+                className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
               />
-            </div>
-          );
-        })}
-        {/* Photo */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-gray-600">Photo:</label>
-          {photoUrl && (
-            <img
-              src={photoUrl}
-              alt="Profile"
-              className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
+            )}
+            <FileUpload
+              label="Profile Photo"
+              accept="image/*"
+              setFile={(file) => {
+                setRawPhotoFile(file);
+                setShowCropModal(true);
+              }}
+              required={false}
             />
-          )}
-          <FileUpload
-            label="Profile Photo"
-            accept="image/*"
-            setFile={(file) => setFileInputs((prev) => ({ ...prev, photo: file }))}
-            required={false}
-          />
+          </div>
+          {/* Performer Images */}
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-semibold text-gray-600">Performer Images:</label>
+            {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {profile.files.performerImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={`${backendBase}/backend/uploads/${uploadFolder}/${img}`}
+                    alt={`Performer ${idx + 1}`}
+                    className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
+                  />
+                ))}
+              </div>
+            )}
+            <FileUpload
+              label="Performer Images"
+              accept="image/*"
+              setFile={(files) => setFileInputs((prev) => ({ ...prev, performerImages: files }))}
+              multiple={true}
+              required={false}
+            />
+          </div>
+          {/* Tax Form */}
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</label>
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 underline text-sm mt-1 inline-block mr-2"
+              >
+                Download Current
+              </a>
+            )}
+            <FileUpload
+              label="Tax Form (PDF)"
+              accept="application/pdf"
+              setFile={(file) => setFileInputs((prev) => ({ ...prev, taxForm: file }))}
+              required={false}
+              renameWithForm={{ firstName: form.firstName, lastName: form.lastName }}
+            />
+          </div>
         </div>
-        {/* Performer Images */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-gray-600">Performer Images:</label>
-          {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {profile.files.performerImages.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={`${backendBase}/backend/uploads/${uploadFolder}/${img}`}
-                  alt={`Performer ${idx + 1}`}
-                  className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
-                />
-              ))}
-            </div>
-          )}
-          <FileUpload
-            label="Performer Images"
-            accept="image/*"
-            setFile={(files) => setFileInputs((prev) => ({ ...prev, performerImages: files }))}
-            multiple={true}
-            required={false}
-          />
+        <div className="mt-10 flex justify-center gap-4">
+          <button
+            type="submit"
+            className="px-6 py-2 rounded-lg bg-green-500 text-white text-sm font-medium shadow hover:bg-green-600 transition"
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </button>
+          <button
+            type="button"
+            className="px-6 py-2 rounded-lg bg-gray-400 text-white text-sm font-medium shadow hover:bg-gray-500 transition"
+            onClick={onCancel}
+            disabled={saving}
+          >
+            Cancel
+          </button>
         </div>
-        {/* Tax Form */}
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</label>
-          {pdfUrl && (
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 underline text-sm mt-1 inline-block mr-2"
-            >
-              Download Current
-            </a>
-          )}
-          <FileUpload
-            label="Tax Form (PDF)"
-            accept="application/pdf"
-            setFile={(file) => setFileInputs((prev) => ({ ...prev, taxForm: file }))}
-            required={false}
-            renameWithForm={{ firstName: form.firstName, lastName: form.lastName }}
-          />
-        </div>
-      </div>
-      <div className="mt-10 flex justify-center gap-4">
-        <button
-          type="submit"
-          className="px-6 py-2 rounded-lg bg-green-500 text-white text-sm font-medium shadow hover:bg-green-600 transition"
-          disabled={saving}
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-        <button
-          type="button"
-          className="px-6 py-2 rounded-lg bg-gray-400 text-white text-sm font-medium shadow hover:bg-gray-500 transition"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+      </form>
+      <PhotoCropModal
+        open={showCropModal}
+        setOpen={setShowCropModal}
+        imageFile={rawPhotoFile}
+        onCropDone={async (croppedBlob) => {
+          // Convert cropped Blob to File with a name
+          const fileName = rawPhotoFile?.name || "cropped_photo.jpg";
+          const croppedFile = new File([croppedBlob], fileName, { type: croppedBlob.type || "image/jpeg" });
+          setCroppedPhoto(croppedBlob);
+          setCroppedPhotoFile(croppedFile);
+          setShowCropModal(false);
+        }}
+      />
+    </>
   );
 }

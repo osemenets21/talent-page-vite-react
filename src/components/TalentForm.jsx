@@ -103,7 +103,6 @@ export default function TalentForm() {
     }
 
     // Append files
-    // Portfolio removed
     formData.append("photo", photo);
     formData.append("taxForm", taxForm);
 

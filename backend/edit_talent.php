@@ -52,6 +52,8 @@ foreach ($data as &$entry) {
             // If files is an array (numeric keys), convert to object
             $entry['files'] = [];
         }
+        // Store previous files for preservation
+        $prevFiles = $entry['files'];
         // Handle file uploads
         $firstName = isset($entry['firstName']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $entry['firstName']) : 'user';
         $lastName = isset($entry['lastName']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $entry['lastName']) : 'user';
@@ -65,6 +67,8 @@ foreach ($data as &$entry) {
             if (move_uploaded_file($_FILES['photo']['tmp_name'], $photoPath)) {
                 $entry['files']['photo'] = $photoName;
             }
+        } else if (isset($prevFiles['photo'])) {
+            $entry['files']['photo'] = $prevFiles['photo'];
         }
         if (isset($_FILES['taxForm']) && $_FILES['taxForm']['error'] === UPLOAD_ERR_OK) {
             $taxName = uniqid('tax_') . '_' . basename($_FILES['taxForm']['name']);
@@ -72,6 +76,8 @@ foreach ($data as &$entry) {
             if (move_uploaded_file($_FILES['taxForm']['tmp_name'], $taxPath)) {
                 $entry['files']['taxForm'] = $taxName;
             }
+        } else if (isset($prevFiles['taxForm'])) {
+            $entry['files']['taxForm'] = $prevFiles['taxForm'];
         }
         // Handle performerImages (multiple files)
         // Fix: handle both single and multiple performerImages uploads
@@ -97,14 +103,16 @@ foreach ($data as &$entry) {
                     $newImages[] = $imgName;
                 }
             }
-            // If new images uploaded, replace; else preserve old
+            // If new images uploaded, replace
             if (count($newImages) > 0) {
                 $entry['files']['performerImages'] = $newImages;
-            } else if (isset($entry['files']['performerImages'])) {
-                // Do nothing, keep old images
+            } else if (isset($prevFiles['performerImages'])) {
+                $entry['files']['performerImages'] = $prevFiles['performerImages'];
             } else {
                 $entry['files']['performerImages'] = [];
             }
+        } else if (isset($prevFiles['performerImages'])) {
+            $entry['files']['performerImages'] = $prevFiles['performerImages'];
         }
         $entry["updated_at"] = date("Y-m-d H:i:s");
         $updated = true;

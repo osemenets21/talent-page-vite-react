@@ -2,6 +2,7 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: *');
 header('Access-Control-Allow-Headers: *');
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -11,12 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-$submissionId = $_GET["submissionId"] ?? null;
-if (!$submissionId || !preg_match('/^[a-zA-Z0-9]+$/', $submissionId)) {
-    echo json_encode(["status" => "error", "message" => "Missing or invalid submission ID"]);
-    exit;
-}
 
 $baseDir = __DIR__;
 $dataFile = "$baseDir/submissions/talent_data.json";
@@ -33,12 +28,5 @@ if (!is_array($data)) {
     exit;
 }
 
-foreach ($data as $entry) {
-    if (isset($entry["submissionId"]) && $entry["submissionId"] === $submissionId) {
-        echo json_encode($entry);
-        exit;
-    }
-}
-
-echo json_encode(["status" => "error", "message" => "Profile not found"]);
+echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 exit;

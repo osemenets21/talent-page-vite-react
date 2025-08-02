@@ -1,20 +1,17 @@
 import React, { useState, useRef } from "react";
+import FileUpload from "./FileUpload";
 
 export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...profile });
-  const [fileInputs, setFileInputs] = useState({ photo: null, taxForm: null });
-  const photoInputRef = useRef();
-  const taxFormInputRef = useRef();
+  const [fileInputs, setFileInputs] = useState({ photo: null, taxForm: null, performerImages: [] });
+  // Remove unused refs, FileUpload handles file input
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    setFileInputs((prev) => ({ ...prev, [name]: files[0] }));
-  };
+  // FileUpload will call setFileInputs directly
 
   // Editable fields config
   const fields = [
@@ -48,9 +45,43 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     ? `${backendBase}/backend/uploads/${uploadFolder}/${profile.files.taxForm}`
     : null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(form, fileInputs);
+    // Build FormData like TalentForm.jsx
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    formData.append("submissionId", form.submissionId);
+    if (fileInputs.photo) formData.append("photo", fileInputs.photo);
+    if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
+    if (fileInputs.performerImages && fileInputs.performerImages.length > 0) {
+      fileInputs.performerImages.forEach((file) => {
+        formData.append("performerImages[]", file);
+      });
+    }
+    // Send to backend
+    try {
+      const res = await fetch("http://localhost:8000/backend/edit_talent.php", {
+        method: "POST",
+        body: formData,
+      });
+      const text = await res.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        alert("Invalid JSON: " + text);
+        return;
+      }
+      if (result.status === "success") {
+        if (typeof onSave === "function") onSave(form, fileInputs);
+      } else {
+        alert(result.message || "Failed to update profile");
+      }
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
   };
 
   return (
@@ -93,9 +124,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         })}
         {/* Photo */}
         <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-gray-600">
-            Photo:
-          </label>
+          <label className="block text-sm font-semibold text-gray-600">Photo:</label>
           {photoUrl && (
             <img
               src={photoUrl}
@@ -103,19 +132,39 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
               className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
             />
           )}
-          <input
-            type="file"
-            name="photo"
+          <FileUpload
+            label="Profile Photo"
             accept="image/*"
-            onChange={handleFileChange}
-            ref={photoInputRef}
+            setFile={(file) => setFileInputs((prev) => ({ ...prev, photo: file }))}
+            required={false}
+          />
+        </div>
+        {/* Performer Images */}
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-semibold text-gray-600">Performer Images:</label>
+          {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {profile.files.performerImages.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={`${backendBase}/backend/uploads/${uploadFolder}/${img}`}
+                  alt={`Performer ${idx + 1}`}
+                  className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
+                />
+              ))}
+            </div>
+          )}
+          <FileUpload
+            label="Performer Images"
+            accept="image/*"
+            setFile={(files) => setFileInputs((prev) => ({ ...prev, performerImages: files }))}
+            multiple={true}
+            required={false}
           />
         </div>
         {/* Tax Form */}
         <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-gray-600">
-            Tax Form (PDF):
-          </label>
+          <label className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</label>
           {pdfUrl && (
             <a
               href={pdfUrl}
@@ -126,12 +175,12 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
               Download Current
             </a>
           )}
-          <input
-            type="file"
-            name="taxForm"
+          <FileUpload
+            label="Tax Form (PDF)"
             accept="application/pdf"
-            onChange={handleFileChange}
-            ref={taxFormInputRef}
+            setFile={(file) => setFileInputs((prev) => ({ ...prev, taxForm: file }))}
+            required={false}
+            renameWithForm={{ firstName: form.firstName, lastName: form.lastName }}
           />
         </div>
       </div>

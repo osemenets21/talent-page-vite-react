@@ -47,8 +47,9 @@ foreach ($data as &$entry) {
                 $entry[$key] = $value;
             }
         }
-        // Ensure 'files' array exists
-        if (!isset($entry['files']) || !is_array($entry['files'])) {
+        // Ensure 'files' object exists (not array)
+        if (!isset($entry['files']) || !is_array($entry['files']) || array_values($entry['files']) === $entry['files']) {
+            // If files is an array (numeric keys), convert to object
             $entry['files'] = [];
         }
         // Handle file uploads
@@ -70,6 +71,39 @@ foreach ($data as &$entry) {
             $taxPath = "$uploadDir/$taxName";
             if (move_uploaded_file($_FILES['taxForm']['tmp_name'], $taxPath)) {
                 $entry['files']['taxForm'] = $taxName;
+            }
+        }
+        // Handle performerImages (multiple files)
+        // Fix: handle both single and multiple performerImages uploads
+        if (isset($_FILES['performerImages'])) {
+            $newImages = [];
+            $filesField = $_FILES['performerImages'];
+            if (is_array($filesField['name'])) {
+                $filesCount = count($filesField['name']);
+                for ($i = 0; $i < $filesCount; $i++) {
+                    if ($filesField['error'][$i] === UPLOAD_ERR_OK) {
+                        $imgName = uniqid('performer_') . '_' . basename($filesField['name'][$i]);
+                        $imgPath = "$uploadDir/$imgName";
+                        if (move_uploaded_file($filesField['tmp_name'][$i], $imgPath)) {
+                            $newImages[] = $imgName;
+                        }
+                    }
+                }
+            } else if ($filesField['error'] === UPLOAD_ERR_OK && !empty($filesField['name'])) {
+                // Single file upload
+                $imgName = uniqid('performer_') . '_' . basename($filesField['name']);
+                $imgPath = "$uploadDir/$imgName";
+                if (move_uploaded_file($filesField['tmp_name'], $imgPath)) {
+                    $newImages[] = $imgName;
+                }
+            }
+            // If new images uploaded, replace; else preserve old
+            if (count($newImages) > 0) {
+                $entry['files']['performerImages'] = $newImages;
+            } else if (isset($entry['files']['performerImages'])) {
+                // Do nothing, keep old images
+            } else {
+                $entry['files']['performerImages'] = [];
             }
         }
         $entry["updated_at"] = date("Y-m-d H:i:s");

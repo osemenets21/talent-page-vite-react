@@ -8,6 +8,7 @@ import MyProfile from "./components/MyProfile";
 import NotFound from "./components/NotFound";
 import SupervisorPanel from "./components/SupervisorPanel";
 import { auth } from "./firebase";
+import { isAdmin } from "./config/adminConfig";
 
 function PrivateRoute({ children }) {
   const [isAuth, setIsAuth] = React.useState(null);
@@ -19,6 +20,29 @@ function PrivateRoute({ children }) {
   }, []);
   if (isAuth === null) return null;
   return isAuth ? children : <Navigate to="/" replace />;
+}
+
+function AdminRoute({ children }) {
+  const [isAuth, setIsAuth] = React.useState(null);
+  const [isAdminUser, setIsAdminUser] = React.useState(null);
+  
+  React.useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setIsAuth(true);
+        setIsAdminUser(isAdmin(user.email));
+      } else {
+        setIsAuth(false);
+        setIsAdminUser(false);
+      }
+    });
+    return unsubscribe;
+  }, []);
+  
+  if (isAuth === null || isAdminUser === null) return <div className="text-center py-16">Loading...</div>;
+  if (!isAuth) return <Navigate to="/" replace />;
+  if (!isAdminUser) return <div className="text-center py-16 text-red-600">Access Denied: Admin privileges required</div>;
+  return children;
 }
 
 export default function App() {
@@ -38,7 +62,11 @@ export default function App() {
             <MyProfile />
           </PrivateRoute>
         } />
-        <Route path="/supervisor-panel" element={<SupervisorPanel />} />
+        <Route path="/supervisor-panel" element={
+          <AdminRoute>
+            <SupervisorPanel />
+          </AdminRoute>
+        } />
         <Route path="*" element={<NotFound />} /> {/* Catch-all route */}
       </Routes>
     </Router>

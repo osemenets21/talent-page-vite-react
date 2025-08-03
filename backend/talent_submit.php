@@ -67,7 +67,10 @@ $data["files"] = $savedFiles;
 if (!empty($performerImages)) {
     $data["files"]["performerImages"] = $performerImages;
 }
-$data["timestamp"] = date("Y-m-d H:i:s");
+// Use timestamp from frontend if provided, otherwise use PHP timestamp
+if (!isset($data["timestamp"]) || empty($data["timestamp"])) {
+    $data["timestamp"] = date("Y-m-d H:i:s");
+}
 // Always overwrite portfolio field: set to empty string if not uploaded, or filename if uploaded
 // Portfolio removed
 

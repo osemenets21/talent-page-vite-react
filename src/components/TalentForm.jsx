@@ -47,6 +47,45 @@ export default function TalentForm() {
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [bioError, setBioError] = useState("");
+
+  // Function to validate bio text to prevent repetitive content
+  const validateBioText = (text) => {
+    if (!text || text.length < 3) return { isValid: true, error: "" };
+    
+    // Check for repetitive characters (more than 10 consecutive same characters)
+    const repetitiveChars = /(.)\1{9,}/;
+    if (repetitiveChars.test(text)) {
+      return { isValid: false, error: "Bio cannot contain more than 10 consecutive same characters" };
+    }
+    
+    // Check for repetitive words (same word repeated more than 5 times)
+    const words = text.toLowerCase().split(/\s+/);
+    const wordCounts = {};
+    for (const word of words) {
+      if (word.length > 1) {
+        wordCounts[word] = (wordCounts[word] || 0) + 1;
+        if (wordCounts[word] > 5) {
+          return { isValid: false, error: "Bio cannot repeat the same word more than 5 times" };
+        }
+      }
+    }
+    
+    // Check for repetitive phrases (3+ word phrases repeated more than 2 times)
+    const phrases = [];
+    for (let i = 0; i <= words.length - 3; i++) {
+      phrases.push(words.slice(i, i + 3).join(' '));
+    }
+    const phraseCounts = {};
+    for (const phrase of phrases) {
+      phraseCounts[phrase] = (phraseCounts[phrase] || 0) + 1;
+      if (phraseCounts[phrase] > 2) {
+        return { isValid: false, error: "Bio cannot repeat the same phrase more than 2 times" };
+      }
+    }
+    
+    return { isValid: true, error: "" };
+  };
 
   function generateId(length = 10) {
     const chars =
@@ -86,6 +125,15 @@ export default function TalentForm() {
       return;
     }
 
+    // Validate bio text
+    const bioValidation = validateBioText(form.bio);
+    if (!bioValidation.isValid) {
+      setModalTitle("Bio Validation Error");
+      setModalMessage(bioValidation.error);
+      setShowModal(true);
+      return;
+    }
+
     // if (!taxForm || !photo) {
     //   setModalTitle("Files Required");
     //   setModalMessage(
@@ -101,6 +149,18 @@ export default function TalentForm() {
     for (const [key, value] of Object.entries(form)) {
       formData.append(key, value);
     }
+
+    // Add USA formatted timestamp
+    const usaTimestamp = new Date().toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    formData.append('timestamp', usaTimestamp);
 
     // Append files
     formData.append("photo", photo);
@@ -322,9 +382,19 @@ export default function TalentForm() {
                 rows={3}
                 maxLength={1500}
                 value={form.bio}
-                onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
+                onChange={(e) => {
+                  const newBio = e.target.value;
+                  setForm({ ...form, bio: newBio });
+                  const validation = validateBioText(newBio);
+                  setBioError(validation.error);
+                }}
+                className={`mt-2 block w-full rounded-md border px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600 ${
+                  bioError ? 'border-red-300 focus:ring-red-600' : 'border-gray-300'
+                }`}
               />
+              {bioError && (
+                <p className="text-xs text-red-500 mt-1">{bioError}</p>
+              )}
               <p className="text-xs text-gray-500 text-right">
                 {form.bio.length}/1500
               </p>

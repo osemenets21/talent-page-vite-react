@@ -279,12 +279,18 @@ export default function MyProfile() {
 
 function ProfileItem({ label, value }) {
   const isPlaceholder = value === "no data";
+  const isLongText = value && value.length > 100; // Consider text long if over 100 characters
+  
   return (
-    <div>
+    <div className={isLongText ? "sm:col-span-2" : ""}>
       <span className="block text-sm font-semibold text-gray-600">
         {label}:
       </span>
-      <p className={`text-sm ${isPlaceholder ? "text-gray-400 italic" : "text-gray-800"}`}>{value}</p>
+      <p className={`text-sm ${isPlaceholder ? "text-gray-400 italic" : "text-gray-800"} ${
+        isLongText ? "break-words whitespace-pre-wrap leading-relaxed" : ""
+      }`}>
+        {value}
+      </p>
     </div>
   );
 }

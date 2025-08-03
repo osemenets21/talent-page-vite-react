@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
+import { isAdmin } from "../config/adminConfig";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -11,17 +12,25 @@ export default function LoginForm() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Check if user profile exists in backend by email
-
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Check if user is admin
+      if (isAdmin(user.email)) {
+        // Admin user - redirect to supervisor panel
+        navigate("/supervisor-panel");
+        return;
+      }
+      
+      // Regular user - check if profile exists in backend
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
       const res = await fetch(`${apiDomain}/backend/get_talent_by_email.php?email=${email}`);
       if (!res.ok) throw new Error("Failed to fetch profile data");
-      const user = await res.json();
-      if (user.submissionId) {
+      const userData = await res.json();
+      if (userData.submissionId) {
         // Store submissionId for MyProfile
-        localStorage.setItem("submissionId", user.submissionId);
+        localStorage.setItem("submissionId", userData.submissionId);
         navigate("/my-profile");
       } else {
         navigate("/register-talent");

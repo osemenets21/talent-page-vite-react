@@ -1,0 +1,32 @@
+[
+    {
+        "firstName": "Oleh",
+        "lastName": "Semenets",
+        "phone": "43545654466",
+        "email": "oleg.min.vin@gmail.com",
+        "instagram": "Test",
+        "facebook": "Test",
+        "soundcloud": "Test",
+        "spotify": "Test",
+        "youtube": "Test",
+        "tiktok": "Test",
+        "performerName": "Test",
+        "city": "Washington DC",
+        "country": "USA",
+        "bio": "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest",
+        "role": "DJ",
+        "roleOther": "",
+        "paymentMethod": "Venmo",
+        "venmo": "dfgdfgfdg",
+        "zelle": "",
+        "submissionId": "jXnVXIHUxO",
+        "timestamp": "08\/05\/2025, 03:43:15 PM",
+        "files": {
+            "photo": "1754422996_profile_photo.jpg",
+            "taxForm": "1754422996_Oleh_Semenets_2025_W9.pdf",
+            "performerImages": [
+                "1754422996_2_photo_2025-05-08_18-21-41.jpg"
+            ]
+        }
+    }
+]

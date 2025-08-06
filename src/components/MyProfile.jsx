@@ -144,13 +144,12 @@ export default function MyProfile() {
     return <div className="text-center text-red-500 py-8">{error}</div>;
   if (!profile) return null;
 
-  const uploadFolder = `${profile.firstName}_${profile.lastName}`;
   const backendBase = "http://localhost:8000";
   const photoUrl = profile.files?.photo
-    ? `${backendBase}/backend/uploads/${uploadFolder}/${profile.files.photo}`
+    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;
   const pdfUrl = profile.files?.taxForm
-    ? `${backendBase}/backend/uploads/${uploadFolder}/${profile.files.taxForm}`
+    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.taxForm}`
     : null;
   const performerImages = Array.isArray(profile.files?.performerImages)
     ? profile.files.performerImages
@@ -214,7 +213,7 @@ export default function MyProfile() {
                   {performerImages.map((img, idx) => (
                     <img
                       key={idx}
-                      src={`${backendBase}/backend/uploads/${uploadFolder}/${img}`}
+                      src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
                       alt={`Performer ${idx + 1}`}
                       className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
                     />

@@ -84,13 +84,12 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     { name: "bio", label: "Bio", type: "textarea" },
   ];
 
-  const uploadFolder = `${form.firstName}_${form.lastName}`;
   const backendBase = "http://localhost:8000";
   const photoUrl = profile.files?.photo
-    ? `${backendBase}/backend/uploads/${uploadFolder}/${profile.files.photo}`
+    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;
   const pdfUrl = profile.files?.taxForm
-    ? `${backendBase}/backend/uploads/${uploadFolder}/${profile.files.taxForm}`
+    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.taxForm}`
     : null;
 
   const handleSubmit = async (e) => {
@@ -109,6 +108,11 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     });
     formData.append("submissionId", form.submissionId);
     if (croppedPhotoFile) {
+      console.log('Adding croppedPhotoFile to FormData:', {
+        name: croppedPhotoFile.name,
+        size: croppedPhotoFile.size,
+        type: croppedPhotoFile.type
+      });
       formData.append("photo", croppedPhotoFile);
     } else if (fileInputs.photo) {
       formData.append("photo", fileInputs.photo);
@@ -119,6 +123,17 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         formData.append("performerImages[]", file);
       });
     }
+    
+    // Debug: Log all FormData entries
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
+    }
+    
     // Send to backend
     try {
       const res = await fetch("http://localhost:8000/backend/edit_talent.php", {
@@ -134,7 +149,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         return;
       }
       if (result.status === "success") {
-        if (typeof onSave === "function") onSave(form, fileInputs);
+        //if (typeof onSave === "function") onSave(form, fileInputs);
       } else {
         alert(result.message || "Failed to update profile");
       }
@@ -215,7 +230,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 {profile.files.performerImages.map((img, idx) => (
                   <img
                     key={idx}
-                    src={`${backendBase}/backend/uploads/${uploadFolder}/${img}`}
+                    src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
                     alt={`Performer ${idx + 1}`}
                     className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
                   />

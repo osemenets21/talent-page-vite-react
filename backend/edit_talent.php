@@ -57,7 +57,7 @@ foreach ($data as &$entry) {
         // Handle file uploads
         $firstName = isset($entry['firstName']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $entry['firstName']) : 'user';
         $lastName = isset($entry['lastName']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $entry['lastName']) : 'user';
-        $uploadDir = "$baseDir/uploads/{$firstName}_{$lastName}";
+        $uploadDir = "$baseDir/uploads/{$submissionId}";
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }

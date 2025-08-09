@@ -14,12 +14,13 @@ export default function SupervisorPanel() {
   const [bioError, setBioError] = useState("");
   const navigate = useNavigate();
 
-  // Function to format timestamp to USA format
+  // Function to format timestamp to NYC Eastern Time
   const formatUSATimestamp = (timestamp) => {
     if (!timestamp) return "no data";
     try {
       const date = new Date(timestamp);
       return date.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
         month: '2-digit',
         day: '2-digit',
         year: 'numeric',

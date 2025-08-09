@@ -20,7 +20,29 @@ export default function MyProfile() {
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [shouldReload, setShouldReload] = useState(false);
-  const navigate = useNavigate();
+  // Function to format timestamp to American format
+  const formatAmericanTimestamp = (timestamp) => {
+    if (!timestamp) return "no data";
+    
+    try {
+      // Parse the timestamp (assuming it's in YYYY-MM-DD HH:mm:ss format)
+      const date = new Date(timestamp);
+      
+      // Format to NYC Eastern Time standard (MM/DD/YYYY, HH:MM:SS AM/PM)
+      return date.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      return timestamp; // Return original if parsing fails
+    }
+  };
 
   const handleEdit = () => setEditMode(true);
 
@@ -158,8 +180,8 @@ export default function MyProfile() {
 
   return (
     <div className="relative max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
-      <h2 className="text-3xl font-bold text-indigo-700 mb-6 text-center">
-        My Profile
+      <h2 className="text-3xl font-bold text-yellow-500 mb-6 text-center">
+        Welcome, {profile.firstName || ''}
       </h2>
       <div className="absolute top-3 right-3 z-10">
         <button onClick={handleLogout} title="Logout" type="button">
@@ -191,6 +213,13 @@ export default function MyProfile() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 mb-8">
             {Object.entries(profile).map(([key, value]) => {
               if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio") return null;
+              
+              // Special handling for updated_at field
+              if (key === "updated_at") {
+                const formattedTime = formatAmericanTimestamp(value);
+                return <ProfileItem key={key} label="Last Updated" value={formattedTime} />;
+              }
+              
               const displayValue = value === null || value === undefined || value === "" ? "no data" : value;
               return <ProfileItem key={key} label={key} value={displayValue} />;
             })}

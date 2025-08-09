@@ -41,9 +41,15 @@ $updated = false;
 $found = false;
 foreach ($data as &$entry) {
     if (isset($entry["submissionId"]) && $entry["submissionId"] === $submissionId) {
-        // Update only fields present in $_POST
+        // Debug: Log what we found
+        file_put_contents("debug.log", "FOUND ENTRY: " . json_encode($entry) . PHP_EOL, FILE_APPEND);
+        file_put_contents("debug.log", "FILES BEFORE UPDATE: " . json_encode($entry['files'] ?? 'NO FILES') . PHP_EOL, FILE_APPEND);
+        file_put_contents("debug.log", "POST DATA: " . json_encode($_POST) . PHP_EOL, FILE_APPEND);
+        file_put_contents("debug.log", "FILES DATA: " . json_encode($_FILES) . PHP_EOL, FILE_APPEND);
+        
+        // Update only fields present in $_POST (but NEVER update 'files' field via POST)
         foreach ($_POST as $key => $value) {
-            if ($key !== "submissionId") {
+            if ($key !== "submissionId" && $key !== "files") {
                 $entry[$key] = $value;
             }
         }
@@ -52,6 +58,10 @@ foreach ($data as &$entry) {
             // If files is an array (numeric keys), convert to object
             $entry['files'] = [];
         }
+        
+        // CRITICAL: Preserve existing files before any modifications
+        $existingFiles = $entry['files'];
+        file_put_contents("debug.log", "EXISTING FILES PRESERVED: " . json_encode($existingFiles) . PHP_EOL, FILE_APPEND);
         // Handle file uploads - only update files that are actually uploaded
         $firstName = isset($entry['firstName']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $entry['firstName']) : 'user';
         $lastName = isset($entry['lastName']) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', $entry['lastName']) : 'user';
@@ -60,28 +70,39 @@ foreach ($data as &$entry) {
             mkdir($uploadDir, 0755, true);
         }
         
+        // Start with existing files - PRESERVE EVERYTHING FIRST
+        $entry['files'] = $existingFiles;
+        file_put_contents("debug.log", "FILES INITIALIZED WITH EXISTING: " . json_encode($entry['files']) . PHP_EOL, FILE_APPEND);
+        
         // Only update photo if a new photo file is uploaded
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            file_put_contents("debug.log", "UPDATING PHOTO" . PHP_EOL, FILE_APPEND);
             $photoName = uniqid('photo_') . '_' . basename($_FILES['photo']['name']);
             $photoPath = "$uploadDir/$photoName";
             if (move_uploaded_file($_FILES['photo']['tmp_name'], $photoPath)) {
                 $entry['files']['photo'] = $photoName;
+                file_put_contents("debug.log", "PHOTO UPDATED TO: " . $photoName . PHP_EOL, FILE_APPEND);
             }
+        } else {
+            file_put_contents("debug.log", "NO NEW PHOTO - KEEPING EXISTING: " . json_encode($existingFiles['photo'] ?? 'none') . PHP_EOL, FILE_APPEND);
         }
-        // Keep existing photo if no new photo uploaded - don't modify it
         
         // Only update taxForm if a new tax form file is uploaded
         if (isset($_FILES['taxForm']) && $_FILES['taxForm']['error'] === UPLOAD_ERR_OK) {
+            file_put_contents("debug.log", "UPDATING TAX FORM" . PHP_EOL, FILE_APPEND);
             $taxName = uniqid('tax_') . '_' . basename($_FILES['taxForm']['name']);
             $taxPath = "$uploadDir/$taxName";
             if (move_uploaded_file($_FILES['taxForm']['tmp_name'], $taxPath)) {
                 $entry['files']['taxForm'] = $taxName;
+                file_put_contents("debug.log", "TAX FORM UPDATED TO: " . $taxName . PHP_EOL, FILE_APPEND);
             }
+        } else {
+            file_put_contents("debug.log", "NO NEW TAX FORM - KEEPING EXISTING: " . json_encode($existingFiles['taxForm'] ?? 'none') . PHP_EOL, FILE_APPEND);
         }
-        // Keep existing taxForm if no new tax form uploaded - don't modify it
         
         // Handle performerImages - only update if new images are uploaded
         if (isset($_FILES['performerImages'])) {
+            file_put_contents("debug.log", "PROCESSING PERFORMER IMAGES" . PHP_EOL, FILE_APPEND);
             $newImages = [];
             $filesField = $_FILES['performerImages'];
             
@@ -108,9 +129,18 @@ foreach ($data as &$entry) {
             // Only replace performerImages if new images were actually uploaded
             if (count($newImages) > 0) {
                 $entry['files']['performerImages'] = $newImages;
+                file_put_contents("debug.log", "PERFORMER IMAGES UPDATED TO: " . json_encode($newImages) . PHP_EOL, FILE_APPEND);
+            } else {
+                file_put_contents("debug.log", "NO NEW PERFORMER IMAGES - KEEPING EXISTING: " . json_encode($existingFiles['performerImages'] ?? 'none') . PHP_EOL, FILE_APPEND);
             }
-            // Keep existing performerImages if no new images uploaded - don't modify them
+        } else {
+            file_put_contents("debug.log", "NO PERFORMER IMAGES IN REQUEST - KEEPING EXISTING: " . json_encode($existingFiles['performerImages'] ?? 'none') . PHP_EOL, FILE_APPEND);
         }
+        
+        file_put_contents("debug.log", "FINAL FILES AFTER PROCESSING: " . json_encode($entry['files']) . PHP_EOL, FILE_APPEND);
+        
+        // Set updated_at timestamp in Eastern Time
+        date_default_timezone_set('America/New_York');
         $entry["updated_at"] = date("Y-m-d H:i:s");
         $updated = true;
         $found = true;

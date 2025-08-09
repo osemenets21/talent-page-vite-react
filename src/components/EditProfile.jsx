@@ -11,6 +11,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [croppedPhoto, setCroppedPhoto] = useState(null);
   const [croppedPhotoFile, setCroppedPhotoFile] = useState(null);
   const [bioError, setBioError] = useState("");
+  const [filesChanged, setFilesChanged] = useState({ photo: false, taxForm: false, performerImages: false });
 
   // Function to validate bio text to prevent repetitive content
   const validateBioText = (text) => {
@@ -107,21 +108,42 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
       formData.append(key, value);
     });
     formData.append("submissionId", form.submissionId);
-    if (croppedPhotoFile) {
-      console.log('Adding croppedPhotoFile to FormData:', {
-        name: croppedPhotoFile.name,
-        size: croppedPhotoFile.size,
-        type: croppedPhotoFile.type
+    
+    // Only append files if they were actually selected/changed
+    if (filesChanged.photo && (croppedPhotoFile || fileInputs.photo)) {
+      const photoFile = croppedPhotoFile || fileInputs.photo;
+      console.log('Adding photo to FormData:', {
+        name: photoFile.name,
+        size: photoFile.size,
+        type: photoFile.type
       });
-      formData.append("photo", croppedPhotoFile);
-    } else if (fileInputs.photo) {
-      formData.append("photo", fileInputs.photo);
+      formData.append("photo", photoFile);
     }
-    if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
-    if (fileInputs.performerImages && fileInputs.performerImages.length > 0) {
+    
+    if (filesChanged.taxForm && fileInputs.taxForm) {
+      console.log('Adding taxForm to FormData:', {
+        name: fileInputs.taxForm.name,
+        size: fileInputs.taxForm.size,
+        type: fileInputs.taxForm.type
+      });
+      formData.append("taxForm", fileInputs.taxForm);
+    }
+    
+    if (filesChanged.performerImages && fileInputs.performerImages && fileInputs.performerImages.length > 0) {
+      console.log('Adding performerImages to FormData:', fileInputs.performerImages.length, 'files');
       fileInputs.performerImages.forEach((file) => {
         formData.append("performerImages[]", file);
       });
+    }
+    
+    // Debug: Log what we're actually sending
+    console.log('FormData contents being sent:');
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
     }
     
     
@@ -140,7 +162,9 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         return;
       }
       if (result.status === "success") {
-        // if (typeof onSave === "function") onSave(form, fileInputs);
+        alert("Profile updated successfully!");
+        // Reload the page to show updated data
+        window.location.reload();
       } else {
         alert(result.message || "Failed to update profile");
       }
@@ -209,6 +233,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
               setFile={(file) => {
                 setRawPhotoFile(file);
                 setShowCropModal(true);
+                setFilesChanged(prev => ({ ...prev, photo: true }));
               }}
               required={false}
             />
@@ -231,7 +256,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
             <FileUpload
               label="Performer Images"
               accept="image/*"
-              setFile={(files) => setFileInputs((prev) => ({ ...prev, performerImages: files }))}
+              setFile={(files) => {
+                setFileInputs((prev) => ({ ...prev, performerImages: files }));
+                setFilesChanged(prev => ({ ...prev, performerImages: true }));
+              }}
               multiple={true}
               required={false}
             />
@@ -252,7 +280,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
             <FileUpload
               label="Tax Form (PDF)"
               accept="application/pdf"
-              setFile={(file) => setFileInputs((prev) => ({ ...prev, taxForm: file }))}
+              setFile={(file) => {
+                setFileInputs((prev) => ({ ...prev, taxForm: file }));
+                setFilesChanged(prev => ({ ...prev, taxForm: true }));
+              }}
               required={false}
               renameWithForm={{ firstName: form.firstName, lastName: form.lastName }}
             />
@@ -286,6 +317,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
           const croppedFile = new File([croppedBlob], fileName, { type: croppedBlob.type || "image/jpeg" });
           setCroppedPhoto(croppedBlob);
           setCroppedPhotoFile(croppedFile);
+          setFilesChanged(prev => ({ ...prev, photo: true }));
           setShowCropModal(false);
         }}
       />

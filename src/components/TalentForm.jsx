@@ -165,8 +165,9 @@ export default function TalentForm() {
       formData.append(key, value);
     }
 
-    // Add USA formatted timestamp
+    // Add NYC Eastern Time formatted timestamp
     const usaTimestamp = new Date().toLocaleString("en-US", {
+      timeZone: "America/New_York",
       month: "2-digit",
       day: "2-digit",
       year: "numeric",

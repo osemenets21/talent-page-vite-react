@@ -1,8 +1,8 @@
 // Admin configuration
 export const ADMIN_EMAILS = [
   "oleg@luckyhospitality.com",
-  "supervisor@luckyhospitality.com",
-  // Add more admin emails here
+  "contact@bunker.com",
+  "ryan@bunkerdc.com"
 ];
 
 export const isAdmin = (email) => {

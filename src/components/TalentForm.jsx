@@ -48,17 +48,21 @@ export default function TalentForm() {
   const [modalMessage, setModalMessage] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [bioError, setBioError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to validate bio text to prevent repetitive content
   const validateBioText = (text) => {
     if (!text || text.length < 3) return { isValid: true, error: "" };
-    
+
     // Check for repetitive characters (more than 10 consecutive same characters)
     const repetitiveChars = /(.)\1{9,}/;
     if (repetitiveChars.test(text)) {
-      return { isValid: false, error: "Bio cannot contain more than 10 consecutive same characters" };
+      return {
+        isValid: false,
+        error: "Bio cannot contain more than 10 consecutive same characters",
+      };
     }
-    
+
     // Check for repetitive words (same word repeated more than 5 times)
     const words = text.toLowerCase().split(/\s+/);
     const wordCounts = {};
@@ -66,24 +70,30 @@ export default function TalentForm() {
       if (word.length > 1) {
         wordCounts[word] = (wordCounts[word] || 0) + 1;
         if (wordCounts[word] > 5) {
-          return { isValid: false, error: "Bio cannot repeat the same word more than 5 times" };
+          return {
+            isValid: false,
+            error: "Bio cannot repeat the same word more than 5 times",
+          };
         }
       }
     }
-    
+
     // Check for repetitive phrases (3+ word phrases repeated more than 2 times)
     const phrases = [];
     for (let i = 0; i <= words.length - 3; i++) {
-      phrases.push(words.slice(i, i + 3).join(' '));
+      phrases.push(words.slice(i, i + 3).join(" "));
     }
     const phraseCounts = {};
     for (const phrase of phrases) {
       phraseCounts[phrase] = (phraseCounts[phrase] || 0) + 1;
       if (phraseCounts[phrase] > 2) {
-        return { isValid: false, error: "Bio cannot repeat the same phrase more than 2 times" };
+        return {
+          isValid: false,
+          error: "Bio cannot repeat the same phrase more than 2 times",
+        };
       }
     }
-    
+
     return { isValid: true, error: "" };
   };
 
@@ -110,12 +120,15 @@ export default function TalentForm() {
     }
   };
 
-  const handleSubmit = (e) => {
-    if (e && typeof e.preventDefault === "function") e.preventDefault();
-    submitTalentProfile();
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    await submitTalentProfile();
   };
 
   const submitTalentProfile = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+
     if (!agreeTerms) {
       setModalTitle("Terms Required");
       setModalMessage(
@@ -134,14 +147,16 @@ export default function TalentForm() {
       return;
     }
 
-    // if (!taxForm || !photo) {
-    //   setModalTitle("Files Required");
-    //   setModalMessage(
-    //     "Upload your profile photo and tax form W9"
-    //   );
-    //   setShowModal(true);
-    //   return;
-    // }
+    setIsSubmitting(true);
+
+    if (!taxForm || !photo) {
+      setModalTitle("Files Required");
+      setModalMessage(
+        "Upload your profile photo and tax form W9"
+      );
+      setShowModal(true);
+      return;
+    }
 
     const formData = new FormData();
 
@@ -151,16 +166,16 @@ export default function TalentForm() {
     }
 
     // Add USA formatted timestamp
-    const usaTimestamp = new Date().toLocaleString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
+    const usaTimestamp = new Date().toLocaleString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
     });
-    formData.append('timestamp', usaTimestamp);
+    formData.append("timestamp", usaTimestamp);
 
     // Append files
     formData.append("photo", photo);
@@ -172,37 +187,38 @@ export default function TalentForm() {
 
     try {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
-      const response = await fetch(
-        `${apiDomain}/backend/talent_submit.php`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${apiDomain}/backend/talent_submit.php`, {
+        method: "POST",
+        body: formData,
+      });
 
       const result = await response.json();
 
       if (result.status === "success") {
         setModalTitle("Submission Successful");
-        setModalMessage("Your talent profile has been submitted.");
-        setShouldRedirect(true);
+        setModalMessage(
+          "Your talent profile has been submitted. You will be logged out after you close this message."
+        );
         setShowModal(true);
+        setIsSubmitting(false);
       } else {
         setModalTitle("Submission Failed");
         setModalMessage(result.message || "Please try again.");
         setShowModal(true);
+        setIsSubmitting(false);
       }
     } catch (err) {
       alert("Something went wrong: " + err.message);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 mt-4 mb-4">
-        <form
-          onSubmit={handleSubmit}
-          className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
-        >
+      <form
+        onSubmit={handleSubmit}
+        className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
+      >
         <div className="absolute top-3 right-3 z-10">
           <button onClick={handleLogout} title="Logout" type="button">
             <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
@@ -389,7 +405,9 @@ export default function TalentForm() {
                   setBioError(validation.error);
                 }}
                 className={`mt-2 block w-full rounded-md border px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600 ${
-                  bioError ? 'border-red-300 focus:ring-red-600' : 'border-gray-300'
+                  bioError
+                    ? "border-red-300 focus:ring-red-600"
+                    : "border-gray-300"
                 }`}
               />
               {bioError && (
@@ -460,16 +478,10 @@ export default function TalentForm() {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <FileUpload
-              label="Performer Images"
+              label="Performer Images / LOGO (JPG/PNG)"
               accept="image/*"
               setFile={setPerformerImages}
               multiple
-            />
-
-            <FileUpload
-              label="Logo (Photo)"
-              accept="image/*"
-              setFile={setPhoto}
             />
             <FileUpload
               label="Upload W9 (PDF)"
@@ -504,14 +516,20 @@ export default function TalentForm() {
           </label>
         </div>
 
-        <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+        <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8 mt-2.5">
           <button
-            type="submit"
-            className="rounded-md bg-orange-200 px-4 py-2 text-sm font-semibold text-black hover:bg-indigo-500"
+            type="submit" 
+            disabled={isSubmitting}
+            className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+              isSubmitting
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-orange-200 text-black hover:bg-indigo-500"
+            }`}
           >
-            Submit Talent Profile
+            {isSubmitting ? "Submitting..." : "Submit Talent Profile"}
           </button>
         </div>
+
         <PhotoCropModal
           open={showCropModal}
           setOpen={setShowCropModal}
@@ -523,9 +541,11 @@ export default function TalentForm() {
         open={showModal}
         setOpen={(open) => {
           setShowModal(open);
-          if (!open && shouldRedirect) {
-            setShouldRedirect(false);
-            navigate("/my-profile");
+          if (!open) {
+            // user closed the modal (Esc, backdrop, or Close button)
+            signOut(auth)
+              .then(() => navigate("/"))
+              .catch(console.error);
           }
         }}
         title={modalTitle}

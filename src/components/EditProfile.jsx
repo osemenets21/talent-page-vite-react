@@ -84,7 +84,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     { name: "bio", label: "Bio", type: "textarea" },
   ];
 
-  const backendBase = "http://localhost:8000";
+  const backendBase = import.meta.env.VITE_API_DOMAIN;
   const photoUrl = profile.files?.photo
     ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;
@@ -124,19 +124,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
       });
     }
     
-    // Debug: Log all FormData entries
-    console.log('FormData contents:');
-    for (let [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-      } else {
-        console.log(`${key}: ${value}`);
-      }
-    }
     
     // Send to backend
     try {
-      const res = await fetch("http://localhost:8000/backend/edit_talent.php", {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
         method: "POST",
         body: formData,
       });
@@ -149,7 +140,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         return;
       }
       if (result.status === "success") {
-        //if (typeof onSave === "function") onSave(form, fileInputs);
+        // if (typeof onSave === "function") onSave(form, fileInputs);
       } else {
         alert(result.message || "Failed to update profile");
       }

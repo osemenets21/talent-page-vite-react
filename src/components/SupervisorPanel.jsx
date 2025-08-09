@@ -73,7 +73,7 @@ export default function SupervisorPanel() {
 
   useEffect(() => {
     // Fetch all talent records from backend PHP endpoint (CORS safe)
-    fetch("http://localhost:8000/backend/get_all_talent.php")
+    fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/get_all_talent.php`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch talent data");
         return res.json();
@@ -93,7 +93,7 @@ export default function SupervisorPanel() {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
     setActionLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/backend/delete_talent.php", {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_talent.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submissionId })
@@ -142,7 +142,7 @@ export default function SupervisorPanel() {
     });
     formData.append("submissionId", submissionId);
     try {
-      const res = await fetch("http://localhost:8000/backend/edit_talent.php", {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
         method: "POST",
         body: formData
       });
@@ -283,7 +283,7 @@ export default function SupervisorPanel() {
                             <li className="text-xs text-gray-700">
                               Photo: 
                               <a 
-                                href={`http://localhost:8000/backend/uploads/${talent.firstName}_${talent.lastName}/${talent.files.photo}`}
+                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.firstName}_${talent.lastName}/${talent.files.photo}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline ml-1"
@@ -298,7 +298,7 @@ export default function SupervisorPanel() {
                             <li className="text-xs text-gray-700">
                               TaxForm: 
                               <a 
-                                href={`http://localhost:8000/backend/uploads/${talent.firstName}_${talent.lastName}/${talent.files.taxForm}`}
+                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.firstName}_${talent.lastName}/${talent.files.taxForm}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline ml-1"
@@ -316,7 +316,7 @@ export default function SupervisorPanel() {
                                 {talent.files.performerImages.map((img, imgIdx) => (
                                   <a 
                                     key={imgIdx}
-                                    href={`http://localhost:8000/backend/uploads/${talent.firstName}_${talent.lastName}/${img}`}
+                                    href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.firstName}_${talent.lastName}/${img}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-600 hover:text-blue-800 underline text-xs"

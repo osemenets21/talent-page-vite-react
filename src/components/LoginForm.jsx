@@ -45,8 +45,8 @@ export default function LoginForm() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <img
-            className="mx-auto h-10 w-auto"
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+            className="mx-auto h-40 w-auto"
+            src="/src/pictures/logo.png"
             alt="Your Company"
           />
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
@@ -115,7 +115,7 @@ export default function LoginForm() {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="flex w-full justify-center rounded-md bg-yellow-400 px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Sign in
             </button>

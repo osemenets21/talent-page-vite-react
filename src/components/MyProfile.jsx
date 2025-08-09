@@ -34,7 +34,7 @@ export default function MyProfile() {
       formData.append("submissionId", profile.submissionId);
       if (fileInputs.photo) formData.append("photo", fileInputs.photo);
       if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
-      const res = await fetch(`http://localhost:8000/backend/edit_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
         method: "POST",
         body: formData,
       });
@@ -78,7 +78,7 @@ export default function MyProfile() {
     if (!window.confirm("Are you sure you want to delete your profile?")) return;
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:8000/backend/delete_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_talent.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submissionId: profile.submissionId }),
@@ -116,7 +116,7 @@ export default function MyProfile() {
     }
 
     fetch(
-      `http://localhost:8000/backend/get_talent.php?submissionId=${encodeURIComponent(
+      `${import.meta.env.VITE_API_DOMAIN}/backend/get_talent.php?submissionId=${encodeURIComponent(
         submissionId
       )}`
     )
@@ -144,7 +144,7 @@ export default function MyProfile() {
     return <div className="text-center text-red-500 py-8">{error}</div>;
   if (!profile) return null;
 
-  const backendBase = "http://localhost:8000";
+  const backendBase = import.meta.env.VITE_API_DOMAIN;
   const photoUrl = profile.files?.photo
     ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;

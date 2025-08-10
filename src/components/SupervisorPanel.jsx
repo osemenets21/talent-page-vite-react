@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import logo from "../pictures/logo.png";
 
 export default function SupervisorPanel() {
   const [talents, setTalents] = useState([]);
@@ -179,12 +180,15 @@ export default function SupervisorPanel() {
           <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
         </button>
       </div>
-      <h1 className="text-3xl font-bold mb-8 text-orange-400 text-center">Supervisor Panel</h1>
+      <div className="flex justify-center mb-8">
+        <img src={logo} alt="Company Logo" className="h-30 w-auto" />
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 shadow-lg rounded-lg" style={{tableLayout: 'fixed'}}>
           <thead className="bg-orange-100">
             <tr>
               <th style={{width:'40px', minWidth:'40px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">#</th>
+              <th style={{width:'80px', minWidth:'80px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Photo</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">First Name</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Last Name</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Phone</th>
@@ -216,6 +220,19 @@ export default function SupervisorPanel() {
                 <td style={{width:'40px', minWidth:'40px'}} className="px-4 py-2 text-xs text-gray-700 font-bold">{idx + 1}</td>
                 {editIdx === idx ? (
                   <>
+                    <td style={{width:'80px', minWidth:'80px'}} className="px-4 py-2">
+                      {talent.files?.photo ? (
+                        <img
+                          src={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.photo}`}
+                          alt="Profile"
+                          className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-300"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No Photo</span>
+                        </div>
+                      )}
+                    </td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="firstName" value={editForm.firstName} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="lastName" value={editForm.lastName} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="phone" value={editForm.phone} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
@@ -257,6 +274,19 @@ export default function SupervisorPanel() {
                   </>
                 ) : (
                   <>
+                    <td style={{width:'80px', minWidth:'80px'}} className="px-4 py-2">
+                      {talent.files?.photo ? (
+                        <img
+                          src={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.photo}`}
+                          alt="Profile"
+                          className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-300"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No Photo</span>
+                        </div>
+                      )}
+                    </td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.firstName || <span className="text-gray-400">no data</span>}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.lastName || <span className="text-gray-400">no data</span>}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.phone || <span className="text-gray-400">no data</span>}</td>

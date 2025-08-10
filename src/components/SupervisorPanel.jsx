@@ -284,7 +284,7 @@ export default function SupervisorPanel() {
                             <li className="text-xs text-gray-700">
                               Photo: 
                               <a 
-                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.firstName}_${talent.lastName}/${talent.files.photo}`}
+                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.photo}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline ml-1"
@@ -299,7 +299,7 @@ export default function SupervisorPanel() {
                             <li className="text-xs text-gray-700">
                               TaxForm: 
                               <a 
-                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.firstName}_${talent.lastName}/${talent.files.taxForm}`}
+                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.taxForm}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline ml-1"
@@ -317,7 +317,7 @@ export default function SupervisorPanel() {
                                 {talent.files.performerImages.map((img, imgIdx) => (
                                   <a 
                                     key={imgIdx}
-                                    href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.firstName}_${talent.lastName}/${img}`}
+                                    href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${img}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-600 hover:text-blue-800 underline text-xs"

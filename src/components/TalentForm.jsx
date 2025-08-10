@@ -108,6 +108,22 @@ export default function TalentForm() {
     return id;
   }
 
+  // Function to extract username from social media URLs
+  const extractUsername = (input) => {
+    if (!input) return "";
+    
+    // Remove common URL prefixes and extract username
+    let cleaned = input
+      .replace(/^https?:\/\//, "") // Remove http:// or https://
+      .replace(/^www\./, "") // Remove www.
+      .replace(/^(instagram\.com|facebook\.com|soundcloud\.com|spotify\.com|youtube\.com|tiktok\.com)\//, "") // Remove domain
+      .replace(/^@/, "") // Remove @ symbol
+      .split('?')[0] // Remove query parameters
+      .split('/')[0]; // Take only the first part (username)
+    
+    return cleaned;
+  };
+
   useEffect(() => {
     localStorage.setItem("submissionId", form.submissionId);
   }, [form.submissionId]);
@@ -337,35 +353,35 @@ export default function TalentForm() {
               label="Instagram"
               id="instagram"
               value={form.instagram}
-              onChange={(v) => setForm({ ...form, instagram: v })}
+              onChange={(v) => setForm({ ...form, instagram: extractUsername(v) })}
               className="sm:col-span-2"
             />
             <Input
               label="Facebook"
               id="facebook"
               value={form.facebook}
-              onChange={(v) => setForm({ ...form, facebook: v })}
+              onChange={(v) => setForm({ ...form, facebook: extractUsername(v) })}
               className="sm:col-span-2"
             />
             <Input
               label="SoundCloud"
               id="soundcloud"
               value={form.soundcloud}
-              onChange={(v) => setForm({ ...form, soundcloud: v })}
+              onChange={(v) => setForm({ ...form, soundcloud: extractUsername(v) })}
               className="sm:col-span-2"
             />
             <Input
               label="Spotify"
               id="spotify"
               value={form.spotify}
-              onChange={(v) => setForm({ ...form, spotify: v })}
+              onChange={(v) => setForm({ ...form, spotify: extractUsername(v) })}
               className="sm:col-span-2"
             />
             <Input
               label="Youtube"
               id="youtube"
               value={form.youtube}
-              onChange={(v) => setForm({ ...form, youtube: v })}
+              onChange={(v) => setForm({ ...form, youtube: extractUsername(v) })}
               className="sm:col-span-2"
             />
 
@@ -373,7 +389,7 @@ export default function TalentForm() {
               label="Tiktok"
               id="tiktok"
               value={form.tiktok}
-              onChange={(v) => setForm({ ...form, tiktok: v })}
+              onChange={(v) => setForm({ ...form, tiktok: extractUsername(v) })}
               className="sm:col-span-2"
             />
             <Input
@@ -514,11 +530,11 @@ export default function TalentForm() {
             <span>
               I agree to the{" "}
               <a
-                href="/terms"
+                href="https://drive.google.com/file/d/1jF7WX3tNIj-v76BOzVPSeA426g6p7vyP/view?usp=sharing"
                 target="_blank"
                 className="underline text-indigo-600"
               >
-                Terms and Conditions
+                Terms & Conditions and Privacy Policy 
               </a>{" "}
               and understand that my data will be collected for profile
               submission purposes.

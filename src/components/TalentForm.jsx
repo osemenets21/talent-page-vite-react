@@ -46,6 +46,7 @@ export default function TalentForm() {
   const [performerImages, setPerformerImages] = useState([]);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
+  const [isSuccessModal, setIsSuccessModal] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [bioError, setBioError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,6 +135,7 @@ export default function TalentForm() {
       setModalMessage(
         "You must agree to our terms and conditions before submitting."
       );
+      setIsSuccessModal(false);
       setShowModal(true);
       return;
     }
@@ -143,6 +145,7 @@ export default function TalentForm() {
     if (!bioValidation.isValid) {
       setModalTitle("Bio Validation Error");
       setModalMessage(bioValidation.error);
+      setIsSuccessModal(false);
       setShowModal(true);
       return;
     }
@@ -154,7 +157,9 @@ export default function TalentForm() {
       setModalMessage(
         "Upload your profile photo and tax form W9"
       );
+      setIsSuccessModal(false);
       setShowModal(true);
+      setIsSubmitting(false);
       return;
     }
 
@@ -200,11 +205,13 @@ export default function TalentForm() {
         setModalMessage(
           "Your talent profile has been submitted. You will be logged out after you close this message."
         );
+        setIsSuccessModal(true);
         setShowModal(true);
         setIsSubmitting(false);
       } else {
         setModalTitle("Submission Failed");
         setModalMessage(result.message || "Please try again.");
+        setIsSuccessModal(false);
         setShowModal(true);
         setIsSubmitting(false);
       }
@@ -279,14 +286,14 @@ export default function TalentForm() {
               id="firstName"
               value={form.firstName}
               onChange={(v) => setForm({ ...form, firstName: v })}
-              // required
+              required
             />
             <Input
               label="Last Name"
               id="lastName"
               value={form.lastName}
               onChange={(v) => setForm({ ...form, lastName: v })}
-              // required
+              required
             />
             <Input
               label="Stage / Performer Name"
@@ -302,7 +309,7 @@ export default function TalentForm() {
                 Your Role<span className="text-red-500 ml-1">*</span>
               </label>
               <select
-                // required
+                required
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
@@ -375,7 +382,7 @@ export default function TalentForm() {
               value={form.city}
               onChange={(v) => setForm({ ...form, city: v })}
               className="sm:col-span-3"
-              // required
+              required
             />
             <Input
               label="Country"
@@ -383,7 +390,7 @@ export default function TalentForm() {
               value={form.country}
               onChange={(v) => setForm({ ...form, country: v })}
               className="sm:col-span-3"
-              // required
+              required
             />
 
             <div className="sm:col-span-6">
@@ -395,7 +402,7 @@ export default function TalentForm() {
               </label>
               <textarea
                 id="bio"
-                // required
+                required
                 rows={3}
                 maxLength={1500}
                 value={form.bio}
@@ -429,14 +436,14 @@ export default function TalentForm() {
               id="phone"
               value={form.phone}
               onChange={(v) => setForm({ ...form, phone: v })}
-              // required
+              required
             />
             <Input
               label="Email"
               id="email"
               value={form.email}
               onChange={(v) => setForm({ ...form, email: v })}
-              // required
+              required
             />
 
             <div className="sm:col-span-3">
@@ -444,6 +451,7 @@ export default function TalentForm() {
                 Form of Payment<span className="text-red-500 ml-1">*</span>
               </label>
               <select
+                required
                 value={form.paymentMethod}
                 onChange={(e) =>
                   setForm({ ...form, paymentMethod: e.target.value })
@@ -462,7 +470,7 @@ export default function TalentForm() {
                 value={form.venmo}
                 onChange={(v) => setForm({ ...form, venmo: v })}
                 className="sm:col-span-3"
-                // required
+                required
               />
             )}
             {form.paymentMethod === "Zelle" && (
@@ -472,7 +480,7 @@ export default function TalentForm() {
                 value={form.zelle}
                 onChange={(v) => setForm({ ...form, zelle: v })}
                 className="sm:col-span-3"
-                // required
+                required
               />
             )}
           </div>
@@ -488,7 +496,7 @@ export default function TalentForm() {
               label="Upload W9 (PDF)"
               accept=".pdf"
               setFile={setTaxForm}
-              // required
+              required
               renameWithForm={form}
             />
           </div>
@@ -498,6 +506,7 @@ export default function TalentForm() {
           <label className="flex items-start text-sm text-gray-700 gap-2">
             <input
               type="checkbox"
+              required
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
               className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -542,8 +551,8 @@ export default function TalentForm() {
         open={showModal}
         setOpen={(open) => {
           setShowModal(open);
-          if (!open) {
-            // user closed the modal (Esc, backdrop, or Close button)
+          if (!open && isSuccessModal) {
+            // Only logout and navigate on successful submission
             signOut(auth)
               .then(() => navigate("/"))
               .catch(console.error);

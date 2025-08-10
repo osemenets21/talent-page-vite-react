@@ -166,7 +166,7 @@ export default function SupervisorPanel() {
       await signOut(auth);
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      // Logout failed - handle silently
     }
   };
 
@@ -174,7 +174,7 @@ export default function SupervisorPanel() {
   if (error) return <div className="p-8 text-center text-red-600">Error: {error}</div>;
 
   return (
-    <div className="p-8 relative">
+    <div className="p-1 relative">
       <div className="absolute top-3 right-3 z-10">
         <button onClick={handleLogout} title="Logout" type="button">
           <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />

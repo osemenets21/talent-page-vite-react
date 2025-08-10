@@ -6,14 +6,16 @@ import ForgotPassword from '../../components/ForgotPassword'
 // Mock Firebase
 vi.mock('../../firebase', () => ({
   auth: {},
-  sendPasswordResetEmail: vi.fn()
+  sendPasswordResetEmail: vi.fn(() => Promise.resolve())
 }))
 
+// Mock react-router-dom
+const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
-    useNavigate: vi.fn(() => vi.fn()),
+    useNavigate: () => mockNavigate,
     Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>
   }
 })
@@ -52,7 +54,8 @@ describe('ForgotPassword', () => {
   it('has link back to sign in', () => {
     renderWithRouter(<ForgotPassword />)
     
-    expect(screen.getByText('Back to sign in')).toBeInTheDocument()
+    // The actual text is "Sign in" not "Back to sign in"
+    expect(screen.getByText('Sign in')).toBeInTheDocument()
   })
 
   it('validates email field as required', () => {

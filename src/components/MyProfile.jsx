@@ -61,7 +61,6 @@ export default function MyProfile() {
         body: formData,
       });
       const text = await res.text();
-      console.log("Raw response:", text);
       let result;
       try {
         result = JSON.parse(text);
@@ -92,7 +91,7 @@ export default function MyProfile() {
       await signOut(auth);
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      // Logout failed - handle silently
     }
   };
 
@@ -106,7 +105,6 @@ export default function MyProfile() {
         body: JSON.stringify({ submissionId: profile.submissionId }),
       });
       const text = await res.text();
-      console.log("Raw response:", text);
       let result;
       try {
         result = JSON.parse(text);

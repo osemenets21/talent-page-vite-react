@@ -117,7 +117,7 @@ export default function TalentForm() {
       await signOut(auth);
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      // Logout failed - handle silently
     }
   };
 
@@ -554,8 +554,8 @@ export default function TalentForm() {
           if (!open && isSuccessModal) {
             // Only logout and navigate on successful submission
             signOut(auth)
-              .then(() => navigate("/"))
-              .catch(console.error);
+              .then(() => navigate())
+              .catch(() => {});
           }
         }}
         title={modalTitle}

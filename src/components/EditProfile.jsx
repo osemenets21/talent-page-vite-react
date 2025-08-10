@@ -112,38 +112,17 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     // Only append files if they were actually selected/changed
     if (filesChanged.photo && (croppedPhotoFile || fileInputs.photo)) {
       const photoFile = croppedPhotoFile || fileInputs.photo;
-      console.log('Adding photo to FormData:', {
-        name: photoFile.name,
-        size: photoFile.size,
-        type: photoFile.type
-      });
       formData.append("photo", photoFile);
     }
     
     if (filesChanged.taxForm && fileInputs.taxForm) {
-      console.log('Adding taxForm to FormData:', {
-        name: fileInputs.taxForm.name,
-        size: fileInputs.taxForm.size,
-        type: fileInputs.taxForm.type
-      });
       formData.append("taxForm", fileInputs.taxForm);
     }
     
     if (filesChanged.performerImages && fileInputs.performerImages && fileInputs.performerImages.length > 0) {
-      console.log('Adding performerImages to FormData:', fileInputs.performerImages.length, 'files');
       fileInputs.performerImages.forEach((file) => {
         formData.append("performerImages[]", file);
       });
-    }
-    
-    // Debug: Log what we're actually sending
-    console.log('FormData contents being sent:');
-    for (let [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-      } else {
-        console.log(`${key}: ${value}`);
-      }
     }
     
     

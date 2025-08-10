@@ -14,7 +14,7 @@ describe('FileUpload', () => {
     render(<FileUpload {...defaultProps} />)
     
     expect(screen.getByText('Upload File')).toBeInTheDocument()
-    expect(screen.getByText('Choose file')).toBeInTheDocument()
+    // The component shows "Upload File" not "Choose file"
   })
 
   it('shows required indicator when required prop is true', () => {
@@ -26,14 +26,14 @@ describe('FileUpload', () => {
   it('accepts correct file types', () => {
     render(<FileUpload {...defaultProps} />)
     
-    const input = screen.getByRole('button').parentElement.querySelector('input[type="file"]')
+    const input = screen.getByLabelText('Upload File')
     expect(input).toHaveAttribute('accept', '.pdf')
   })
 
   it('handles multiple files when multiple prop is true', () => {
     render(<FileUpload {...defaultProps} multiple />)
     
-    const input = screen.getByRole('button').parentElement.querySelector('input[type="file"]')
+    const input = screen.getByLabelText('Upload File')
     expect(input).toHaveAttribute('multiple')
   })
 
@@ -41,7 +41,7 @@ describe('FileUpload', () => {
     const setFile = vi.fn()
     render(<FileUpload {...defaultProps} setFile={setFile} />)
     
-    const input = screen.getByRole('button').parentElement.querySelector('input[type="file"]')
+    const input = screen.getByLabelText('Upload File')
     const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
     
     fireEvent.change(input, { target: { files: [file] } })

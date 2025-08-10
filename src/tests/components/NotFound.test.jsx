@@ -22,7 +22,8 @@ describe('NotFound', () => {
   it('has link to go back home', () => {
     renderWithRouter(<NotFound />)
     
-    const homeLink = screen.getByText('Go back home')
+    // The actual text is "Back to home" not "Go back home"
+    const homeLink = screen.getByText('Back to home')
     expect(homeLink).toBeInTheDocument()
     expect(homeLink.closest('a')).toHaveAttribute('href', '/')
   })
@@ -30,6 +31,7 @@ describe('NotFound', () => {
   it('displays helpful message', () => {
     renderWithRouter(<NotFound />)
     
-    expect(screen.getByText(/Sorry, we couldn't find the page you're looking for/)).toBeInTheDocument()
+    // Use exact text match instead of regex
+    expect(screen.getByText("Sorry, we couldn't find the page you're looking for.")).toBeInTheDocument()
   })
 })

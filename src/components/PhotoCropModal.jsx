@@ -72,7 +72,6 @@ export default function PhotoCropModal({
         alert("Upload failed: " + (result.message || "Unknown error"));
       }
     } catch (err) {
-      console.error("Cropping/upload failed:", err);
       alert("Cropping or upload failed.");
     }
   };

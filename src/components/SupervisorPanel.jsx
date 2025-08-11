@@ -210,7 +210,7 @@ export default function SupervisorPanel() {
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Zelle</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Submission ID</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Files</th>
-              <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Timestamp</th>
+              <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Last updated</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>

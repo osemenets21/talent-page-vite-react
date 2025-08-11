@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import FileUpload from "./FileUpload";
 import getCroppedImg from "../utils/cropImage";
 import PhotoCropModal from "./PhotoCropModal";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...profile });
@@ -12,6 +13,33 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [croppedPhotoFile, setCroppedPhotoFile] = useState(null);
   const [bioError, setBioError] = useState("");
   const [filesChanged, setFilesChanged] = useState({ photo: false, taxForm: false, performerImages: false });
+
+  // Function to delete individual files
+  const handleFileDelete = async (fileType, fileName = null) => {
+    if (!window.confirm(`Are you sure you want to delete this ${fileType}?`)) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_file.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionId: profile.submissionId,
+          fileType: fileType,
+          fileName: fileName
+        }),
+      });
+
+      const result = await response.json();
+      if (result.status === "success") {
+        alert(`${fileType} deleted successfully!`);
+        window.location.reload();
+      } else {
+        alert(result.message || `Failed to delete ${fileType}`);
+      }
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  };
 
   // Function to validate bio text to prevent repetitive content
   const validateBioText = (text) => {
@@ -200,11 +228,21 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
           <div className="sm:col-span-2">
             <label className="block text-sm font-semibold text-gray-600">Photo:</label>
             {photoUrl && (
-              <img
-                src={photoUrl}
-                alt="Profile"
-                className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
-              />
+              <div className="relative inline-block">
+                <img
+                  src={photoUrl}
+                  alt="Profile"
+                  className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleFileDelete("photo")}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors"
+                  title="Delete photo"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              </div>
             )}
             <FileUpload
               label="Profile Photo"
@@ -223,12 +261,21 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
             {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {profile.files.performerImages.map((img, idx) => (
-                  <img
-                    key={idx}
-                    src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
-                    alt={`Performer ${idx + 1}`}
-                    className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
-                  />
+                  <div key={idx} className="relative">
+                    <img
+                      src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
+                      alt={`Performer ${idx + 1}`}
+                      className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleFileDelete("performerImage", img)}
+                      className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-lg transition-colors"
+                      title="Delete image"
+                    >
+                      <XMarkIcon className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -247,14 +294,24 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
           <div className="sm:col-span-2">
             <label className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</label>
             {pdfUrl && (
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-600 underline text-sm mt-1 inline-block mr-2"
-              >
-                Download Current
-              </a>
+              <div className="flex items-center gap-2 mb-2">
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 underline text-sm"
+                >
+                  Download Current
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleFileDelete("taxForm")}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors ml-2"
+                  title="Delete tax form"
+                >
+                  <XMarkIcon className="h-3 w-3" />
+                </button>
+              </div>
             )}
             <FileUpload
               label="Tax Form (PDF)"

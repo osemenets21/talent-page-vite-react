@@ -111,16 +111,19 @@ export default function TalentForm() {
   // Function to extract username from social media URLs
   const extractUsername = (input) => {
     if (!input) return "";
-    
+
     // Remove common URL prefixes and extract username
     let cleaned = input
       .replace(/^https?:\/\//, "") // Remove http:// or https://
       .replace(/^www\./, "") // Remove www.
-      .replace(/^(instagram\.com|facebook\.com|soundcloud\.com|spotify\.com|youtube\.com|tiktok\.com)\//, "") // Remove domain
+      .replace(
+        /^(instagram\.com|facebook\.com|soundcloud\.com|spotify\.com|youtube\.com|tiktok\.com)\//,
+        ""
+      ) // Remove domain
       .replace(/^@/, "") // Remove @ symbol
-      .split('?')[0] // Remove query parameters
-      .split('/')[0]; // Take only the first part (username)
-    
+      .split("?")[0] // Remove query parameters
+      .split("/")[0]; // Take only the first part (username)
+
     return cleaned;
   };
 
@@ -170,9 +173,7 @@ export default function TalentForm() {
 
     if (!taxForm || !photo) {
       setModalTitle("Files Required");
-      setModalMessage(
-        "Upload your profile photo and tax form W9"
-      );
+      setModalMessage("Upload your profile photo and tax form W9");
       setIsSuccessModal(false);
       setShowModal(true);
       setIsSubmitting(false);
@@ -219,7 +220,7 @@ export default function TalentForm() {
       if (result.status === "success") {
         setModalTitle("Submission Successful");
         setModalMessage(
-          "Your talent profile has been submitted. You will be logged out after you close this message."
+          "Your talent profile has been submitted successfully! You will be redirected to your profile page when you close this message."
         );
         setIsSuccessModal(true);
         setShowModal(true);
@@ -256,7 +257,7 @@ export default function TalentForm() {
 
           <div className="col-span-full">
             <label className="block text-sm font-medium text-gray-900">
-              Photo
+              Profile photo<span className="text-red-500 ml-1">*</span>
             </label>
             <div className="mt-2 flex items-center gap-x-3">
               {photo ? (
@@ -353,35 +354,45 @@ export default function TalentForm() {
               label="Instagram"
               id="instagram"
               value={form.instagram}
-              onChange={(v) => setForm({ ...form, instagram: extractUsername(v) })}
+              onChange={(v) =>
+                setForm({ ...form, instagram: extractUsername(v) })
+              }
               className="sm:col-span-2"
             />
             <Input
               label="Facebook"
               id="facebook"
               value={form.facebook}
-              onChange={(v) => setForm({ ...form, facebook: extractUsername(v) })}
+              onChange={(v) =>
+                setForm({ ...form, facebook: extractUsername(v) })
+              }
               className="sm:col-span-2"
             />
             <Input
               label="SoundCloud"
               id="soundcloud"
               value={form.soundcloud}
-              onChange={(v) => setForm({ ...form, soundcloud: extractUsername(v) })}
+              onChange={(v) =>
+                setForm({ ...form, soundcloud: extractUsername(v) })
+              }
               className="sm:col-span-2"
             />
             <Input
               label="Spotify"
               id="spotify"
               value={form.spotify}
-              onChange={(v) => setForm({ ...form, spotify: extractUsername(v) })}
+              onChange={(v) =>
+                setForm({ ...form, spotify: extractUsername(v) })
+              }
               className="sm:col-span-2"
             />
             <Input
               label="Youtube"
               id="youtube"
               value={form.youtube}
-              onChange={(v) => setForm({ ...form, youtube: extractUsername(v) })}
+              onChange={(v) =>
+                setForm({ ...form, youtube: extractUsername(v) })
+              }
               className="sm:col-span-2"
             />
 
@@ -440,81 +451,86 @@ export default function TalentForm() {
               <p className="text-xs text-gray-500 text-right">
                 {form.bio.length}/1500
               </p>
+              <div className="pt-5">
+                <FileUpload
+                  label="Performer Images / LOGO (JPG/PNG)"
+                  accept="image/*"
+                  setFile={setPerformerImages}
+                  multiple
+                />
+              </div>
             </div>
           </div>
 
           <hr className="border-t border-gray-300" />
 
-          <h3 className="text-lg font-medium text-gray-900">Private Info</h3>
-          <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
-            <Input
-              label="Phone"
-              id="phone"
-              value={form.phone}
-              onChange={(v) => setForm({ ...form, phone: v })}
-              required
-            />
-            <Input
-              label="Email"
-              id="email"
-              value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
-              required
-            />
-
-            <div className="sm:col-span-3">
-              <label className="block text-sm font-medium text-gray-900">
-                Form of Payment<span className="text-red-500 ml-1">*</span>
-              </label>
-              <select
+          <div className="bg-gray-100 p-6 rounded-lg">
+            <h3 className="text-lg font-medium text-gray-900 mb-6">
+              Private Encrypted Info
+            </h3>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+              <Input
+                label="Phone"
+                id="phone"
+                value={form.phone}
+                onChange={(v) => setForm({ ...form, phone: v })}
                 required
-                value={form.paymentMethod}
-                onChange={(e) =>
-                  setForm({ ...form, paymentMethod: e.target.value })
-                }
-                className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
-              >
-                <option>Venmo</option>
-                <option>Zelle</option>
-              </select>
+              />
+              <Input
+                label="Email"
+                id="email"
+                value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })}
+                required
+              />
+
+              <div className="sm:col-span-3">
+                <label className="block text-sm font-medium text-gray-900">
+                  Form of Payment<span className="text-red-500 ml-1">*</span>
+                </label>
+                <select
+                  required
+                  value={form.paymentMethod}
+                  onChange={(e) =>
+                    setForm({ ...form, paymentMethod: e.target.value })
+                  }
+                  className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
+                >
+                  <option>Venmo</option>
+                  <option>Zelle</option>
+                </select>
+              </div>
+
+              {form.paymentMethod === "Venmo" && (
+                <Input
+                  label="Venmo Name"
+                  id="venmo"
+                  value={form.venmo}
+                  onChange={(v) => setForm({ ...form, venmo: v })}
+                  className="sm:col-span-3"
+                  required
+                />
+              )}
+              {form.paymentMethod === "Zelle" && (
+                <Input
+                  label="Zelle Email or Phone"
+                  id="zelle"
+                  value={form.zelle}
+                  onChange={(v) => setForm({ ...form, zelle: v })}
+                  className="sm:col-span-3"
+                  required
+                />
+              )}
             </div>
-
-            {form.paymentMethod === "Venmo" && (
-              <Input
-                label="Venmo Name"
-                id="venmo"
-                value={form.venmo}
-                onChange={(v) => setForm({ ...form, venmo: v })}
-                className="sm:col-span-3"
+            <div className="pt-5">
+              <FileUpload
+                label="Upload W9 (PDF)"
+                accept=".pdf"
+                setFile={setTaxForm}
                 required
+                renameWithForm={form}
               />
-            )}
-            {form.paymentMethod === "Zelle" && (
-              <Input
-                label="Zelle Email or Phone"
-                id="zelle"
-                value={form.zelle}
-                onChange={(v) => setForm({ ...form, zelle: v })}
-                className="sm:col-span-3"
-                required
-              />
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            <FileUpload
-              label="Performer Images / LOGO (JPG/PNG)"
-              accept="image/*"
-              setFile={setPerformerImages}
-              multiple
-            />
-            <FileUpload
-              label="Upload W9 (PDF)"
-              accept=".pdf"
-              setFile={setTaxForm}
-              required
-              renameWithForm={form}
-            />
+            </div>
           </div>
         </div>
 
@@ -530,21 +546,22 @@ export default function TalentForm() {
             <span>
               I agree to the{" "}
               <a
-                href="https://drive.google.com/file/d/1jF7WX3tNIj-v76BOzVPSeA426g6p7vyP/view?usp=sharing"
+                href="https://drive.google.com/file/d/1Wp36AhlsiazCJTvflEqH4YYucS3dF3hw/view?usp=sharing"
                 target="_blank"
                 className="underline text-indigo-600"
               >
-                Terms & Conditions and Privacy Policy 
+                Terms & Conditions and Privacy Policy
               </a>{" "}
               and understand that my data will be collected for profile
               submission purposes.
+              <span className="text-red-500 ml-1">*</span>
             </span>
           </label>
         </div>
 
         <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8 mt-2.5">
           <button
-            type="submit" 
+            type="submit"
             disabled={isSubmitting}
             className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
               isSubmitting
@@ -568,10 +585,8 @@ export default function TalentForm() {
         setOpen={(open) => {
           setShowModal(open);
           if (!open && isSuccessModal) {
-            // Only logout and navigate on successful submission
-            signOut(auth)
-              .then(() => navigate())
-              .catch(() => {});
+            // Navigate to profile page after successful submission
+            navigate("/my-profile");
           }
         }}
         title={modalTitle}

@@ -21,8 +21,8 @@ export default function ForgotPassword() {
       <div className="w-full max-w-md space-y-8">
         <div>
           <img
-            className="mx-auto h-10 w-auto"
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+            className="mx-auto h-20 w-auto"
+            src="src/pictures/logo.png"
             alt="Your Company"
           />
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">

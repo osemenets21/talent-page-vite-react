@@ -175,6 +175,16 @@ export default function SupervisorPanel() {
 
   return (
     <div className="p-1 relative">
+      <div className="absolute top-3 left-3 z-10">
+        <button 
+          onClick={() => navigate('/admin-dashboard')} 
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
+          title="Back to Dashboard"
+          type="button"
+        >
+          ← Dashboard
+        </button>
+      </div>
       <div className="absolute top-3 right-3 z-10">
         <button onClick={handleLogout} title="Logout" type="button">
           <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />

@@ -17,8 +17,8 @@ export default function LoginForm() {
       
       // Check if user is admin
       if (isAdmin(user.email)) {
-        // Admin user - redirect to supervisor panel
-        navigate("/supervisor-panel");
+        // Admin user - redirect to admin dashboard
+        navigate("/admin-dashboard");
         return;
       }
       

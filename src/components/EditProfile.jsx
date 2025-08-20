@@ -156,7 +156,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     
     // Send to backend
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, {
         method: "POST",
         body: formData,
       });

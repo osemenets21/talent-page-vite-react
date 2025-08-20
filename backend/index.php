@@ -2,9 +2,30 @@
 // Unified Backend Router
 // Routes all requests to appropriate handlers
 
-header('Access-Control-Allow-Origin: http://localhost:5173');
+// Handle CORS for development
+$allowed_origins = [
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if (in_array($origin, $allowed_origins)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    // For development, allow all localhost origins
+    if (strpos($origin, 'http://localhost:') === 0 || strpos($origin, 'http://127.0.0.1:') === 0) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+    } else {
+        header('Access-Control-Allow-Origin: *');
+    }
+}
+
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -218,7 +239,7 @@ function handleTalentRoutes($pathParts, $method) {
     switch ($action) {
         case 'submit':
             if ($method === 'POST') {
-                require_once __DIR__ . '/talent_submit.php';
+                require_once __DIR__ . '/talent_submit_mysql.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);
@@ -228,9 +249,10 @@ function handleTalentRoutes($pathParts, $method) {
         case 'get':
             if ($method === 'GET') {
                 if (isset($_GET['email'])) {
-                    require_once __DIR__ . '/get_talent_by_email.php';
+                    require_once __DIR__ . '/get_talent_by_email_mysql.php';
                 } else {
-                    require_once __DIR__ . '/get_talent.php';
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Email parameter required for talent get']);
                 }
             } else {
                 http_response_code(405);
@@ -240,7 +262,7 @@ function handleTalentRoutes($pathParts, $method) {
             
         case 'all':
             if ($method === 'GET') {
-                require_once __DIR__ . '/get_all_talent.php';
+                require_once __DIR__ . '/get_all_talent_mysql.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);
@@ -249,7 +271,7 @@ function handleTalentRoutes($pathParts, $method) {
             
         case 'edit':
             if ($method === 'POST') {
-                require_once __DIR__ . '/edit_talent.php';
+                require_once __DIR__ . '/edit_talent_mysql.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);
@@ -258,7 +280,7 @@ function handleTalentRoutes($pathParts, $method) {
             
         case 'delete':
             if ($method === 'POST' || $method === 'DELETE') {
-                require_once __DIR__ . '/delete_talent.php';
+                require_once __DIR__ . '/delete_talent_mysql.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);

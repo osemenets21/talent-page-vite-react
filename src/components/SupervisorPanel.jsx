@@ -75,7 +75,7 @@ export default function SupervisorPanel() {
 
   useEffect(() => {
     // Fetch all talent records from backend PHP endpoint (CORS safe)
-    fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/get_all_talent.php`)
+    fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/all`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch talent data");
         return res.json();
@@ -95,7 +95,7 @@ export default function SupervisorPanel() {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submissionId })
@@ -144,7 +144,7 @@ export default function SupervisorPanel() {
     });
     formData.append("submissionId", submissionId);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, {
         method: "POST",
         body: formData
       });

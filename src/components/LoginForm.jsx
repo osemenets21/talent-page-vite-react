@@ -25,7 +25,7 @@ export default function LoginForm() {
       // Regular user - check if profile exists in backend
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
-      const res = await fetch(`${apiDomain}/backend/get_talent_by_email.php?email=${email}`);
+      const res = await fetch(`${apiDomain}/talent/get?email=${email}`);
       if (!res.ok) throw new Error("Failed to fetch profile data");
       const userData = await res.json();
       if (userData.submissionId) {

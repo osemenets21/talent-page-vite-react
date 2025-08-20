@@ -56,7 +56,7 @@ export default function MyProfile() {
       formData.append("submissionId", profile.submissionId);
       if (fileInputs.photo) formData.append("photo", fileInputs.photo);
       if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, {
         method: "POST",
         body: formData,
       });
@@ -99,7 +99,7 @@ export default function MyProfile() {
     if (!window.confirm("Are you sure you want to delete your profile?")) return;
     setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_talent.php`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ submissionId: profile.submissionId }),
@@ -136,7 +136,7 @@ export default function MyProfile() {
     }
 
     fetch(
-      `${import.meta.env.VITE_API_DOMAIN}/backend/get_talent.php?submissionId=${encodeURIComponent(
+      `${import.meta.env.VITE_API_DOMAIN}/talent/get?submissionId=${encodeURIComponent(
         submissionId
       )}`
     )

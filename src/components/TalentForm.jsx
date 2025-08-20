@@ -210,7 +210,7 @@ export default function TalentForm() {
 
     try {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
-      const response = await fetch(`${apiDomain}/backend/talent_submit.php`, {
+      const response = await fetch(`${apiDomain}/talent/submit`, {
         method: "POST",
         body: formData,
       });

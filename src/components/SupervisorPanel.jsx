@@ -80,8 +80,12 @@ export default function SupervisorPanel() {
         if (!res.ok) throw new Error("Failed to fetch talent data");
         return res.json();
       })
-      .then((data) => {
-        setTalents(data);
+      .then((response) => {
+        if (response.status === 'success') {
+          setTalents(response.data || []);
+        } else {
+          throw new Error(response.message || 'Failed to load talent data');
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -233,7 +237,7 @@ export default function SupervisorPanel() {
                     <td style={{width:'80px', minWidth:'80px'}} className="px-4 py-2">
                       {talent.files?.photo ? (
                         <img
-                          src={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.photo}`}
+                          src={`${import.meta.env.VITE_API_DOMAIN}/uploads/${talent.submissionId}/${talent.files.photo}`}
                           alt="Profile"
                           className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-300"
                         />
@@ -287,7 +291,7 @@ export default function SupervisorPanel() {
                     <td style={{width:'80px', minWidth:'80px'}} className="px-4 py-2">
                       {talent.files?.photo ? (
                         <img
-                          src={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.photo}`}
+                          src={`${import.meta.env.VITE_API_DOMAIN}/uploads/${talent.submissionId}/${talent.files.photo}`}
                           alt="Profile"
                           className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-300"
                         />
@@ -324,7 +328,7 @@ export default function SupervisorPanel() {
                             <li className="text-xs text-gray-700">
                               Photo: 
                               <a 
-                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.photo}`}
+                                href={`${import.meta.env.VITE_API_DOMAIN}/uploads/${talent.submissionId}/${talent.files.photo}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline ml-1"
@@ -339,7 +343,7 @@ export default function SupervisorPanel() {
                             <li className="text-xs text-gray-700">
                               TaxForm: 
                               <a 
-                                href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${talent.files.taxForm}`}
+                                href={`${import.meta.env.VITE_API_DOMAIN}/uploads/${talent.submissionId}/${talent.files.taxForm}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline ml-1"
@@ -357,7 +361,7 @@ export default function SupervisorPanel() {
                                 {talent.files.performerImages.map((img, imgIdx) => (
                                   <a 
                                     key={imgIdx}
-                                    href={`${import.meta.env.VITE_API_DOMAIN}/backend/uploads/${talent.submissionId}/${img}`}
+                                    href={`${import.meta.env.VITE_API_DOMAIN}/uploads/${talent.submissionId}/${img}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-600 hover:text-blue-800 underline text-xs"

@@ -66,7 +66,8 @@ try {
             'timestamp' => date("m/d/Y, h:i:s A", strtotime($talent['created_at'])),
             'files' => [
                 'photo' => $talent['photo_filename'],
-                'taxForm' => $talent['tax_form_filename']
+                'taxForm' => $talent['tax_form_filename'],
+                'performerImages' => $talent['additional_files'] ? json_decode($talent['additional_files'], true) : []
             ],
             'updated_at' => $talent['updated_at'],
             'status' => $talent['status'],

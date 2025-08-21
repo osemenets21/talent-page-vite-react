@@ -26,14 +26,25 @@ export default function LoginForm() {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
       const res = await fetch(`${apiDomain}/talent/get?email=${email}`);
-      if (!res.ok) throw new Error("Failed to fetch profile data");
-      const userData = await res.json();
-      if (userData.submissionId) {
-        // Store submissionId for MyProfile
-        localStorage.setItem("submissionId", userData.submissionId);
-        navigate("/my-profile");
-      } else {
+      
+      if (res.ok) {
+        // User profile found
+        const userData = await res.json();
+        if (userData.data && userData.data.submissionId) {
+          // Store submissionId for MyProfile
+          localStorage.setItem("submissionId", userData.data.submissionId);
+          navigate("/my-profile");
+        } else {
+          navigate("/register-talent");
+        }
+      } else if (res.status === 404) {
+        // User profile not found - redirect to registration
+        console.log("Create a new profile");
+        
         navigate("/register-talent");
+      } else {
+        // Other error (500, etc.)
+        throw new Error("Failed to fetch profile data");
       }
     } catch (error) {
       alert("Login failed: " + error.message);

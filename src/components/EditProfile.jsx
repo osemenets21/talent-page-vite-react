@@ -19,7 +19,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     if (!window.confirm(`Are you sure you want to delete this ${fileType}?`)) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_file.php`, {
+      const response = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/delete-file`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,10 +115,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
 
   const backendBase = import.meta.env.VITE_API_DOMAIN;
   const photoUrl = profile.files?.photo
-    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
+    ? `${backendBase}/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;
   const pdfUrl = profile.files?.taxForm
-    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.taxForm}`
+    ? `${backendBase}/uploads/${profile.submissionId}/${profile.files.taxForm}`
     : null;
 
   const handleSubmit = async (e) => {
@@ -140,14 +140,17 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     // Only append files if they were actually selected/changed
     if (filesChanged.photo && (croppedPhotoFile || fileInputs.photo)) {
       const photoFile = croppedPhotoFile || fileInputs.photo;
+      console.log('Appending photo file:', photoFile?.name, photoFile?.size);
       formData.append("photo", photoFile);
     }
     
     if (filesChanged.taxForm && fileInputs.taxForm) {
+      console.log('Appending tax form:', fileInputs.taxForm?.name);
       formData.append("taxForm", fileInputs.taxForm);
     }
     
     if (filesChanged.performerImages && fileInputs.performerImages && fileInputs.performerImages.length > 0) {
+      console.log('Appending performer images:', fileInputs.performerImages.length);
       fileInputs.performerImages.forEach((file) => {
         formData.append("performerImages[]", file);
       });
@@ -263,7 +266,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 {profile.files.performerImages.map((img, idx) => (
                   <div key={idx} className="relative">
                     <img
-                      src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
+                      src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
                       alt={`Performer ${idx + 1}`}
                       className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
                     />

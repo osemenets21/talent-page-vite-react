@@ -248,12 +248,7 @@ function handleTalentRoutes($pathParts, $method) {
             
         case 'get':
             if ($method === 'GET') {
-                if (isset($_GET['email'])) {
-                    require_once __DIR__ . '/get_talent_by_email_mysql.php';
-                } else {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Email parameter required for talent get']);
-                }
+                require_once __DIR__ . '/get_talent_by_email_mysql.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);
@@ -281,6 +276,15 @@ function handleTalentRoutes($pathParts, $method) {
         case 'delete':
             if ($method === 'POST' || $method === 'DELETE') {
                 require_once __DIR__ . '/delete_talent_mysql.php';
+            } else {
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
+            }
+            break;
+            
+        case 'delete-file':
+            if ($method === 'POST') {
+                require_once __DIR__ . '/delete_file_mysql.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);

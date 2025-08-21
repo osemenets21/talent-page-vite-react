@@ -64,15 +64,88 @@ try {
         }
     }
     
+    // Handle file uploads
+    $uploadDir = __DIR__ . '/uploads/' . $talent['submission_id'];
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
+    // Handle photo upload
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+        $photoExtension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+        $photoFilename = 'photo.' . $photoExtension;
+        $photoPath = $uploadDir . '/' . $photoFilename;
+        
+        // Delete old photo if exists
+        if (!empty($talent['photo_filename'])) {
+            $oldPhotoPath = $uploadDir . '/' . $talent['photo_filename'];
+            if (file_exists($oldPhotoPath)) {
+                @unlink($oldPhotoPath);
+            }
+        }
+        
+        if (move_uploaded_file($_FILES['photo']['tmp_name'], $photoPath)) {
+            $updateData['photo_filename'] = $photoFilename;
+        }
+    }
+
+    // Handle tax form upload
+    if (isset($_FILES['taxForm']) && $_FILES['taxForm']['error'] === UPLOAD_ERR_OK) {
+        $taxExtension = pathinfo($_FILES['taxForm']['name'], PATHINFO_EXTENSION);
+        $taxFilename = 'tax_form.' . $taxExtension;
+        $taxPath = $uploadDir . '/' . $taxFilename;
+        
+        // Delete old tax form if exists
+        if (!empty($talent['tax_form_filename'])) {
+            $oldTaxPath = $uploadDir . '/' . $talent['tax_form_filename'];
+            if (file_exists($oldTaxPath)) {
+                @unlink($oldTaxPath);
+            }
+        }
+        
+        if (move_uploaded_file($_FILES['taxForm']['tmp_name'], $taxPath)) {
+            $updateData['tax_form_filename'] = $taxFilename;
+        }
+    }
+
+    // Handle performer images upload
+    if (isset($_FILES['performerImages']) && is_array($_FILES['performerImages']['name'])) {
+        $additionalFiles = [];
+        $existingFiles = !empty($talent['additional_files']) ? json_decode($talent['additional_files'], true) : [];
+        
+        // Keep existing files
+        if (is_array($existingFiles)) {
+            $additionalFiles = $existingFiles;
+        }
+        
+        $uploadedCount = 0;
+        for ($i = 0; $i < count($_FILES['performerImages']['name']); $i++) {
+            if ($_FILES['performerImages']['error'][$i] === UPLOAD_ERR_OK) {
+                $originalName = $_FILES['performerImages']['name'][$i];
+                $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+                $filename = 'performer_' . (count($additionalFiles) + $uploadedCount + 1) . '.' . $extension;
+                $path = $uploadDir . '/' . $filename;
+                
+                if (move_uploaded_file($_FILES['performerImages']['tmp_name'][$i], $path)) {
+                    $additionalFiles[] = $filename;
+                    $uploadedCount++;
+                }
+            }
+        }
+        
+        $updateData['additional_files'] = !empty($additionalFiles) ? json_encode($additionalFiles) : null;
+    }
+
     if (empty($updateData)) {
         echo json_encode(["status" => "error", "message" => "No valid fields to update"]);
         exit;
     }
-    
+
+    // Add updated timestamp
+    $updateData['updated_at'] = date('Y-m-d H:i:s');
+
     // Update the record
-    $result = $db->update($talent['id'], $updateData);
-    
-    if ($result) {
+    $result = $db->update($talent['id'], $updateData);    if ($result) {
         // Also update JSON backup
         $jsonFile = __DIR__ . '/submissions/talent_data.json';
         if (file_exists($jsonFile)) {

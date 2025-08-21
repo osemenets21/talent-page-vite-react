@@ -144,11 +144,11 @@ export default function MyProfile() {
         if (!res.ok) throw new Error("Failed to fetch profile data");
         return res.json();
       })
-      .then((data) => {
-        if (!data || data.status === "error" || !data.submissionId) {
-          setError(data.message || "Profile not found.");
+      .then((res) => {
+        if (!res || res.status === "error" || !res.data.submissionId) {
+          setError(res.data.message || "Profile not found.");
         } else {
-          setProfile(data);
+          setProfile(res.data);
         }
         setLoading(false);
       })
@@ -166,15 +166,15 @@ export default function MyProfile() {
 
   const backendBase = import.meta.env.VITE_API_DOMAIN;
   const photoUrl = profile.files?.photo
-    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
+    ? `${backendBase}/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;
   const pdfUrl = profile.files?.taxForm
-    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.taxForm}`
+    ? `${backendBase}/uploads/${profile.submissionId}/${profile.files.taxForm}`
     : null;
   const performerImages = Array.isArray(profile.files?.performerImages)
     ? profile.files.performerImages
     : [];
-  // Portfolio removed
+ 
 
   return (
     <div className="relative max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
@@ -210,7 +210,8 @@ export default function MyProfile() {
           {/* Profile fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 mb-8">
             {Object.entries(profile).map(([key, value]) => {
-              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio") return null;
+
+              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio" || key === "mysql_data") return null;
               
               // Special handling for updated_at field
               if (key === "updated_at") {
@@ -240,7 +241,7 @@ export default function MyProfile() {
                   {performerImages.map((img, idx) => (
                     <img
                       key={idx}
-                      src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
+                      src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
                       alt={`Performer ${idx + 1}`}
                       className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
                     />

@@ -2,6 +2,10 @@
 // Unified Backend Router
 // Routes all requests to appropriate handlers
 
+// Enable error logging for debugging
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/debug.log');
+
 // Handle CORS for development
 $allowed_origins = [
     'http://localhost:5173', 
@@ -36,6 +40,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $request = $_SERVER['REQUEST_URI'];
 $path = parse_url($request, PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Debug: Log all requests
+error_log("Request: " . $method . " " . $request);
+error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+
+// Handle static files (images, CSS, JS, etc.)
+if (preg_match('/\.(png|jpg|jpeg|gif|css|js|ico|svg)$/i', $path)) {
+    // Since document root is project root, construct path from project root
+    $filePath = dirname(__DIR__) . $path; // Go up one level from backend to project root
+    if (file_exists($filePath)) {
+        // Get file extension and set appropriate MIME type
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'ico' => 'image/x-icon'
+        ];
+        
+        $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . filesize($filePath));
+        readfile($filePath);
+        exit;
+    } else {
+        http_response_code(404);
+        echo "File not found: " . $filePath;
+        exit;
+    }
+}
 
 // Remove leading slash and split path
 $pathParts = array_filter(explode('/', trim($path, '/')));
@@ -99,6 +137,8 @@ function handleApiRoutes($pathParts, $method) {
 }
 
 function handleEventRoutes($pathParts, $method) {
+    header('Content-Type: application/json');
+    
     // Try MySQL first, fallback to file-based DB
     try {
         require_once __DIR__ . '/event-content-manager/EventsMysqlDB.php';
@@ -113,7 +153,94 @@ function handleEventRoutes($pathParts, $method) {
         }
     }
     
-    $input = json_decode(file_get_contents('php://input'), true);
+    // Handle different content types
+    if (($method === 'POST' || $method === 'PUT') && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'multipart/form-data') !== false) {
+        // Handle file upload in POST/PUT
+        error_log("Detected multipart/form-data for " . $method);
+        
+        if ($method === 'PUT') {
+            // For PUT requests, we need to manually parse the multipart data
+            // PHP doesn't populate $_POST and $_FILES for PUT requests
+            $input = null;
+            
+            // Get the raw input
+            $rawInput = file_get_contents('php://input');
+            
+            // Parse boundary from Content-Type header
+            $boundary = '';
+            if (preg_match('/boundary=(.+)$/', $_SERVER['CONTENT_TYPE'], $matches)) {
+                $boundary = $matches[1];
+            }
+            
+            if ($boundary && $rawInput) {
+                // Parse multipart data manually for PUT requests
+                $parts = explode('--' . $boundary, $rawInput);
+                $putData = [];
+                $putFiles = [];
+                
+                foreach ($parts as $part) {
+                    if (trim($part) === '' || trim($part) === '--') continue;
+                    
+                    $part = ltrim($part, "\r\n");
+                    list($headers, $body) = explode("\r\n\r\n", $part, 2);
+                    $body = rtrim($body, "\r\n");
+                    
+                    // Parse headers
+                    $headerLines = explode("\r\n", $headers);
+                    $disposition = '';
+                    $name = '';
+                    $filename = '';
+                    
+                    foreach ($headerLines as $headerLine) {
+                        if (strpos($headerLine, 'Content-Disposition:') === 0) {
+                            $disposition = $headerLine;
+                            if (preg_match('/name="([^"]+)"/', $disposition, $matches)) {
+                                $name = $matches[1];
+                            }
+                            if (preg_match('/filename="([^"]+)"/', $disposition, $matches)) {
+                                $filename = $matches[1];
+                            }
+                        }
+                    }
+                    
+                    if ($name) {
+                        if ($filename) {
+                            // This is a file
+                            $tempFile = tempnam(sys_get_temp_dir(), 'upload');
+                            file_put_contents($tempFile, $body);
+                            $putFiles[$name] = [
+                                'name' => $filename,
+                                'tmp_name' => $tempFile,
+                                'size' => strlen($body),
+                                'error' => UPLOAD_ERR_OK
+                            ];
+                        } else {
+                            // This is regular form data
+                            $putData[$name] = $body;
+                        }
+                    }
+                }
+                
+                // Set the parsed data
+                $_POST = $putData;
+                $_FILES = $putFiles;
+                
+                error_log("PUT parsed POST data: " . json_encode($_POST));
+                error_log("PUT parsed FILES data: " . json_encode(array_keys($_FILES)));
+            }
+        }
+        
+        error_log("POST eventData: " . ($_POST['eventData'] ?? 'not set'));
+        $input = null;
+        if (isset($_POST['eventData'])) {
+            $input = json_decode($_POST['eventData'], true);
+            error_log("Decoded eventData: " . ($input ? json_encode($input) : 'decode failed'));
+        }
+    } else {
+        // Handle JSON input
+        $input = json_decode(file_get_contents('php://input'), true);
+        error_log("Detected JSON input for " . $method . ": " . ($input ? json_encode($input) : 'null'));
+    }
     
     switch ($method) {
         case 'GET':
@@ -189,6 +316,83 @@ function handleEventPost($db, $input) {
         }
     }
     
+    error_log("About to check for cover photo upload");
+    error_log("FILES array: " . json_encode($_FILES));
+    error_log("cover_photo isset: " . (isset($_FILES['cover_photo']) ? 'yes' : 'no'));
+    if (isset($_FILES['cover_photo'])) {
+        error_log("cover_photo error: " . $_FILES['cover_photo']['error']);
+    }
+    
+    // Handle cover photo upload if present
+    if (isset($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK) {
+        error_log("ENTERING cover photo processing block");
+        error_log("Processing cover photo upload in PUT");
+        error_log("Input event_name: " . ($input['event_name'] ?? 'not set'));
+        
+        $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $input['event_name']);
+        error_log("Sanitized event name: " . $eventName);
+        
+        $eventFolder = __DIR__ . "/event-content-manager/{$eventName}";
+        error_log("Event folder path: " . $eventFolder);
+        
+        // Create event folder if it doesn't exist
+        if (!file_exists($eventFolder)) {
+            error_log("Creating event folder");
+            if (!mkdir($eventFolder, 0755, true)) {
+                error_log("Failed to create folder");
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to create event folder']);
+                return;
+            }
+            error_log("Folder created successfully");
+        } else {
+            error_log("Event folder already exists");
+        }
+        
+        $file = $_FILES['cover_photo'];
+        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+        
+        if (!in_array($fileExtension, $allowedExtensions)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, JPEG, PNG, and GIF are allowed.']);
+            return;
+        }
+        
+        $fileName = 'cover_photo.' . $fileExtension;
+        $filePath = $eventFolder . '/' . $fileName;
+        
+        error_log("Attempting to move file from: " . $file['tmp_name']);
+        error_log("To: " . $filePath);
+        error_log("Event folder exists: " . (file_exists($eventFolder) ? 'yes' : 'no'));
+        error_log("Temp file exists: " . (file_exists($file['tmp_name']) ? 'yes' : 'no'));
+        
+        // For PUT requests with manually parsed files, use copy instead of move_uploaded_file
+        $fileUploaded = false;
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'PUT') {
+            // For PUT requests, we manually created the temp file, so use copy
+            if (file_exists($file['tmp_name'])) {
+                $fileUploaded = copy($file['tmp_name'], $filePath);
+                if ($fileUploaded) {
+                    unlink($file['tmp_name']); // Clean up temp file
+                }
+            }
+        } else {
+            // For POST requests, use the standard move_uploaded_file
+            $fileUploaded = move_uploaded_file($file['tmp_name'], $filePath);
+        }
+        
+        if ($fileUploaded) {
+            error_log("File moved successfully");
+            $input['cover_photo'] = "/backend/event-content-manager/{$eventName}/{$fileName}";
+        } else {
+            error_log("Failed to move file");
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to upload cover photo']);
+            return;
+        }
+    }
+    
     $eventId = $db->insert($input);
     echo json_encode(['success' => true, 'message' => 'Event created successfully', 'event_id' => $eventId]);
 }
@@ -196,13 +400,103 @@ function handleEventPost($db, $input) {
 function handleEventPut($db, $input) {
     header('Content-Type: application/json');
     
+    error_log("=== START handleEventPut ===");
+    
+    // Debug logging
+    error_log("PUT request - GET ID: " . ($_GET['id'] ?? 'not set'));
+    error_log("PUT request - Input: " . ($input ? json_encode($input) : 'null'));
+    error_log("PUT request - POST data: " . json_encode($_POST));
+    error_log("PUT request - FILES: " . json_encode($_FILES));
+    
     if (!isset($_GET['id']) || !$input) {
+        error_log("EARLY RETURN: Missing ID or input");
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Event ID and input data required']);
         return;
     }
     
     $eventId = $_GET['id'];
+    
+    error_log("About to check cover photo processing");
+    error_log("FILES array isset cover_photo: " . (isset($_FILES['cover_photo']) ? 'yes' : 'no'));
+    if (isset($_FILES['cover_photo'])) {
+        error_log("Cover photo error code: " . $_FILES['cover_photo']['error']);
+        error_log("UPLOAD_ERR_OK value: " . UPLOAD_ERR_OK);
+        error_log("Error comparison result: " . ($_FILES['cover_photo']['error'] === UPLOAD_ERR_OK ? 'true' : 'false'));
+        error_log("Combined condition result: " . ((isset($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK) ? 'true' : 'false'));
+    }
+    
+    // Handle cover photo upload if present
+    if (isset($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK) {
+        error_log("PUT: ENTERING cover photo processing block");
+        
+        $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $input['event_name']);
+        error_log("PUT: Sanitized event name: " . $eventName);
+        
+        $eventFolder = __DIR__ . "/event-content-manager/{$eventName}";
+        error_log("PUT: Event folder path: " . $eventFolder);
+        
+        // Create event folder if it doesn't exist
+        if (!file_exists($eventFolder)) {
+            if (!mkdir($eventFolder, 0755, true)) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to create event folder']);
+                return;
+            }
+        }
+        
+        $file = $_FILES['cover_photo'];
+        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+        
+        if (!in_array($fileExtension, $allowedExtensions)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, JPEG, PNG, and GIF are allowed.']);
+            return;
+        }
+        
+        $fileName = 'cover_photo.' . $fileExtension;
+        $filePath = $eventFolder . '/' . $fileName;
+        
+        // Remove old cover photo if it exists
+        foreach (['jpg', 'jpeg', 'png', 'gif'] as $ext) {
+            $oldFile = $eventFolder . '/cover_photo.' . $ext;
+            if (file_exists($oldFile)) {
+                unlink($oldFile);
+            }
+        }
+        
+        error_log("PUT: Attempting to move file from: " . $file['tmp_name']);
+        error_log("PUT: To: " . $filePath);
+        error_log("PUT: Event folder exists: " . (file_exists($eventFolder) ? 'yes' : 'no'));
+        error_log("PUT: Temp file exists: " . (file_exists($file['tmp_name']) ? 'yes' : 'no'));
+        
+        // For PUT requests with manually parsed files, use copy instead of move_uploaded_file
+        $fileUploaded = false;
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'PUT') {
+            // For PUT requests, we manually created the temp file, so use copy
+            if (file_exists($file['tmp_name'])) {
+                $fileUploaded = copy($file['tmp_name'], $filePath);
+                if ($fileUploaded) {
+                    unlink($file['tmp_name']); // Clean up temp file
+                }
+            }
+        } else {
+            // For POST requests, use the standard move_uploaded_file
+            $fileUploaded = move_uploaded_file($file['tmp_name'], $filePath);
+        }
+        
+        if ($fileUploaded) {
+            error_log("PUT: File moved successfully");
+            $input['cover_photo'] = "/backend/event-content-manager/{$eventName}/{$fileName}";
+        } else {
+            error_log("PUT: Failed to move file");
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to upload cover photo']);
+            return;
+        }
+    }
+    
     $updated = $db->update($eventId, $input);
     
     if ($updated) {
@@ -223,6 +517,19 @@ function handleEventDelete($db) {
     }
     
     $eventId = $_GET['id'];
+    
+    // Get event details before deletion to clean up files
+    $event = $db->selectById($eventId);
+    if ($event && isset($event['event_name'])) {
+        $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $event['event_name']);
+        $eventFolder = __DIR__ . "/event-content-manager/{$eventName}";
+        
+        // Delete the event folder and its contents
+        if (file_exists($eventFolder)) {
+            deleteDirectory($eventFolder);
+        }
+    }
+    
     $deleted = $db->delete($eventId);
     
     if ($deleted) {
@@ -231,6 +538,25 @@ function handleEventDelete($db) {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Event not found']);
     }
+}
+
+// Utility function to recursively delete a directory
+function deleteDirectory($dir) {
+    if (!is_dir($dir)) {
+        return false;
+    }
+    
+    $files = array_diff(scandir($dir), array('.', '..'));
+    foreach ($files as $file) {
+        $filePath = $dir . DIRECTORY_SEPARATOR . $file;
+        if (is_dir($filePath)) {
+            deleteDirectory($filePath);
+        } else {
+            unlink($filePath);
+        }
+    }
+    
+    return rmdir($dir);
 }
 
 function handleTalentRoutes($pathParts, $method) {

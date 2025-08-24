@@ -44,6 +44,11 @@ class EventsMysqlDB {
                 eagle_xl TEXT,
                 short_description TEXT,
                 long_description LONGTEXT,
+                cover_photo VARCHAR(500),
+                manager_comments TEXT,
+                door_sales_total INT DEFAULT 0,
+                bar_sales_total INT DEFAULT 0,
+                ticket_sales_total INT DEFAULT 0,
                 status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'active',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -57,6 +62,38 @@ class EventsMysqlDB {
             // Add status column if it doesn't exist (for existing tables)
             try {
                 $this->pdo->exec("ALTER TABLE events ADD COLUMN status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'active'");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            // Add cover_photo column if it doesn't exist (for existing tables)
+            try {
+                $this->pdo->exec("ALTER TABLE events ADD COLUMN cover_photo VARCHAR(500)");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            // Add new fields for events management
+            try {
+                $this->pdo->exec("ALTER TABLE events ADD COLUMN manager_comments TEXT");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            try {
+                $this->pdo->exec("ALTER TABLE events ADD COLUMN door_sales_total INT DEFAULT 0");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            try {
+                $this->pdo->exec("ALTER TABLE events ADD COLUMN bar_sales_total INT DEFAULT 0");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            try {
+                $this->pdo->exec("ALTER TABLE events ADD COLUMN ticket_sales_total INT DEFAULT 0");
             } catch (PDOException $e) {
                 // Column probably already exists, ignore error
             }        } catch (PDOException $e) {

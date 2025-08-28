@@ -120,8 +120,31 @@ function handleApiRoutes($pathParts, $method) {
     switch ($endpoint) {
         case 'events':
             // Route to events API
-            $_SERVER['REQUEST_URI'] = '/events/' . implode('/', array_slice($pathParts, 2));
-            handleEventRoutes(['events'], $method);
+            $eventAction = $pathParts[2] ?? '';
+            if ($eventAction === 'stats') {
+                // Handle events stats specifically
+                header('Content-Type: application/json');
+                try {
+                    require_once __DIR__ . '/event-content-manager/EventsMysqlDB.php';
+                    $db = new EventsMysqlDB('localhost', 'talent_events_db', 'root', '');
+                    $totalEvents = $db->getTotalCount();
+                    $activeEvents = $db->getActiveCount();
+                    echo json_encode([
+                        'success' => true, 
+                        'total' => $totalEvents,
+                        'active' => $activeEvents
+                    ]);
+                } catch (Exception $e) {
+                    echo json_encode([
+                        'success' => true, 
+                        'total' => 0,
+                        'active' => 0
+                    ]);
+                }
+            } else {
+                $_SERVER['REQUEST_URI'] = '/events/' . implode('/', array_slice($pathParts, 2));
+                handleEventRoutes(['events'], $method);
+            }
             break;
             
         case 'talent':
@@ -267,6 +290,26 @@ function handleEventRoutes($pathParts, $method) {
 
 function handleEventGet($db) {
     header('Content-Type: application/json');
+    
+    // Handle stats request
+    if (isset($_GET['stats']) || strpos($_SERVER['REQUEST_URI'], '/events/stats') !== false) {
+        try {
+            $totalEvents = $db->getTotalCount();
+            $activeEvents = $db->getActiveCount();
+            echo json_encode([
+                'success' => true, 
+                'total' => $totalEvents,
+                'active' => $activeEvents
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => true, 
+                'total' => 0,
+                'active' => 0
+            ]);
+        }
+        return;
+    }
     
     if (isset($_GET['search'])) {
         $events = $db->search($_GET['search']);
@@ -611,6 +654,24 @@ function handleTalentRoutes($pathParts, $method) {
         case 'delete-file':
             if ($method === 'POST') {
                 require_once __DIR__ . '/delete_file_mysql.php';
+            } else {
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
+            }
+            break;
+            
+        case 'request-deletion':
+            if ($method === 'POST') {
+                require_once __DIR__ . '/request_deletion.php';
+            } else {
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
+            }
+            break;
+            
+        case 'stats':
+            if ($method === 'GET') {
+                require_once __DIR__ . '/talent_stats.php';
             } else {
                 http_response_code(405);
                 echo json_encode(['error' => 'Method not allowed']);

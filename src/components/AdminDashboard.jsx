@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalTalents: '--',
+    activeEvents: '--',
+    loading: true
+  });
 
   const handleLogout = async () => {
     try {
@@ -15,11 +20,51 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch dashboard statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [talentsResponse, eventsResponse] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/stats`),
+          fetch(`${import.meta.env.VITE_API_DOMAIN}/events/stats`)
+        ]);
+
+        let totalTalents = '--';
+        let activeEvents = '--';
+
+        if (talentsResponse.ok) {
+          const talentsData = await talentsResponse.json();
+          totalTalents = talentsData.total || 0;
+        }
+
+        if (eventsResponse.ok) {
+          const eventsData = await eventsResponse.json();
+          activeEvents = eventsData.active || 0;
+        }
+
+        setStats({
+          totalTalents,
+          activeEvents,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        setStats({
+          totalTalents: 'Error',
+          activeEvents: 'Error',
+          loading: false
+        });
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <img
@@ -27,10 +72,10 @@ export default function AdminDashboard() {
                 src="/src/pictures/logo.png"
                 alt="Lucky Hospitality"
               />
-              <h1 className="ml-4 text-2xl font-bold text-gray-900">
-                Admin Dashboard
-              </h1>
             </div>
+            <h1 className="text-2xl font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+              Admin Dashboard
+            </h1>
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
@@ -108,19 +153,20 @@ export default function AdminDashboard() {
           <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
             Quick Overview
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">--</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {stats.loading ? '...' : stats.totalTalents}
+              </div>
               <div className="text-gray-600">Total Talents</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">--</div>
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {stats.loading ? '...' : stats.activeEvents}
+              </div>
               <div className="text-gray-600">Active Events</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">--</div>
-              <div className="text-gray-600">Pending Reviews</div>
-            </div>
+            
           </div>
         </div>
       </div>

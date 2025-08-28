@@ -73,10 +73,21 @@ try {
     // Handle photo upload
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
         $photoExtension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-        $photoFilename = 'photo.' . $photoExtension;
+        $photoFilename = 'profile_photo.' . $photoExtension;
         $photoPath = $uploadDir . '/' . $photoFilename;
         
-        // Delete old photo if exists
+        // Delete ALL existing photo files to ensure clean replacement
+        $photoPatterns = ['photo.*', 'profile_photo.*', '*_profile_photo.*'];
+        foreach ($photoPatterns as $pattern) {
+            $existingPhotos = glob($uploadDir . '/' . $pattern);
+            foreach ($existingPhotos as $oldPhoto) {
+                if (file_exists($oldPhoto)) {
+                    @unlink($oldPhoto);
+                }
+            }
+        }
+        
+        // Also check database field for specific filename
         if (!empty($talent['photo_filename'])) {
             $oldPhotoPath = $uploadDir . '/' . $talent['photo_filename'];
             if (file_exists($oldPhotoPath)) {
@@ -95,7 +106,18 @@ try {
         $taxFilename = 'tax_form.' . $taxExtension;
         $taxPath = $uploadDir . '/' . $taxFilename;
         
-        // Delete old tax form if exists
+        // Delete ALL existing tax form files to ensure clean replacement
+        $taxPatterns = ['tax_form.*', '*_W9.*', '*_tax_form.*'];
+        foreach ($taxPatterns as $pattern) {
+            $existingTaxForms = glob($uploadDir . '/' . $pattern);
+            foreach ($existingTaxForms as $oldTaxForm) {
+                if (file_exists($oldTaxForm)) {
+                    @unlink($oldTaxForm);
+                }
+            }
+        }
+        
+        // Also check database field for specific filename
         if (!empty($talent['tax_form_filename'])) {
             $oldTaxPath = $uploadDir . '/' . $talent['tax_form_filename'];
             if (file_exists($oldTaxPath)) {
@@ -110,12 +132,12 @@ try {
 
     // Handle performer images upload
     if (isset($_FILES['performerImages']) && is_array($_FILES['performerImages']['name'])) {
-        $additionalFiles = [];
-        $existingFiles = !empty($talent['additional_files']) ? json_decode($talent['additional_files'], true) : [];
+        $performerImages = [];
+        $existingFiles = !empty($talent['performer_images']) ? json_decode($talent['performer_images'], true) : [];
         
         // Keep existing files
         if (is_array($existingFiles)) {
-            $additionalFiles = $existingFiles;
+            $performerImages = $existingFiles;
         }
         
         $uploadedCount = 0;
@@ -123,17 +145,17 @@ try {
             if ($_FILES['performerImages']['error'][$i] === UPLOAD_ERR_OK) {
                 $originalName = $_FILES['performerImages']['name'][$i];
                 $extension = pathinfo($originalName, PATHINFO_EXTENSION);
-                $filename = 'performer_' . (count($additionalFiles) + $uploadedCount + 1) . '.' . $extension;
+                $filename = 'performer_' . (count($performerImages) + $uploadedCount + 1) . '.' . $extension;
                 $path = $uploadDir . '/' . $filename;
                 
                 if (move_uploaded_file($_FILES['performerImages']['tmp_name'][$i], $path)) {
-                    $additionalFiles[] = $filename;
+                    $performerImages[] = $filename;
                     $uploadedCount++;
                 }
             }
         }
         
-        $updateData['additional_files'] = !empty($additionalFiles) ? json_encode($additionalFiles) : null;
+        $updateData['performer_images'] = !empty($performerImages) ? json_encode($performerImages) : null;
     }
 
     if (empty($updateData)) {

@@ -49,10 +49,10 @@ try {
     foreach (["photo", "taxForm"] as $field) {
         if (isset($_FILES[$field])) {
             $filename = basename($_FILES[$field]["name"]);
-            $uniqueName = time() . "_" . $filename;
-            $targetPath = $userUploadDir . "/" . $uniqueName;
+            // No timestamp prefix needed since each submission has its own folder
+            $targetPath = $userUploadDir . "/" . $filename;
             if (@move_uploaded_file($_FILES[$field]["tmp_name"], $targetPath)) {
-                $savedFiles[$field] = $uniqueName;
+                $savedFiles[$field] = $filename;
             } else {
                 echo json_encode(["status" => "error", "message" => "Failed to save $field"]);
                 exit;
@@ -60,21 +60,48 @@ try {
         }
     }
 
-    // 7. Handle additional files (if any)
+    // 7. Handle performer images
+    $performerImages = [];
+    if (isset($_FILES['performerImages'])) {
+        $fileArray = $_FILES['performerImages'];
+        if (is_array($fileArray['name'])) {
+            // Multiple files
+            for ($i = 0; $i < count($fileArray['name']); $i++) {
+                if ($fileArray['error'][$i] === UPLOAD_ERR_OK) {
+                    $filename = basename($fileArray['name'][$i]);
+                    $targetPath = $userUploadDir . "/" . $filename;
+                    if (@move_uploaded_file($fileArray['tmp_name'][$i], $targetPath)) {
+                        $performerImages[] = $filename;
+                    }
+                }
+            }
+        } else {
+            // Single file
+            if ($fileArray['error'] === UPLOAD_ERR_OK) {
+                $filename = basename($fileArray['name']);
+                $targetPath = $userUploadDir . "/" . $filename;
+                if (@move_uploaded_file($fileArray['tmp_name'], $targetPath)) {
+                    $performerImages[] = $filename;
+                }
+            }
+        }
+    }
+
+    // 8. Handle additional files (if any)
     $additionalFiles = [];
     for ($i = 0; $i <= 10; $i++) {
         $fieldName = "additionalFile$i";
         if (isset($_FILES[$fieldName])) {
             $filename = basename($_FILES[$fieldName]["name"]);
-            $uniqueName = time() . "_$i" . "_" . $filename;
-            $targetPath = $userUploadDir . "/" . $uniqueName;
+            // No timestamp prefix needed since each submission has its own folder
+            $targetPath = $userUploadDir . "/" . $filename;
             if (@move_uploaded_file($_FILES[$fieldName]["tmp_name"], $targetPath)) {
-                $additionalFiles[] = $uniqueName;
+                $additionalFiles[] = $filename;
             }
         }
     }
 
-    // 8. Prepare talent data for MySQL
+    // 9. Prepare talent data for MySQL
     $talentData = [
         'submission_id' => $submissionId,
         'first_name' => $_POST["firstName"] ?? '',
@@ -98,6 +125,7 @@ try {
         'zelle' => $_POST["zelle"] ?? '',
         'photo_filename' => $savedFiles["photo"] ?? '',
         'tax_form_filename' => $savedFiles["taxForm"] ?? '',
+        'performer_images' => !empty($performerImages) ? json_encode($performerImages) : null,
         'additional_files' => !empty($additionalFiles) ? json_encode($additionalFiles) : null,
         'status' => 'pending',
         'notes' => ''
@@ -140,7 +168,8 @@ try {
             "timestamp" => date("m\/d\/Y, h:i:s A"),
             "files" => [
                 "photo" => $savedFiles["photo"] ?? '',
-                "taxForm" => $savedFiles["taxForm"] ?? ''
+                "taxForm" => $savedFiles["taxForm"] ?? '',
+                "performerImages" => $performerImages
             ],
             "updated_at" => date("Y-m-d H:i:s")
         ];
@@ -178,6 +207,7 @@ try {
                 "mysql_id" => $result['id'],
                 "action" => $action,
                 "files" => $savedFiles,
+                "performer_images" => $performerImages,
                 "additional_files" => $additionalFiles
             ]
         ]);

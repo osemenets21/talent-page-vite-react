@@ -552,24 +552,24 @@ export default function EventsContentManager() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
+              <img
+                className="h-12 w-auto"
+                src="/src/pictures/logo.png"
+                alt="Lucky Hospitality"
+              />
               <button
                 onClick={() => navigate("/admin-dashboard")}
                 className="mr-4 text-gray-600 hover:text-gray-900"
               >
                 ← Back to Dashboard
               </button>
-              <img
-                className="h-12 w-auto"
-                src="/src/pictures/logo.png"
-                alt="Lucky Hospitality"
-              />
-              <h1 className="ml-4 text-2xl font-bold text-gray-900">
-                Events Content Manager
-              </h1>
             </div>
+            <h1 className="text-2xl font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+              Events Content Manager
+            </h1>
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
@@ -636,7 +636,7 @@ export default function EventsContentManager() {
                 {editingEvent ? "Edit Event" : "Create New Event"}
               </h3>
               <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                🕐 New York Time (ET/EST)
+                🕐 Washington DC (ET/EST)
               </div>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">

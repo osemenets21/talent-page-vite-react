@@ -11,6 +11,7 @@ import EditProfile from "./EditProfile";
 
 
 export default function MyProfile() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -95,14 +96,18 @@ export default function MyProfile() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete your profile?")) return;
+  const handleDeleteRequest = async () => {
+    if (!window.confirm("Are you sure you want to request deletion of your profile? This will send a request to our team for review.")) return;
     setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/delete`, {
+      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/request-deletion`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId: profile.submissionId }),
+        body: JSON.stringify({ 
+          submissionId: profile.submissionId,
+          firstName: profile.firstName,
+          lastName: profile.lastName
+        }),
       });
       const text = await res.text();
       let result;
@@ -114,12 +119,12 @@ export default function MyProfile() {
         return;
       }
       if (result.status === "success") {
-        setModalTitle("Profile deleted");
-        setModalMessage("Your profile has been deleted");
+        setModalTitle("Deletion Request Sent");
+        setModalMessage("Your deletion request has been sent to our team. We will review your request and contact you if needed.");
         setShowModal(true);
-        handleLogout(); 
+        setShouldReload(false);
       } else {
-        alert(result.message || "Failed to delete profile");
+        alert(result.message || "Failed to send deletion request");
       }
     } catch (err) {
       alert("Error: " + err.message);
@@ -211,7 +216,7 @@ export default function MyProfile() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 mb-8">
             {Object.entries(profile).map(([key, value]) => {
 
-              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio" || key === "mysql_data") return null;
+              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio" || key === "mysql_data" || key === "status") return null;
               
               // Special handling for updated_at field
               if (key === "updated_at") {
@@ -268,17 +273,17 @@ export default function MyProfile() {
             <button
               type="button"
               onClick={handleEdit}
-              className="px-6 py-2 rounded-lg bg-yellow-400 text-white text-sm font-medium shadow hover:bg-indigo-700 transition"
+              className="px-6 py-2 rounded-lg bg-yellow-400 text-black text-sm font-medium shadow hover:bg-indigo-700 transition"
             >
               Edit
             </button>
             <button
               type="button"
-              onClick={handleDelete}
-              className="px-6 py-2 rounded-lg bg-red-500 text-white text-sm font-medium shadow hover:bg-red-600 transition"
+              onClick={handleDeleteRequest}
+              className="px-6 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium shadow hover:bg-orange-600 transition"
               disabled={saving}
             >
-              {saving ? "Deleting..." : "Delete"}
+              {saving ? "Sending..." : "Request Profile Deletion"}
             </button>
           </div>
         </>
@@ -288,13 +293,8 @@ export default function MyProfile() {
         setOpen={(open) => {
           setShowModal(open);
           if (!open && shouldReload) {
-            if (shouldReload === "redirect") {
-              setShouldReload(false);
-              navigate("/");
-            } else {
-              setShouldReload(false);
-              window.location.reload();
-            }
+            setShouldReload(false);
+            window.location.reload();
           }
         }}
         title={modalTitle}

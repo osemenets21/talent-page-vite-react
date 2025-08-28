@@ -200,12 +200,25 @@ export default function TalentForm() {
     });
     formData.append("timestamp", usaTimestamp);
 
-    // Append files
+    // Append files with proper naming
     formData.append("photo", photo);
-    formData.append("taxForm", taxForm);
+    
+    // Rename tax form to have consistent naming
+    if (taxForm) {
+      const taxFormExtension = taxForm.name.split('.').pop();
+      const renamedTaxForm = new File([taxForm], `tax_form.${taxFormExtension}`, {
+        type: taxForm.type
+      });
+      formData.append("taxForm", renamedTaxForm);
+    }
 
+    // Rename performer images with consistent numbering
     performerImages.forEach((file, index) => {
-      formData.append("performerImages[]", file);
+      const fileExtension = file.name.split('.').pop();
+      const renamedFile = new File([file], `performer_${index + 1}.${fileExtension}`, {
+        type: file.type
+      });
+      formData.append("performerImages[]", renamedFile);
     });
 
     try {
@@ -528,7 +541,6 @@ export default function TalentForm() {
                 accept=".pdf"
                 setFile={setTaxForm}
                 required
-                renameWithForm={form}
               />
             </div>
           </div>

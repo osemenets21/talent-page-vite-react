@@ -140,19 +140,43 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     // Only append files if they were actually selected/changed
     if (filesChanged.photo && (croppedPhotoFile || fileInputs.photo)) {
       const photoFile = croppedPhotoFile || fileInputs.photo;
-      console.log('Appending photo file:', photoFile?.name, photoFile?.size);
-      formData.append("photo", photoFile);
+      
+      // Ensure consistent naming for profile photo
+      let renamedPhotoFile;
+      if (photoFile.name === "profile_photo.jpg") {
+        // Already correctly named from cropping
+        renamedPhotoFile = photoFile;
+      } else {
+        // Rename to consistent format
+        const photoExtension = photoFile.name.split('.').pop();
+        renamedPhotoFile = new File([photoFile], `profile_photo.${photoExtension}`, {
+          type: photoFile.type
+        });
+      }
+      
+      console.log('Appending photo file:', renamedPhotoFile?.name, renamedPhotoFile?.size);
+      formData.append("photo", renamedPhotoFile);
     }
     
     if (filesChanged.taxForm && fileInputs.taxForm) {
-      console.log('Appending tax form:', fileInputs.taxForm?.name);
-      formData.append("taxForm", fileInputs.taxForm);
+      // Rename tax form to consistent format
+      const taxFormExtension = fileInputs.taxForm.name.split('.').pop();
+      const renamedTaxForm = new File([fileInputs.taxForm], `tax_form.${taxFormExtension}`, {
+        type: fileInputs.taxForm.type
+      });
+      console.log('Appending tax form:', renamedTaxForm?.name);
+      formData.append("taxForm", renamedTaxForm);
     }
     
     if (filesChanged.performerImages && fileInputs.performerImages && fileInputs.performerImages.length > 0) {
       console.log('Appending performer images:', fileInputs.performerImages.length);
-      fileInputs.performerImages.forEach((file) => {
-        formData.append("performerImages[]", file);
+      // Rename performer images with consistent numbering
+      fileInputs.performerImages.forEach((file, index) => {
+        const fileExtension = file.name.split('.').pop();
+        const renamedFile = new File([file], `performer_${index + 1}.${fileExtension}`, {
+          type: file.type
+        });
+        formData.append("performerImages[]", renamedFile);
       });
     }
     
@@ -201,14 +225,23 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                     name={f.name}
                     value={form[f.name] ?? ""}
                     onChange={handleInputChange}
+                    maxLength={1500}
                     className={`w-full border rounded px-2 py-1 mt-1 ${
                       bioError ? 'border-red-300 focus:ring-red-600' : ''
                     }`}
                     rows={3}
+                    placeholder="Tell us about yourself... (Max 1500 characters)"
                   />
-                  {bioError && (
-                    <p className="text-xs text-red-500 mt-1">{bioError}</p>
-                  )}
+                  <div className="flex justify-between items-center mt-1">
+                    {bioError && (
+                      <p className="text-xs text-red-500">{bioError}</p>
+                    )}
+                    <p className={`text-xs ml-auto ${
+                      (form[f.name] ?? "").length > 1400 ? 'text-red-500' : 'text-gray-500'
+                    }`}>
+                      {(form[f.name] ?? "").length}/1500 characters
+                    </p>
+                  </div>
                 </div>
               );
             }
@@ -324,7 +357,6 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 setFilesChanged(prev => ({ ...prev, taxForm: true }));
               }}
               required={false}
-              renameWithForm={{ firstName: form.firstName, lastName: form.lastName }}
             />
           </div>
         </div>

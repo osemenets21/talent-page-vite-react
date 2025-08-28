@@ -113,5 +113,34 @@
             ]
         },
         "updated_at": "2025-08-28 18:44:30"
+    },
+    {
+        "firstName": "Test",
+        "lastName": "Test",
+        "phone": "5757578525",
+        "email": "oleg.min.vin@gmail.com",
+        "instagram": "Test",
+        "facebook": "Test",
+        "soundcloud": "Test",
+        "spotify": "Test",
+        "youtube": "Test",
+        "tiktok": "Test",
+        "performerName": "",
+        "city": "Test",
+        "country": "USA",
+        "bio": "Test",
+        "role": "DJ",
+        "roleOther": "",
+        "paymentMethod": "Venmo",
+        "venmo": "Test",
+        "zelle": "Test",
+        "submissionId": "REw2v6tzuJ",
+        "timestamp": "08\/28\/2025, 08:14:36 PM",
+        "files": {
+            "photo": "profile_photo.jpg",
+            "taxForm": "tax_form.pdf",
+            "performerImages": []
+        },
+        "updated_at": "2025-08-28 20:14:36"
     }
 ]

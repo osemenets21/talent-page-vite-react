@@ -63,11 +63,11 @@ try {
             break;
             
         case 'performerImage':
-            if ($fileName && $talent['additional_files']) {
-                $additionalFiles = json_decode($talent['additional_files'], true);
-                if (is_array($additionalFiles)) {
+            if ($fileName && $talent['performer_images']) {
+                $performerImages = json_decode($talent['performer_images'], true);
+                if (is_array($performerImages)) {
                     // Remove the specific image from array
-                    $newFiles = array_filter($additionalFiles, function($file) use ($fileName) {
+                    $newFiles = array_filter($performerImages, function($file) use ($fileName) {
                         return $file !== $fileName;
                     });
                     
@@ -79,7 +79,7 @@ try {
                     
                     // Update the array (reindex to avoid gaps)
                     $newFiles = array_values($newFiles);
-                    $updateData['additional_files'] = !empty($newFiles) ? json_encode($newFiles) : null;
+                    $updateData['performer_images'] = !empty($newFiles) ? json_encode($newFiles) : null;
                 }
             }
             break;

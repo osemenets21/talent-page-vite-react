@@ -28,23 +28,17 @@ export default function LoginForm() {
       const res = await fetch(`${apiDomain}/talent/get?email=${email}`);
       
       if (res.ok) {
-        // User profile found
-        const userData = await res.json();
-        if (userData.data && userData.data.submissionId) {
-          // Store submissionId for MyProfile
-          localStorage.setItem("submissionId", userData.data.submissionId);
+        const result = await res.json();
+        if (result.status === "success" && result.data) {
+          // Profile exists, go to profile page
           navigate("/my-profile");
         } else {
+          // Profile doesn't exist, go to talent form
           navigate("/register-talent");
         }
-      } else if (res.status === 404) {
-        // User profile not found - redirect to registration
-        console.log("Create a new profile");
-        
-        navigate("/register-talent");
       } else {
-        // Other error (500, etc.)
-        throw new Error("Failed to fetch profile data");
+        // Error or profile not found, go to talent form
+        navigate("/register-talent");
       }
     } catch (error) {
       alert("Login failed: " + error.message);
@@ -90,7 +84,6 @@ export default function LoginForm() {
             </div>
           </div>
           
-
           <div>
             <label
               htmlFor="password"
@@ -112,17 +105,6 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <div className="flex justify-between items-center">
-            <div className="text-sm">
-              <Link
-                to="/forgot-password"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          </div>
-
           <div>
             <button
               type="submit"
@@ -132,8 +114,17 @@ export default function LoginForm() {
             </button>
           </div>
 
+          <div className="flex items-center justify-between">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-indigo-600 hover:text-indigo-500"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+
           <p className="text-center text-sm text-gray-500">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               to="/signup"
               className="font-semibold text-indigo-600 hover:text-indigo-500"

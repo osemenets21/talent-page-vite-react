@@ -56,6 +56,7 @@ class TalentMysqlDB {
                 bank_info TEXT,
                 photo_filename VARCHAR(255),
                 tax_form_filename VARCHAR(255),
+                performer_images JSON,
                 additional_files JSON,
                 status ENUM('pending', 'approved', 'rejected', 'archived') DEFAULT 'pending',
                 notes TEXT,
@@ -70,8 +71,60 @@ class TalentMysqlDB {
 
             $this->pdo->exec($sql);
             
+            // Add performer_images column if it doesn't exist
+            $this->addPerformerImagesColumn();
+            
+            // Migrate performer images from additional_files to performer_images
+            $this->migratePerformerImages();
+            
         } catch (PDOException $e) {
             throw new Exception("Database connection failed: " . $e->getMessage());
+        }
+    }
+    
+    // Migrate performer images from additional_files to performer_images
+    private function migratePerformerImages() {
+        try {
+            // Check if migration is needed
+            $stmt = $this->pdo->prepare("SELECT id, additional_files, performer_images FROM talent WHERE additional_files IS NOT NULL AND performer_images IS NULL");
+            $stmt->execute();
+            $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach ($records as $record) {
+                $additionalFiles = json_decode($record['additional_files'], true);
+                if (is_array($additionalFiles) && !empty($additionalFiles)) {
+                    // Assume these are performer images and migrate them
+                    $updateStmt = $this->pdo->prepare("UPDATE talent SET performer_images = ?, additional_files = NULL WHERE id = ?");
+                    $updateStmt->execute([json_encode($additionalFiles), $record['id']]);
+                }
+            }
+        } catch (PDOException $e) {
+            // If migration fails, it's not critical
+            error_log("Could not migrate performer images: " . $e->getMessage());
+        }
+    }
+    
+    // Get database connection for external access
+    public function getConnection() {
+        return $this->pdo;
+    }
+    
+    // Add performer_images column if it doesn't exist
+    private function addPerformerImagesColumn() {
+        try {
+            // Check if column exists
+            $stmt = $this->pdo->prepare("SHOW COLUMNS FROM talent LIKE 'performer_images'");
+            $stmt->execute();
+            $result = $stmt->fetch();
+            
+            if (!$result) {
+                // Column doesn't exist, add it
+                $sql = "ALTER TABLE talent ADD COLUMN performer_images JSON AFTER tax_form_filename";
+                $this->pdo->exec($sql);
+            }
+        } catch (PDOException $e) {
+            // If this fails, it's not critical - the column might already exist
+            error_log("Could not add performer_images column: " . $e->getMessage());
         }
     }
     
@@ -82,12 +135,12 @@ class TalentMysqlDB {
                 submission_id, first_name, last_name, phone, email, instagram, facebook, 
                 soundcloud, spotify, youtube, tiktok, performer_name, city, country, bio, 
                 role, role_other, payment_method, venmo, zelle, paypal, bank_info,
-                photo_filename, tax_form_filename, additional_files, status, notes
+                photo_filename, tax_form_filename, performer_images, additional_files, status, notes
             ) VALUES (
                 :submission_id, :first_name, :last_name, :phone, :email, :instagram, :facebook,
                 :soundcloud, :spotify, :youtube, :tiktok, :performer_name, :city, :country, :bio,
                 :role, :role_other, :payment_method, :venmo, :zelle, :paypal, :bank_info,
-                :photo_filename, :tax_form_filename, :additional_files, :status, :notes
+                :photo_filename, :tax_form_filename, :performer_images, :additional_files, :status, :notes
             )";
             
             $stmt = $this->pdo->prepare($sql);
@@ -118,6 +171,7 @@ class TalentMysqlDB {
                 'bank_info' => $data['bank_info'] ?? '',
                 'photo_filename' => $data['photo_filename'] ?? ($data['files']['photo'] ?? ''),
                 'tax_form_filename' => $data['tax_form_filename'] ?? ($data['files']['taxForm'] ?? ''),
+                'performer_images' => $data['performer_images'] ?? null,
                 'additional_files' => isset($data['additional_files']) ? json_encode($data['additional_files']) : null,
                 'status' => $data['status'] ?? 'pending',
                 'notes' => $data['notes'] ?? ''

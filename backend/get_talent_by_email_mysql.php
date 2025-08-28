@@ -59,7 +59,7 @@ try {
             'files' => [
                 'photo' => $talent['photo_filename'],
                 'taxForm' => $talent['tax_form_filename'],
-                'performerImages' => $talent['additional_files'] ? json_decode($talent['additional_files'], true) : []
+                'performerImages' => $talent['performer_images'] ? json_decode($talent['performer_images'], true) : []
             ],
             'updated_at' => $talent['updated_at'],
             'status' => $talent['status'],

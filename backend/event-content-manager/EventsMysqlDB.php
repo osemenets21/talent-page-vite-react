@@ -310,6 +310,27 @@ class EventsMysqlDB {
         }
     }
     
+    // Get total count of all events
+    public function getTotalCount() {
+        try {
+            return $this->count();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+    
+    // Get count of active/upcoming events
+    public function getActiveCount() {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM events WHERE status = 'active'";
+            $stmt = $this->pdo->query($sql);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int)$result['count'];
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+    
     public function query($sql, $params = []) {
         try {
             $stmt = $this->pdo->prepare($sql);

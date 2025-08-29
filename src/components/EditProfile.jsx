@@ -210,154 +210,336 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
   return (
     <>
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
-          {fields.map((f) => {
-            if (f.name === "venmo" && form.paymentMethod !== "Venmo") return null;
-            if (f.name === "zelle" && form.paymentMethod !== "Zelle") return null;
-            if (f.name === "roleOther" && !form.roleOther) return null;
-            if (f.name === "bio") {
-              return (
-                <div key={f.name} className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-600">
-                    {f.label}:
-                  </label>
-                  <textarea
-                    name={f.name}
-                    value={form[f.name] ?? ""}
-                    onChange={handleInputChange}
-                    maxLength={1500}
-                    className={`w-full border rounded px-2 py-1 mt-1 ${
-                      bioError ? 'border-red-300 focus:ring-red-600' : ''
-                    }`}
-                    rows={3}
-                    placeholder="Tell us about yourself... (Max 1500 characters)"
-                  />
-                  <div className="flex justify-between items-center mt-1">
-                    {bioError && (
-                      <p className="text-xs text-red-500">{bioError}</p>
-                    )}
-                    <p className={`text-xs ml-auto ${
-                      (form[f.name] ?? "").length > 1400 ? 'text-red-500' : 'text-gray-500'
-                    }`}>
-                      {(form[f.name] ?? "").length}/1500 characters
-                    </p>
-                  </div>
-                </div>
-              );
-            }
-            return (
-              <div key={f.name}>
-                <label className="block text-sm font-semibold text-gray-600">
-                  {f.label}:
-                </label>
+        {/* Public Information Section */}
+        <div className="bg-white rounded-lg p-6 mb-8 border border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+            Edit Public Profile Information
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+            {/* Public fields */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">First Name:</label>
+              <input
+                type="text"
+                name="firstName"
+                value={form.firstName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Last Name:</label>
+              <input
+                type="text"
+                name="lastName"
+                value={form.lastName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Stage / Performer Name:</label>
+              <input
+                type="text"
+                name="performerName"
+                value={form.performerName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Your Role:</label>
+              <input
+                type="text"
+                name="role"
+                value={form.role ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            {form.roleOther && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-600">Role (Other):</label>
                 <input
-                  type={f.type || "text"}
-                  name={f.name}
-                  value={form[f.name] ?? ""}
+                  type="text"
+                  name="roleOther"
+                  value={form.roleOther ?? ""}
                   onChange={handleInputChange}
                   className="w-full border rounded px-2 py-1 mt-1"
                 />
               </div>
-            );
-          })}
-          {/* Photo */}
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-semibold text-gray-600">Photo:</label>
-            {photoUrl && (
-              <div className="relative inline-block">
-                <img
-                  src={photoUrl}
-                  alt="Profile"
-                  className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
+            )}
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Instagram:</label>
+              <input
+                type="text"
+                name="instagram"
+                value={form.instagram ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Facebook:</label>
+              <input
+                type="text"
+                name="facebook"
+                value={form.facebook ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">SoundCloud:</label>
+              <input
+                type="text"
+                name="soundcloud"
+                value={form.soundcloud ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Spotify:</label>
+              <input
+                type="text"
+                name="spotify"
+                value={form.spotify ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">YouTube:</label>
+              <input
+                type="text"
+                name="youtube"
+                value={form.youtube ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Tiktok:</label>
+              <input
+                type="text"
+                name="tiktok"
+                value={form.tiktok ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">City of Origin:</label>
+              <input
+                type="text"
+                name="city"
+                value={form.city ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Country:</label>
+              <input
+                type="text"
+                name="country"
+                value={form.country ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            
+            {/* Brief BIO - full width */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-gray-600">Brief BIO:</label>
+              <textarea
+                name="bio"
+                value={form.bio ?? ""}
+                onChange={handleInputChange}
+                maxLength={1500}
+                className={`w-full border rounded px-2 py-1 mt-1 ${
+                  bioError ? 'border-red-300 focus:ring-red-600' : ''
+                }`}
+                rows={3}
+                placeholder="Tell us about yourself... (Max 1500 characters)"
+              />
+              <div className="flex justify-between items-center mt-1">
+                {bioError && (
+                  <p className="text-xs text-red-500">{bioError}</p>
+                )}
+                <p className={`text-xs ml-auto ${
+                  (form.bio ?? "").length > 1400 ? 'text-red-500' : 'text-gray-500'
+                }`}>
+                  {(form.bio ?? "").length}/1500 characters
+                </p>
+              </div>
+            </div>
+
+            {/* Profile Photo */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-gray-600">Profile Photo:</label>
+              {photoUrl && (
+                <div className="relative inline-block">
+                  <img
+                    src={photoUrl}
+                    alt="Profile"
+                    className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleFileDelete("photo")}
+                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors"
+                    title="Delete photo"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              <FileUpload
+                label="Profile Photo"
+                accept="image/*"
+                setFile={(file) => {
+                  setRawPhotoFile(file);
+                  setShowCropModal(true);
+                  setFilesChanged(prev => ({ ...prev, photo: true }));
+                }}
+                required={false}
+              />
+            </div>
+
+            {/* Performer Images */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-gray-600">Performer Images / LOGO:</label>
+              {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {profile.files.performerImages.map((img, idx) => (
+                    <div key={idx} className="relative">
+                      <img
+                        src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
+                        alt={`Performer ${idx + 1}`}
+                        className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleFileDelete("performerImage", img)}
+                        className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-lg transition-colors"
+                        title="Delete image"
+                      >
+                        <XMarkIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <FileUpload
+                label="Performer Images"
+                accept="image/*"
+                setFile={(files) => {
+                  setFileInputs((prev) => ({ ...prev, performerImages: files }));
+                  setFilesChanged(prev => ({ ...prev, performerImages: true }));
+                }}
+                multiple={true}
+                required={false}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Private Information Section */}
+        <div className="bg-gray-50 rounded-lg p-6 mb-8">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-300 pb-2">
+            Edit Private Information
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Phone:</label>
+              <input
+                type="text"
+                name="phone"
+                value={form.phone ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Email:</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Form of Payment:</label>
+              <input
+                type="text"
+                name="paymentMethod"
+                value={form.paymentMethod ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+              />
+            </div>
+            {form.paymentMethod === "Venmo" && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-600">Venmo Name:</label>
+                <input
+                  type="text"
+                  name="venmo"
+                  value={form.venmo ?? ""}
+                  onChange={handleInputChange}
+                  className="w-full border rounded px-2 py-1 mt-1"
                 />
-                <button
-                  type="button"
-                  onClick={() => handleFileDelete("photo")}
-                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors"
-                  title="Delete photo"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </button>
               </div>
             )}
-            <FileUpload
-              label="Profile Photo"
-              accept="image/*"
-              setFile={(file) => {
-                setRawPhotoFile(file);
-                setShowCropModal(true);
-                setFilesChanged(prev => ({ ...prev, photo: true }));
-              }}
-              required={false}
-            />
-          </div>
-          {/* Performer Images */}
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-semibold text-gray-600">Performer Images:</label>
-            {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
-                {profile.files.performerImages.map((img, idx) => (
-                  <div key={idx} className="relative">
-                    <img
-                      src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
-                      alt={`Performer ${idx + 1}`}
-                      className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleFileDelete("performerImage", img)}
-                      className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-lg transition-colors"
-                      title="Delete image"
-                    >
-                      <XMarkIcon className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+            {form.paymentMethod === "Zelle" && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-600">Zelle:</label>
+                <input
+                  type="text"
+                  name="zelle"
+                  value={form.zelle ?? ""}
+                  onChange={handleInputChange}
+                  className="w-full border rounded px-2 py-1 mt-1"
+                />
               </div>
             )}
-            <FileUpload
-              label="Performer Images"
-              accept="image/*"
-              setFile={(files) => {
-                setFileInputs((prev) => ({ ...prev, performerImages: files }));
-                setFilesChanged(prev => ({ ...prev, performerImages: true }));
-              }}
-              multiple={true}
-              required={false}
-            />
-          </div>
-          {/* Tax Form */}
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</label>
-            {pdfUrl && (
-              <div className="flex items-center gap-2 mb-2">
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 underline text-sm"
-                >
-                  Download Current
-                </a>
-                <button
-                  type="button"
-                  onClick={() => handleFileDelete("taxForm")}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors ml-2"
-                  title="Delete tax form"
-                >
-                  <XMarkIcon className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            <FileUpload
-              label="Tax Form (PDF)"
-              accept="application/pdf"
-              setFile={(file) => {
-                setFileInputs((prev) => ({ ...prev, taxForm: file }));
-                setFilesChanged(prev => ({ ...prev, taxForm: true }));
-              }}
-              required={false}
-            />
+            
+            {/* Tax Form */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-gray-600">Uploaded W9 (tax form):</label>
+              {pdfUrl && (
+                <div className="flex items-center gap-2 mb-2">
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 underline text-sm"
+                  >
+                    Download Current W9 Form
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => handleFileDelete("taxForm")}
+                    className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors ml-2"
+                    title="Delete tax form"
+                  >
+                    <XMarkIcon className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              <FileUpload
+                label="Tax Form (PDF)"
+                accept="application/pdf"
+                setFile={(file) => {
+                  setFileInputs((prev) => ({ ...prev, taxForm: file }));
+                  setFilesChanged(prev => ({ ...prev, taxForm: true }));
+                }}
+                required={false}
+              />
+            </div>
           </div>
         </div>
         <div className="mt-10 flex justify-center gap-4">

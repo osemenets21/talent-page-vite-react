@@ -128,7 +128,7 @@
         "performerName": "",
         "city": "Test",
         "country": "USA",
-        "bio": "Test",
+        "bio": "Test1",
         "role": "DJ",
         "roleOther": "",
         "paymentMethod": "Venmo",
@@ -141,6 +141,6 @@
             "taxForm": "tax_form.pdf",
             "performerImages": []
         },
-        "updated_at": "2025-08-28 20:14:36"
+        "updated_at": "2025-08-28 20:37:53"
     }
 ]

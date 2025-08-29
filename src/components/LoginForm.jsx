@@ -30,6 +30,8 @@ export default function LoginForm() {
       if (res.ok) {
         const result = await res.json();
         if (result.status === "success" && result.data) {
+          // Store submissionId for MyProfile to use
+          localStorage.setItem("submissionId", result.data.submissionId);
           // Profile exists, go to profile page
           navigate("/my-profile");
         } else {

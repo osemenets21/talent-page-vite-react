@@ -179,6 +179,10 @@ export default function MyProfile() {
   const performerImages = Array.isArray(profile.files?.performerImages)
     ? profile.files.performerImages
     : [];
+  
+  // Debug: Let's see what's in the files object
+  console.log('Profile files:', profile.files);
+  console.log('Performer images:', performerImages);
  
 
   return (
@@ -212,62 +216,83 @@ export default function MyProfile() {
         />
       ) : (
         <>
-          {/* Profile fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 mb-8">
-            {Object.entries(profile).map(([key, value]) => {
-
-              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio" || key === "mysql_data" || key === "status") return null;
+          {/* Public Information Section */}
+          <div className="bg-white rounded-lg p-6 mb-8 border border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+              Public Profile Information
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+              {/* Public fields */}
+              <ProfileItem label="First Name" value={profile.firstName || "no data"} />
+              <ProfileItem label="Last Name" value={profile.lastName || "no data"} />
+              <ProfileItem label="Stage / Performer Name" value={profile.performerName || "no data"} />
+              <ProfileItem label="Your Role" value={profile.role || "no data"} />
+              <ProfileItem label="Instagram" value={profile.instagram || "no data"} />
+              <ProfileItem label="Facebook" value={profile.facebook || "no data"} />
+              <ProfileItem label="SoundCloud" value={profile.soundcloud || "no data"} />
+              <ProfileItem label="Spotify" value={profile.spotify || "no data"} />
+              <ProfileItem label="Youtube" value={profile.youtube || "no data"} />
+              <ProfileItem label="Tiktok" value={profile.tiktok || "no data"} />
+              <ProfileItem label="City of Origin" value={profile.city || "no data"} />
+              <ProfileItem label="Country" value={profile.country || "no data"} />
               
-              // Special handling for updated_at field
-              if (key === "updated_at") {
-                const formattedTime = formatAmericanTimestamp(value);
-                return <ProfileItem key={key} label="Last Updated" value={formattedTime} />;
-              }
-              
-              const displayValue = value === null || value === undefined || value === "" ? "no data" : value;
-              return <ProfileItem key={key} label={key} value={displayValue} />;
-            })}
-            {/* Photo */}
-            {photoUrl && (
+              {/* Brief BIO - full width */}
               <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">Profile Photo:</span>
-                <img
-                  src={photoUrl}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full object-cover ring-2 ring-indigo-300 mt-2"
-                />
+                <ProfileItem label="Brief BIO" value={profile.bio || "no data"} />
               </div>
-            )}
-            {/* Performer Images */}
-            {performerImages.length > 0 && (
-              <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">Performer Images:</span>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {performerImages.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
-                      alt={`Performer ${idx + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
-                    />
-                  ))}
+              
+              {/* Performer Images */}
+              {performerImages.length > 0 && (
+                <div className="sm:col-span-2">
+                  <span className="block text-sm font-semibold text-gray-600">Performer Images / LOGO:</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {performerImages.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
+                        alt={`Performer ${idx + 1}`}
+                        className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            {/* Tax Form */}
-            {pdfUrl && (
-              <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</span>
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 underline text-sm mt-1 inline-block"
-                >
-                  Download
-                </a>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+
+          {/* Private Information Section */}
+          <div className="bg-gray-50 rounded-lg p-6 mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-300 pb-2">
+              Private Information
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+              <ProfileItem label="Phone" value={profile.phone || "no data"} />
+              <ProfileItem label="Email" value={profile.email || "no data"} />
+              <ProfileItem label="Form of Payment" value={profile.paymentMethod || "no data"} />
+              <ProfileItem label="Venmo Name" value={profile.venmo || "no data"} />
+              
+              {/* Special handling for updated_at field */}
+              {profile.updated_at && (
+                <div className="sm:col-span-2">
+                  <ProfileItem label="Last Updated" value={formatAmericanTimestamp(profile.updated_at)} />
+                </div>
+              )}
+              
+              {/* Tax Form */}
+              {pdfUrl && (
+                <div className="sm:col-span-2">
+                  <span className="block text-sm font-semibold text-gray-600">Uploaded W9 (tax form):</span>
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 underline text-sm mt-1 inline-block"
+                  >
+                    Download W9 Form
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
           <div className="mt-10 flex justify-center gap-4">
             <button

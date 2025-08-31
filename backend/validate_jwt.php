@@ -57,7 +57,7 @@ if (!$idToken) {
 
 try {
     // Try with cached/fresh keys
-    $jwks = getGooglePublicKeys();
+    $jwks = getGooglePublicKeys(true);
     $publicKeys = JWK::parseKeySet($jwks);
     $decoded = JWT::decode($idToken, $publicKeys);
 } catch (Exception $e) {

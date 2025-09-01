@@ -440,7 +440,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         </div>
 
         {/* Private Information Section */}
-        <div className="bg-gray-50 rounded-lg p-6 mb-8">
+        <div className="bg-gray-200 rounded-lg p-6 mb-8">
           <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-300 pb-2">
             Edit Private Information
           </h3>

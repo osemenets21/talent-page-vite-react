@@ -4,6 +4,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import logo from "../pictures/logo.png";
+import { authenticatedGet, authenticatedPost, authenticatedDelete } from "../utils/apiUtils";
 
 export default function SupervisorPanel() {
   const [talents, setTalents] = useState([]);
@@ -13,6 +14,7 @@ export default function SupervisorPanel() {
   const [editForm, setEditForm] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
   const [bioError, setBioError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({}); // New state for field-level errors
   const navigate = useNavigate();
 
   // Function to format timestamp to NYC Eastern Time
@@ -73,44 +75,86 @@ export default function SupervisorPanel() {
     return { isValid: true, error: "" };
   };
 
+  // Field validation function
+  const validateField = (name, value) => {
+    const errors = {};
+    
+    switch (name) {
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.email = 'Invalid email format';
+        }
+        break;
+      case 'phone':
+        if (value && !/^[\+]?[\s\-\(\)]*([0-9][\s\-\(\)]*){10,}$/.test(value)) {
+          errors.phone = 'Invalid phone number format';
+        }
+        break;
+      case 'bio':
+        const bioValidation = validateBioText(value);
+        if (!bioValidation.isValid) {
+          errors.bio = bioValidation.error;
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return errors;
+  };
+
   useEffect(() => {
-    // Fetch all talent records from backend PHP endpoint (CORS safe)
-    fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/all`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch talent data");
-        return res.json();
-      })
-      .then((response) => {
-        if (response.status === 'success') {
-          setTalents(response.data || []);
+    // Fetch all talent records from backend PHP endpoint with authentication
+    const loadTalents = async () => {
+      try {
+        const response = await authenticatedGet(`${import.meta.env.VITE_API_DOMAIN}/talent/all`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setTalents(result.data || []);
         } else {
-          throw new Error(response.message || 'Failed to load talent data');
+          throw new Error(result.message || 'Failed to load talent data');
         }
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
+        console.error('Failed to load talents:', err);
         setError(err.message);
         setLoading(false);
-      });
+      }
+    };
+    
+    loadTalents();
   }, []);
 
   // Handle delete
   const handleDelete = async (submissionId) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
     setActionLoading(true);
+    
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId })
+      const response = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/delete`, {
+        submissionId
       });
-      const result = await res.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Delete result:', result);
+      
       if (result.status === "success") {
         setTalents((prev) => prev.filter((t) => t.submissionId !== submissionId));
       } else {
         alert(result.message || "Delete failed");
       }
     } catch (err) {
+      console.error('Delete error:', err);
       alert("Error: " + err.message);
     }
     setActionLoading(false);
@@ -120,46 +164,95 @@ export default function SupervisorPanel() {
   const handleEdit = (idx) => {
     setEditIdx(idx);
     setEditForm({ ...talents[idx] });
+    setBioError(""); // Clear bio errors when starting edit
+    setFieldErrors({}); // Clear field errors when starting edit
   };
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({ ...prev, [name]: value }));
     
-    // Validate bio field specifically
+    // Validate the specific field
+    const fieldValidationErrors = validateField(name, value);
+    
+    // Update field errors
+    setFieldErrors((prev) => ({
+      ...prev,
+      ...fieldValidationErrors,
+      // Clear error if validation passes
+      ...(Object.keys(fieldValidationErrors).length === 0 ? { [name]: undefined } : {})
+    }));
+    
+    // Validate bio field specifically (legacy support)
     if (name === "bio") {
       const validation = validateBioText(value);
       setBioError(validation.error);
     }
   };
   const handleSave = async (submissionId) => {
-    // Validate bio text before saving
-    const bioValidation = validateBioText(editForm.bio);
-    if (!bioValidation.isValid) {
-      alert(bioValidation.error);
+    // Validate all fields before saving
+    const allErrors = {};
+    Object.entries(editForm).forEach(([key, value]) => {
+      const fieldErrors = validateField(key, value);
+      Object.assign(allErrors, fieldErrors);
+    });
+    
+    // Check if there are any validation errors
+    const hasErrors = Object.values(allErrors).some(error => error);
+    if (hasErrors) {
+      alert("Please fix all validation errors before saving:\n" + Object.values(allErrors).filter(e => e).join('\n'));
       return;
     }
     
     setActionLoading(true);
-    const formData = new FormData();
-    Object.entries(editForm).forEach(([key, value]) => {
-      if (key !== "files" && key !== "updated_at" && key !== "timestamp") {
-        formData.append(key, value);
-      }
-    });
-    formData.append("submissionId", submissionId);
+    setBioError(""); // Clear any previous bio errors
+    setFieldErrors({}); // Clear any previous field errors
+    
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, {
-        method: "POST",
-        body: formData
-      });
-      const result = await res.json();
+      // Prepare the data for supervisor edit (using JSON instead of FormData for simplicity)
+      const updateData = { ...editForm };
+      
+      // Remove read-only fields that shouldn't be updated
+      delete updateData.files;
+      delete updateData.updated_at;
+      delete updateData.timestamp;
+      delete updateData.id; // Don't send the database ID
+      
+      // Ensure submissionId is included
+      updateData.submissionId = submissionId;
+      
+      
+      const response = await authenticatedPost(
+        `${import.meta.env.VITE_API_DOMAIN}/talent/supervisor-edit`, 
+        updateData
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Edit response error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
       if (result.status === "success") {
-        setTalents((prev) => prev.map((t, idx) => idx === editIdx ? { ...editForm, files: t.files, updated_at: new Date().toISOString() } : t));
+        // Update the local state with the edited data
+        setTalents((prev) => prev.map((t, idx) => 
+          idx === editIdx 
+            ? { 
+                ...editForm, 
+                files: t.files, // Preserve files data
+                updated_at: new Date().toISOString() 
+              } 
+            : t
+        ));
         setEditIdx(null);
+        alert("Talent updated successfully!");
       } else {
+        console.error('Edit failed:', result);
         alert(result.message || "Update failed");
       }
     } catch (err) {
+      console.error('Edit error:', err);
       alert("Error: " + err.message);
     }
     setActionLoading(false);
@@ -247,10 +340,34 @@ export default function SupervisorPanel() {
                         </div>
                       )}
                     </td>
-                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="firstName" value={editForm.firstName} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
-                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="lastName" value={editForm.lastName} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
-                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="phone" value={editForm.phone} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
-                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="email" value={editForm.email} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
+                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="firstName" value={editForm.firstName || ''} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
+                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="lastName" value={editForm.lastName || ''} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
+                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">
+                      <input 
+                        name="phone" 
+                        value={editForm.phone || ''} 
+                        onChange={handleEditChange} 
+                        className={`border rounded px-2 py-1 w-full min-w-0 ${
+                          fieldErrors.phone ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                        style={{width:'118px'}}
+                        title={fieldErrors.phone || undefined}
+                      />
+                      {fieldErrors.phone && <div className="text-xs text-red-500 mt-1">{fieldErrors.phone}</div>}
+                    </td>
+                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">
+                      <input 
+                        name="email" 
+                        value={editForm.email || ''} 
+                        onChange={handleEditChange} 
+                        className={`border rounded px-2 py-1 w-full min-w-0 ${
+                          fieldErrors.email ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                        style={{width:'118px'}}
+                        title={fieldErrors.email || undefined}
+                      />
+                      {fieldErrors.email && <div className="text-xs text-red-500 mt-1">{fieldErrors.email}</div>}
+                    </td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="instagram" value={editForm.instagram} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="facebook" value={editForm.facebook} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="soundcloud" value={editForm.soundcloud} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
@@ -263,15 +380,15 @@ export default function SupervisorPanel() {
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900 max-w-xs truncate">
                       <input 
                         name="bio" 
-                        value={editForm.bio} 
+                        value={editForm.bio || ''} 
                         onChange={handleEditChange} 
                         className={`border rounded px-2 py-1 w-full min-w-0 ${
-                          bioError ? 'border-red-300' : 'border-gray-300'
+                          fieldErrors.bio || bioError ? 'border-red-300' : 'border-gray-300'
                         }`}
                         style={{width:'118px'}}
-                        title={bioError || undefined}
+                        title={(fieldErrors.bio || bioError) || undefined}
                       />
-                      {bioError && <div className="text-xs text-red-500 mt-1">{bioError}</div>}
+                      {(fieldErrors.bio || bioError) && <div className="text-xs text-red-500 mt-1">{fieldErrors.bio || bioError}</div>}
                     </td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="role" value={editForm.role} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="roleOther" value={editForm.roleOther} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
@@ -282,7 +399,19 @@ export default function SupervisorPanel() {
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">(Files not editable inline)</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{formatUSATimestamp(editForm.timestamp || editForm.updated_at)}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">
-                      <button className="bg-green-500 text-white px-3 py-1 rounded mr-2 mb-1 text-xs w-15" disabled={actionLoading || bioError} onClick={() => handleSave(editForm.submissionId)}>{actionLoading ? "Saving..." : "Save"}</button>
+                      <button 
+                        className="bg-green-500 text-white px-3 py-1 rounded mr-2 mb-1 text-xs w-15 disabled:bg-gray-400 disabled:cursor-not-allowed" 
+                        disabled={actionLoading || bioError || Object.values(fieldErrors).some(error => error)} 
+                        onClick={() => handleSave(editForm.submissionId)}
+                        title={
+                          actionLoading ? "Saving..." :
+                          bioError ? bioError :
+                          Object.values(fieldErrors).some(error => error) ? "Please fix validation errors" :
+                          "Save changes"
+                        }
+                      >
+                        {actionLoading ? "Saving..." : "Save"}
+                      </button>
                       <button className="bg-gray-400 text-white px-3 py-1 rounded text-xs w-15" disabled={actionLoading} onClick={() => setEditIdx(null)}>Cancel</button>
                     </td>
                   </>

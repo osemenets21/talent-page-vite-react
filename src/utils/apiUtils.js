@@ -55,7 +55,7 @@ export const authenticatedFetch = async (url, options = {}) => {
     // If we get 401 and haven't retried yet, try to refresh token
     if (response.status === 401 && retryCount < maxRetries) {
       retryCount++;
-      console.log('Received 401, attempting to refresh token...');
+      console.log('Received 401, attempting to refresh token...', await response.json());
       
       try {
         // Try to refresh the token
@@ -90,6 +90,7 @@ export const authenticatedFetch = async (url, options = {}) => {
  * Wrapper for GET requests with authentication
  */
 export const authenticatedGet = async (url, options = {}) => {
+  console.log('Making authenticated GET request to:', url);
   return authenticatedFetch(url, {
     ...options,
     method: 'GET'

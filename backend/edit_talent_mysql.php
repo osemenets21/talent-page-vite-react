@@ -13,30 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'validate_jwt.php';
 require_once 'TalentMysqlDB.php';
 
+// Add debug logging
+error_log("edit_talent_mysql.php: Starting profile update");
+error_log("POST data: " . json_encode($_POST));
+error_log("FILES data: " . json_encode(array_keys($_FILES)));
+
 try {
     $db = new TalentMysqlDB();
     
     // Get the talent ID or submission ID
-    $id = $_POST["id"] ?? $_GET["id"] ?? null;
-    $email = $_REQUEST['jwt_user_email'] ?? null; 
+    $email = $_REQUEST['jwt_user_email'] ?? null;     
+    error_log("Authenticated user email: " . ($email ?? 'null'));
     
-    if (!$id && !$submissionId) {
-        echo json_encode(["status" => "error", "message" => "Missing talent ID or submission ID"]);
-        exit;
-    }
-    
-    // Find the talent record
-    $talent = null;
-    if ($id) {
-        $talent = $db->selectById($id);
-    } elseif ($submissionId) {
-        $talent = $db->selectByEmail($email);
-    }
+    $talent = $db->selectByEmail($email);
     
     if (!$talent) {
+        error_log("Talent not found for email: " . ($email ?? 'null'));
         echo json_encode(["status" => "error", "message" => "Talent not found"]);
         exit;
     }
+    
+    error_log("Found talent: " . $talent['submission_id']);
     
     // Prepare update data
     $updateData = [];
@@ -160,15 +157,22 @@ try {
     }
 
     if (empty($updateData)) {
+        error_log("No valid fields to update");
         echo json_encode(["status" => "error", "message" => "No valid fields to update"]);
         exit;
     }
 
     // Add updated timestamp
     $updateData['updated_at'] = date('Y-m-d H:i:s');
+    
+    error_log("Update data: " . json_encode($updateData));
 
     // Update the record
-    $result = $db->update($talent['id'], $updateData);    if ($result) {
+    $result = $db->update($talent['id'], $updateData);
+    
+    error_log("Database update result: " . ($result ? 'success' : 'failed'));
+    
+    if ($result) {
         // Also update JSON backup
         $jsonFile = __DIR__ . '/submissions/talent_data.json';
         if (file_exists($jsonFile)) {

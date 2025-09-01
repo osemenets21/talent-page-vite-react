@@ -27,16 +27,17 @@ export default function LoginForm() {
         return;
       }
       
+      console.log("setting timeout")
       // Wait for auth state to be properly established
-      await new Promise(resolve => setTimeout(resolve, 500));
+      //await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Regular user - check if profile exists in backend using authenticated API
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
       try {
         console.log('Attempting to fetch profile for email:', email);
-        const res = await authenticatedGet(`${apiDomain}/talent/get?email=${email}`);
-        
+        const res = await authenticatedGet(`${apiDomain}/talent/get`);
+        console.log('Profile fetch response:', res);
         if (res.ok) {
           const result = await res.json();
           console.log('Profile fetch result:', result);

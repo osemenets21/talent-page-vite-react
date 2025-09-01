@@ -3,6 +3,7 @@ import FileUpload from "./FileUpload";
 import getCroppedImg from "../utils/cropImage";
 import PhotoCropModal from "./PhotoCropModal";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { authenticatedPost } from "../utils/apiUtils";
 
 export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...profile });
@@ -19,14 +20,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     if (!window.confirm(`Are you sure you want to delete this ${fileType}?`)) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/delete-file`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          submissionId: profile.submissionId,
-          fileType: fileType,
-          fileName: fileName
-        }),
+      const response = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/delete-file`, {
+        submissionId: profile.submissionId,
+        fileType: fileType,
+        fileName: fileName
       });
 
       const result = await response.json();
@@ -180,13 +177,9 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
       });
     }
     
-    
     // Send to backend
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, {
-        method: "POST",
-        body: formData,
-      });
+      const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, formData);
       const text = await res.text();
       let result;
       try {

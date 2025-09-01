@@ -20,7 +20,6 @@ export const authenticatedFetch = async (url, options = {}) => {
     
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-      console.log('Making request with token:', token.substring(0, 50) + '...');
     } else {
       console.warn('Making request without token');
     }
@@ -38,9 +37,7 @@ export const authenticatedFetch = async (url, options = {}) => {
     // If we have a current Firebase user, prefer getting a fresh token
     if (auth.currentUser) {
       try {
-        console.log('Getting fresh token from current user...');
         token = await auth.currentUser.getIdToken();
-        console.log('Got fresh token:', token.substring(0, 50) + '...');
       } catch (freshTokenError) {
         console.warn('Failed to get fresh token, using stored token:', freshTokenError);
         // Fall back to stored token
@@ -50,7 +47,6 @@ export const authenticatedFetch = async (url, options = {}) => {
     }
     
     let response = await makeRequest(token);
-    console.log('First request response status:', response.status);
     
     // If we get 401 and haven't retried yet, try to refresh token
     if (response.status === 401 && retryCount < maxRetries) {
@@ -90,7 +86,6 @@ export const authenticatedFetch = async (url, options = {}) => {
  * Wrapper for GET requests with authentication
  */
 export const authenticatedGet = async (url, options = {}) => {
-  console.log('Making authenticated GET request to:', url);
   return authenticatedFetch(url, {
     ...options,
     method: 'GET'

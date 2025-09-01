@@ -642,6 +642,15 @@ function handleTalentRoutes($pathParts, $method) {
             }
             break;
             
+        case 'supervisor-edit':
+            if ($method === 'POST') {
+                require_once __DIR__ . '/supervisor_edit_talent_mysql.php';
+            } else {
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
+            }
+            break;
+            
         case 'delete':
             if ($method === 'POST' || $method === 'DELETE') {
                 require_once __DIR__ . '/delete_talent_mysql.php';

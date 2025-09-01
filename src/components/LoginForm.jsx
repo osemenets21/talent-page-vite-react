@@ -3,6 +3,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { isAdmin } from "../config/adminConfig";
+import { saveTokens as saveTokensToLocalStorage } from "../utils/tokenManager";
+import { authenticatedGet } from "../utils/apiUtils";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,6 +16,9 @@ export default function LoginForm() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      const tokenResponse = userCredential._tokenResponse;
+      
+      await saveTokensToLocalStorage(tokenResponse);
       
       // Check if user is admin
       if (isAdmin(user.email)) {
@@ -22,27 +27,41 @@ export default function LoginForm() {
         return;
       }
       
-      // Regular user - check if profile exists in backend
+      // Wait for auth state to be properly established
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Regular user - check if profile exists in backend using authenticated API
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
-      const res = await fetch(`${apiDomain}/talent/get?email=${email}`);
-      
-      if (res.ok) {
-        const result = await res.json();
-        if (result.status === "success" && result.data) {
-          // Store submissionId for MyProfile to use
-          localStorage.setItem("submissionId", result.data.submissionId);
-          // Profile exists, go to profile page
-          navigate("/my-profile");
+      try {
+        console.log('Attempting to fetch profile for email:', email);
+        const res = await authenticatedGet(`${apiDomain}/talent/get?email=${email}`);
+        
+        if (res.ok) {
+          const result = await res.json();
+          console.log('Profile fetch result:', result);
+          if (result.status === "success" && result.data) {
+            // Store submissionId for MyProfile to use
+            localStorage.setItem("submissionId", result.data.submissionId);
+            // Profile exists, go to profile page
+            navigate("/my-profile");
+          } else {
+            console.log('Profile not found, redirecting to registration');
+            // Profile doesn't exist, go to talent form
+            navigate("/register-talent");
+          }
         } else {
-          // Profile doesn't exist, go to talent form
+          console.error('API call failed with status:', res.status);
+          // Error or profile not found, go to talent form
           navigate("/register-talent");
         }
-      } else {
-        // Error or profile not found, go to talent form
+      } catch (apiError) {
+        console.error('API call error:', apiError);
+        // If API call fails, assume profile doesn't exist and go to talent form
         navigate("/register-talent");
       }
     } catch (error) {
+      console.error('Login error:', error);
       alert("Login failed: " + error.message);
     }
   };

@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+require_once 'validate_jwt.php';
 require_once 'TalentMysqlDB.php';
 
 try {
@@ -17,7 +18,7 @@ try {
     
     // Get the talent ID or submission ID
     $id = $_POST["id"] ?? $_GET["id"] ?? null;
-    $submissionId = $_POST["submissionId"] ?? $_GET["submissionId"] ?? null;
+    $email = $_REQUEST['jwt_user_email'] ?? null; 
     
     if (!$id && !$submissionId) {
         echo json_encode(["status" => "error", "message" => "Missing talent ID or submission ID"]);
@@ -29,7 +30,7 @@ try {
     if ($id) {
         $talent = $db->selectById($id);
     } elseif ($submissionId) {
-        $talent = $db->selectBySubmissionId($submissionId);
+        $talent = $db->selectByEmail($email);
     }
     
     if (!$talent) {

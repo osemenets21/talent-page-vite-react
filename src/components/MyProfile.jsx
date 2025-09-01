@@ -5,6 +5,9 @@ import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 import EditProfile from "./EditProfile";
+import { authenticatedGet, authenticatedPost } from "../utils/apiUtils";
+import { clearTokens } from "../utils/tokenManager";
+
 
 
 
@@ -57,10 +60,10 @@ export default function MyProfile() {
       formData.append("submissionId", profile.submissionId);
       if (fileInputs.photo) formData.append("photo", fileInputs.photo);
       if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, {
-        method: "POST",
-        body: formData,
-      });
+      
+      // Use authenticated fetch with FormData
+      const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, formData);
+      
       const text = await res.text();
       let result;
       try {
@@ -90,9 +93,12 @@ export default function MyProfile() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      clearTokens(); // Clear stored tokens
       navigate("/");
     } catch (error) {
-      // Logout failed - handle silently
+      // Logout failed - still clear tokens and navigate
+      clearTokens();
+      navigate("/");
     }
   };
 
@@ -100,15 +106,12 @@ export default function MyProfile() {
     if (!window.confirm("Are you sure you want to request deletion of your profile? This will send a request to our team for review.")) return;
     setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/request-deletion`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          submissionId: profile.submissionId,
-          firstName: profile.firstName,
-          lastName: profile.lastName
-        }),
+      const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/request-deletion`, {
+        submissionId: profile.submissionId,
+        firstName: profile.firstName,
+        lastName: profile.lastName
       });
+      
       const text = await res.text();
       let result;
       try {
@@ -140,7 +143,7 @@ export default function MyProfile() {
       return;
     }
 
-    fetch(
+    authenticatedGet(
       `${import.meta.env.VITE_API_DOMAIN}/talent/get?submissionId=${encodeURIComponent(
         submissionId
       )}`
@@ -190,6 +193,9 @@ export default function MyProfile() {
       <h2 className="text-3xl font-bold text-yellow-500 mb-6 text-center">
         Welcome, {profile.firstName || ''}
       </h2>
+      
+
+      
       <div className="absolute top-3 right-3 z-10">
         <button onClick={handleLogout} title="Logout" type="button">
           <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />

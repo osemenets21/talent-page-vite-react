@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import logoUrl from "../pictures/logo.png";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <img
                 className="h-12 w-auto"
-                src="/src/pictures/logo.png"
+                src={logoUrl}
                 alt="Lucky Hospitality"
               />
             </div>

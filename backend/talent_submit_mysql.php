@@ -20,8 +20,8 @@ try {
         exit;
     }
 
-    // 2. Initialize database
-    $db = new TalentMysqlDB();
+    // 2. Initialize database with working credentials
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
 
     // 3. Check if submission already exists
     $existing = null;

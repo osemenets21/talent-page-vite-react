@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
+import logoUrl from "../pictures/logo.png";
 
 // API Configuration
 const API_BASE_URL = `${import.meta.env.VITE_API_DOMAIN}/events`;
@@ -557,7 +558,7 @@ export default function EventsContentManager() {
             <div className="flex items-center">
               <img
                 className="h-12 w-auto"
-                src="/src/pictures/logo.png"
+                src={logoUrl}
                 alt="Lucky Hospitality"
               />
               <button

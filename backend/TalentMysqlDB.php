@@ -6,8 +6,9 @@ class TalentMysqlDB {
     private $dbname;
     private $username;
     private $password;
+    private $tableName = 'talent_data';  // Updated to match actual table name
     
-    public function __construct($host = 'localhost', $dbname = 'talent_events_db', $username = 'root', $password = '') {
+    public function __construct($host = 'localhost', $dbname = 'talent_db', $username = 'talent_user', $password = 'en(x5z@ADuv*') {
         $this->host = $host;
         $this->dbname = $dbname;
         $this->username = $username;
@@ -29,8 +30,8 @@ class TalentMysqlDB {
             $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
-            // Create talent table if it doesn't exist
-            $sql = "CREATE TABLE IF NOT EXISTS talent (
+            // Create talent_data table if it doesn't exist
+            $sql = "CREATE TABLE IF NOT EXISTS {$this->tableName} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 submission_id VARCHAR(50) UNIQUE NOT NULL,
                 first_name VARCHAR(100) NOT NULL,
@@ -86,7 +87,7 @@ class TalentMysqlDB {
     private function migratePerformerImages() {
         try {
             // Check if migration is needed
-            $stmt = $this->pdo->prepare("SELECT id, additional_files, performer_images FROM talent WHERE additional_files IS NOT NULL AND performer_images IS NULL");
+            $stmt = $this->pdo->prepare("SELECT id, additional_files, performer_images FROM {$this->tableName} WHERE additional_files IS NOT NULL AND performer_images IS NULL");
             $stmt->execute();
             $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -94,7 +95,7 @@ class TalentMysqlDB {
                 $additionalFiles = json_decode($record['additional_files'], true);
                 if (is_array($additionalFiles) && !empty($additionalFiles)) {
                     // Assume these are performer images and migrate them
-                    $updateStmt = $this->pdo->prepare("UPDATE talent SET performer_images = ?, additional_files = NULL WHERE id = ?");
+                    $updateStmt = $this->pdo->prepare("UPDATE {$this->tableName} SET performer_images = ?, additional_files = NULL WHERE id = ?");
                     $updateStmt->execute([json_encode($additionalFiles), $record['id']]);
                 }
             }
@@ -113,13 +114,13 @@ class TalentMysqlDB {
     private function addPerformerImagesColumn() {
         try {
             // Check if column exists
-            $stmt = $this->pdo->prepare("SHOW COLUMNS FROM talent LIKE 'performer_images'");
+            $stmt = $this->pdo->prepare("SHOW COLUMNS FROM {$this->tableName} LIKE 'performer_images'");
             $stmt->execute();
             $result = $stmt->fetch();
             
             if (!$result) {
                 // Column doesn't exist, add it
-                $sql = "ALTER TABLE talent ADD COLUMN performer_images JSON AFTER tax_form_filename";
+                $sql = "ALTER TABLE {$this->tableName} ADD COLUMN performer_images JSON AFTER tax_form_filename";
                 $this->pdo->exec($sql);
             }
         } catch (PDOException $e) {
@@ -131,7 +132,7 @@ class TalentMysqlDB {
     // Insert new talent
     public function insert($data) {
         try {
-            $sql = "INSERT INTO talent (
+            $sql = "INSERT INTO {$this->tableName} (
                 submission_id, first_name, last_name, phone, email, instagram, facebook, 
                 soundcloud, spotify, youtube, tiktok, performer_name, city, country, bio, 
                 role, role_other, payment_method, venmo, zelle, paypal, bank_info,
@@ -189,7 +190,7 @@ class TalentMysqlDB {
     // Get all talent
     public function selectAll($conditions = [], $orderBy = 'created_at DESC', $limit = null, $offset = 0) {
         try {
-            $sql = "SELECT * FROM talent";
+            $sql = "SELECT * FROM {$this->tableName}";
             $params = [];
             
             if (!empty($conditions)) {
@@ -222,7 +223,7 @@ class TalentMysqlDB {
     // Get talent by ID
     public function selectById($id) {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM talent WHERE id = :id");
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->tableName} WHERE id = :id");
             $stmt->execute(['id' => $id]);
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -235,7 +236,7 @@ class TalentMysqlDB {
     // Get talent by email
     public function selectByEmail($email) {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM talent WHERE email = :email");
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->tableName} WHERE email = :email");
             $stmt->execute(['email' => $email]);
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -248,7 +249,7 @@ class TalentMysqlDB {
     // Get talent by submission ID
     public function selectBySubmissionId($submissionId) {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM talent WHERE submission_id = :submission_id");
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->tableName} WHERE submission_id = :submission_id");
             $stmt->execute(['submission_id' => $submissionId]);
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -275,7 +276,7 @@ class TalentMysqlDB {
                 throw new Exception("No data to update");
             }
             
-            $sql = "UPDATE talent SET " . implode(", ", $fields) . " WHERE id = :id";
+            $sql = "UPDATE {$this->tableName} SET " . implode(", ", $fields) . " WHERE id = :id";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             
@@ -289,7 +290,7 @@ class TalentMysqlDB {
     // Delete talent
     public function delete($id) {
         try {
-            $stmt = $this->pdo->prepare("DELETE FROM talent WHERE id = :id");
+            $stmt = $this->pdo->prepare("DELETE FROM {$this->tableName} WHERE id = :id");
             $stmt->execute(['id' => $id]);
             
             return $stmt->rowCount() > 0;
@@ -302,7 +303,7 @@ class TalentMysqlDB {
     // Search talent
     public function search($query) {
         try {
-            $sql = "SELECT * FROM talent WHERE 
+            $sql = "SELECT * FROM {$this->tableName} WHERE 
                     first_name LIKE :query OR 
                     last_name LIKE :query OR 
                     email LIKE :query OR 
@@ -327,19 +328,19 @@ class TalentMysqlDB {
             $stats = [];
             
             // Total count
-            $stmt = $this->pdo->query("SELECT COUNT(*) as total FROM talent");
+            $stmt = $this->pdo->query("SELECT COUNT(*) as total FROM {$this->tableName}");
             $stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
             
             // By status
-            $stmt = $this->pdo->query("SELECT status, COUNT(*) as count FROM talent GROUP BY status");
+            $stmt = $this->pdo->query("SELECT status, COUNT(*) as count FROM {$this->tableName} GROUP BY status");
             $stats['by_status'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // By role
-            $stmt = $this->pdo->query("SELECT role, COUNT(*) as count FROM talent GROUP BY role ORDER BY count DESC");
+            $stmt = $this->pdo->query("SELECT role, COUNT(*) as count FROM {$this->tableName} GROUP BY role ORDER BY count DESC");
             $stats['by_role'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Recent submissions (last 30 days)
-            $stmt = $this->pdo->query("SELECT COUNT(*) as recent FROM talent WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+            $stmt = $this->pdo->query("SELECT COUNT(*) as recent FROM {$this->tableName} WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
             $stats['recent_submissions'] = $stmt->fetch(PDO::FETCH_ASSOC)['recent'];
             
             return $stats;

@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { isAdmin } from "../config/adminConfig";
 import { saveTokens as saveTokensToLocalStorage } from "../utils/tokenManager";
 import { authenticatedGet } from "../utils/apiUtils";
+import logoUrl from "../pictures/logo.png";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -71,10 +72,10 @@ export default function LoginForm() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <img
+         <img
             className="mx-auto h-40 w-auto"
-            src="/src/pictures/logo.png"
-            alt="Your Company"
+            src={logoUrl}                 
+            alt="Lucky Hospitality"
           />
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
             Sign in to your account

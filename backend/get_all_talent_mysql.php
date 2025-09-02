@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'TalentMysqlDB.php';
 
 try {
-    $db = new TalentMysqlDB();
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
     
     // Get query parameters
     $status = $_GET['status'] ?? null;

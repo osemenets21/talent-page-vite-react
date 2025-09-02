@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { XMarkIcon } from "@heroicons/react/24/solid";
-import logo from "../pictures/logo.png";
+
 import { authenticatedGet, authenticatedPost, authenticatedDelete } from "../utils/apiUtils";
+import logoUrl from "../pictures/logo.png";
 
 export default function SupervisorPanel() {
   const [talents, setTalents] = useState([]);
@@ -288,7 +289,7 @@ export default function SupervisorPanel() {
         </button>
       </div>
       <div className="flex justify-center mb-8">
-        <img src={logo} alt="Company Logo" className="h-30 w-auto" />
+        <img src={logoUrl} alt="Company Logo" className="h-30 w-auto" />
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 shadow-lg rounded-lg" style={{tableLayout: 'fixed'}}>

@@ -12,17 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'validate_jwt.php';
 require_once 'TalentMysqlDB.php';
 
-// Debug logging
-error_log("get_talent_by_email_mysql.php: Starting request processing");
-error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
-error_log("Headers: " . json_encode(getallheaders()));
-
 try {
     $email = $_REQUEST['jwt_user_email'] ?? null;
     $submissionId = $_REQUEST['submissionId'] ?? $_GET['submissionId'] ?? null;
-    
-    error_log("Extracted email from JWT: " . ($email ?? 'null'));
-    error_log("Extracted submissionId: " . ($submissionId ?? 'null'));
     
     if (!$email && !$submissionId) {
         http_response_code(400);
@@ -33,7 +25,8 @@ try {
         exit;
     }
     
-    $db = new TalentMysqlDB();
+    // Use the working database credentials from diagnostic
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
     
     // Try to get talent by email first (from JWT), then by submissionId
     if ($email) {

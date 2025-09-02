@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'TalentMysqlDB.php';
 
 try {
-    $db = new TalentMysqlDB();
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
     
     // Get input from JSON body or POST data
     $input = json_decode(file_get_contents('php://input'), true) ?: [];

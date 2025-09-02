@@ -2,12 +2,10 @@
 // Unified Backend Router
 // Routes all requests to appropriate handlers
 
-// Enable error logging for debugging
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/debug.log');
-
-// Handle CORS for development
+// Handle CORS for production and development
 $allowed_origins = [
+    'https://luckyhospitality.com',
+    'https://www.luckyhospitality.com',
     'http://localhost:5173', 
     'http://localhost:5174', 
     'http://localhost:3000',
@@ -41,9 +39,13 @@ $request = $_SERVER['REQUEST_URI'];
 $path = parse_url($request, PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Debug: Log all requests
-error_log("Request: " . $method . " " . $request);
-error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+// Remove /backend prefix if present
+if (strpos($path, '/backend') === 0) {
+    $path = substr($path, 8); // Remove '/backend'
+}
+
+// Remove leading slash and split path
+$pathParts = array_filter(explode('/', trim($path, '/')));
 
 // Handle static files (images, CSS, JS, etc.)
 if (preg_match('/\.(png|jpg|jpeg|gif|css|js|ico|svg)$/i', $path)) {
@@ -75,38 +77,38 @@ if (preg_match('/\.(png|jpg|jpeg|gif|css|js|ico|svg)$/i', $path)) {
     }
 }
 
-// Remove leading slash and split path
-$pathParts = array_filter(explode('/', trim($path, '/')));
-
 // Route requests
 try {
     switch ($pathParts[0] ?? '') {
-        case 'api':
-            handleApiRoutes($pathParts, $method);
+        case 'talent':
+            handleTalentRoutes($pathParts, $method);
             break;
             
         case 'events':
             handleEventRoutes($pathParts, $method);
             break;
             
-        case 'talent':
-            handleTalentRoutes($pathParts, $method);
-            break;
-            
         case 'uploads':
             handleUploads($pathParts);
             break;
             
+        case 'admin':
+            handleAdminRoutes($pathParts, $method);
+            break;
+            
         default:
-            // Serve static files or return 404
-            if (file_exists(__DIR__ . $request)) {
-                $mimeType = getMimeType($request);
-                header("Content-Type: $mimeType");
-                readfile(__DIR__ . $request);
-            } else {
-                http_response_code(404);
-                echo json_encode(['error' => 'Not found']);
-            }
+            http_response_code(404);
+            echo json_encode([
+                'error' => 'Not found',
+                'path' => $path,
+                'pathParts' => $pathParts,
+                'available_endpoints' => [
+                    '/backend/talent/get',
+                    '/backend/talent/submit',
+                    '/backend/talent/all',
+                    '/backend/admin/login'
+                ]
+            ]);
             break;
     }
 } catch (Exception $e) {
@@ -114,48 +116,22 @@ try {
     echo json_encode(['error' => $e->getMessage()]);
 }
 
-function handleApiRoutes($pathParts, $method) {
-    $endpoint = $pathParts[1] ?? '';
+function handleAdminRoutes($pathParts, $method) {
+    $action = $pathParts[1] ?? '';
     
-    switch ($endpoint) {
-        case 'events':
-            // Route to events API
-            $eventAction = $pathParts[2] ?? '';
-            if ($eventAction === 'stats') {
-                // Handle events stats specifically
-                header('Content-Type: application/json');
-                try {
-                    require_once __DIR__ . '/event-content-manager/EventsMysqlDB.php';
-                    $db = new EventsMysqlDB('localhost', 'talent_events_db', 'root', '');
-                    $totalEvents = $db->getTotalCount();
-                    $activeEvents = $db->getActiveCount();
-                    echo json_encode([
-                        'success' => true, 
-                        'total' => $totalEvents,
-                        'active' => $activeEvents
-                    ]);
-                } catch (Exception $e) {
-                    echo json_encode([
-                        'success' => true, 
-                        'total' => 0,
-                        'active' => 0
-                    ]);
-                }
+    switch ($action) {
+        case 'login':
+            if ($method === 'POST') {
+                require_once __DIR__ . '/admin_login.php';
             } else {
-                $_SERVER['REQUEST_URI'] = '/events/' . implode('/', array_slice($pathParts, 2));
-                handleEventRoutes(['events'], $method);
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
             }
-            break;
-            
-        case 'talent':
-            // Route to talent API
-            $_SERVER['REQUEST_URI'] = '/talent/' . implode('/', array_slice($pathParts, 2));
-            handleTalentRoutes(['talent'], $method);
             break;
             
         default:
             http_response_code(404);
-            echo json_encode(['error' => 'API endpoint not found']);
+            echo json_encode(['error' => 'Admin endpoint not found']);
     }
 }
 
@@ -165,7 +141,7 @@ function handleEventRoutes($pathParts, $method) {
     // Try MySQL first, fallback to file-based DB
     try {
         require_once __DIR__ . '/event-content-manager/EventsMysqlDB.php';
-        $db = new EventsMysqlDB('localhost', 'talent_events_db', 'root', '');
+        $db = new EventsMysqlDB('localhost', 'event_db', 'event_user', 'ZLK&h,Dc5Hvn');
     } catch (Exception $e) {
         try {
             require_once __DIR__ . '/event-content-manager/EventsDB.php';
@@ -179,7 +155,6 @@ function handleEventRoutes($pathParts, $method) {
     // Handle different content types
     if (($method === 'POST' || $method === 'PUT') && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'multipart/form-data') !== false) {
         // Handle file upload in POST/PUT
-        error_log("Detected multipart/form-data for " . $method);
         
         if ($method === 'PUT') {
             // For PUT requests, we need to manually parse the multipart data
@@ -247,22 +222,16 @@ function handleEventRoutes($pathParts, $method) {
                 // Set the parsed data
                 $_POST = $putData;
                 $_FILES = $putFiles;
-                
-                error_log("PUT parsed POST data: " . json_encode($_POST));
-                error_log("PUT parsed FILES data: " . json_encode(array_keys($_FILES)));
             }
         }
         
-        error_log("POST eventData: " . ($_POST['eventData'] ?? 'not set'));
         $input = null;
         if (isset($_POST['eventData'])) {
             $input = json_decode($_POST['eventData'], true);
-            error_log("Decoded eventData: " . ($input ? json_encode($input) : 'decode failed'));
         }
     } else {
         // Handle JSON input
         $input = json_decode(file_get_contents('php://input'), true);
-        error_log("Detected JSON input for " . $method . ": " . ($input ? json_encode($input) : 'null'));
     }
     
     switch ($method) {
@@ -359,37 +328,19 @@ function handleEventPost($db, $input) {
         }
     }
     
-    error_log("About to check for cover photo upload");
-    error_log("FILES array: " . json_encode($_FILES));
-    error_log("cover_photo isset: " . (isset($_FILES['cover_photo']) ? 'yes' : 'no'));
-    if (isset($_FILES['cover_photo'])) {
-        error_log("cover_photo error: " . $_FILES['cover_photo']['error']);
-    }
-    
     // Handle cover photo upload if present
     if (isset($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK) {
-        error_log("ENTERING cover photo processing block");
-        error_log("Processing cover photo upload in PUT");
-        error_log("Input event_name: " . ($input['event_name'] ?? 'not set'));
-        
         $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $input['event_name']);
-        error_log("Sanitized event name: " . $eventName);
         
         $eventFolder = __DIR__ . "/event-content-manager/{$eventName}";
-        error_log("Event folder path: " . $eventFolder);
         
         // Create event folder if it doesn't exist
         if (!file_exists($eventFolder)) {
-            error_log("Creating event folder");
             if (!mkdir($eventFolder, 0755, true)) {
-                error_log("Failed to create folder");
                 http_response_code(500);
                 echo json_encode(['success' => false, 'message' => 'Failed to create event folder']);
                 return;
             }
-            error_log("Folder created successfully");
-        } else {
-            error_log("Event folder already exists");
         }
         
         $file = $_FILES['cover_photo'];
@@ -404,11 +355,6 @@ function handleEventPost($db, $input) {
         
         $fileName = 'cover_photo.' . $fileExtension;
         $filePath = $eventFolder . '/' . $fileName;
-        
-        error_log("Attempting to move file from: " . $file['tmp_name']);
-        error_log("To: " . $filePath);
-        error_log("Event folder exists: " . (file_exists($eventFolder) ? 'yes' : 'no'));
-        error_log("Temp file exists: " . (file_exists($file['tmp_name']) ? 'yes' : 'no'));
         
         // For PUT requests with manually parsed files, use copy instead of move_uploaded_file
         $fileUploaded = false;
@@ -426,10 +372,8 @@ function handleEventPost($db, $input) {
         }
         
         if ($fileUploaded) {
-            error_log("File moved successfully");
             $input['cover_photo'] = "/backend/event-content-manager/{$eventName}/{$fileName}";
         } else {
-            error_log("Failed to move file");
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Failed to upload cover photo']);
             return;

@@ -26,7 +26,7 @@ try {
     }
     
     // Initialize database
-    $db = new TalentMysqlDB();
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
     
     // Get current talent record
     $talent = $db->selectBySubmissionId($submissionId);

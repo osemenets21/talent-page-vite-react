@@ -12,23 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'validate_jwt.php';
 require_once 'TalentMysqlDB.php';
 
-// Add debug logging
-error_log("supervisor_edit_talent_mysql.php: Starting supervisor edit");
-
 // Read JSON input for supervisor edits
 $input = file_get_contents('php://input');
 $jsonData = json_decode($input, true);
 
-error_log("Raw input: " . $input);
-error_log("JSON data: " . json_encode($jsonData));
-error_log("POST data: " . json_encode($_POST));
-
 try {
-    $db = new TalentMysqlDB();
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
     
     // Get the authenticated user email (set by validate_jwt.php)
     $userEmail = $_REQUEST['jwt_user_email'] ?? null;
-    error_log("Supervisor edit by user: " . ($userEmail ?? 'null'));
     
     // Get the submission ID for the talent to edit
     $submissionId = $jsonData['submissionId'] ?? null;
@@ -37,18 +29,15 @@ try {
         exit;
     }
     
-    $db = new TalentMysqlDB();
+    $db = new TalentMysqlDB('localhost', 'talent_db', 'talent_user', 'en(x5z@ADuv*');
     
     // Find talent by submission ID (different from regular edit which uses user's email)
     $talent = $db->selectBySubmissionId($submissionId);
     
     if (!$talent) {
-        error_log("Talent not found for submission ID: " . $submissionId);
         echo json_encode(["status" => "error", "message" => "Talent not found with submission ID: " . $submissionId]);
         exit;
     }
-    
-    error_log("Found talent: " . $talent['submission_id'] . " for supervisor edit");
     
     // Prepare update data
     $updateData = [];
@@ -81,20 +70,15 @@ try {
     }
 
     if (empty($updateData)) {
-        error_log("No valid fields to update");
         echo json_encode(["status" => "error", "message" => "No valid fields to update"]);
         exit;
     }
 
     // Add updated timestamp
     $updateData['updated_at'] = date('Y-m-d H:i:s');
-    
-    error_log("Update data: " . json_encode($updateData));
 
     // Update the record
     $result = $db->update($talent['id'], $updateData);
-    
-    error_log("Database update result: " . ($result ? 'success' : 'failed'));
     
     if ($result) {
         // Also update JSON backup

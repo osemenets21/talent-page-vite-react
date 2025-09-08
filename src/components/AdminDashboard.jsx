@@ -25,22 +25,38 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        console.log('Fetching stats from:', {
+          talentUrl: `${import.meta.env.VITE_API_DOMAIN}/talent/stats`,
+          eventsUrl: `${import.meta.env.VITE_API_DOMAIN}/events/stats`
+        });
+
         const [talentsResponse, eventsResponse] = await Promise.all([
           fetch(`${import.meta.env.VITE_API_DOMAIN}/talent/stats`),
           fetch(`${import.meta.env.VITE_API_DOMAIN}/events/stats`)
         ]);
+
+        console.log('Responses:', {
+          talents: { ok: talentsResponse.ok, status: talentsResponse.status },
+          events: { ok: eventsResponse.ok, status: eventsResponse.status }
+        });
 
         let totalTalents = '--';
         let activeEvents = '--';
 
         if (talentsResponse.ok) {
           const talentsData = await talentsResponse.json();
+          console.log('Talents data:', talentsData);
           totalTalents = talentsData.total || 0;
+        } else {
+          console.error('Talents response not ok:', talentsResponse.status, talentsResponse.statusText);
         }
 
         if (eventsResponse.ok) {
           const eventsData = await eventsResponse.json();
+          console.log('Events data:', eventsData);
           activeEvents = eventsData.active || 0;
+        } else {
+          console.error('Events response not ok:', eventsResponse.status, eventsResponse.statusText);
         }
 
         setStats({

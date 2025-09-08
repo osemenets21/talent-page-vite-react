@@ -2,7 +2,7 @@ name: Build & Deploy to GoDaddy (FTP)
 
 on:
   push:
-    branches: [ main ]   # change if your default branch is different
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -11,7 +11,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Remove the next 2 steps if your site is pure HTML/CSS (no build step)
       - name: Use Node
         uses: actions/setup-node@v4
         with:
@@ -21,20 +20,23 @@ jobs:
       - name: Install & Build
         run: |
           npm ci
-          npm run build
+          npm run build   # Vite -> outputs to dist/
 
-      # Deploy only the build output (adjust local-dir if different)
       - name: Upload via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: ${{ secrets.FTP_SERVER }}        # 132.148.216.245
+          username: ${{ secrets.FTP_USERNAME }}    # deploy@takeoverpresents.com
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          local-dir: ./                       # for React/Vite. If plain HTML: ./
-          server-dir: public_html/luckyhospitality.com/  # adjust if needed
-          exclude: |
-            **/.git*
+          local-dir: dist/                         # ONLY deploy the build
+          server-dir: ./                           # FTP user's root = site root
+          dangerous-clean-slate: true              # remove leftovers from bad deploys
+          exclude: |                               # extra safety
+            **/.git**
             **/.github/**
+            **/.env*
+            **/src/**
+            **/public/**
             **/node_modules/**

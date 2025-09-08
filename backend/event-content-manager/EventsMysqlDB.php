@@ -29,8 +29,8 @@ class EventsMysqlDB {
             $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4", $this->username, $this->password);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
-            // Create events table if it doesn't exist
-            $sql = "CREATE TABLE IF NOT EXISTS events (
+            // Create event_data table if it doesn't exist
+            $sql = "CREATE TABLE IF NOT EXISTS event_data (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 club VARCHAR(255) NOT NULL,
                 event_name VARCHAR(255) NOT NULL,
@@ -44,6 +44,11 @@ class EventsMysqlDB {
                 eagle_xl TEXT,
                 short_description TEXT,
                 long_description LONGTEXT,
+                cover_photo VARCHAR(500),
+                manager_comments TEXT,
+                door_sales_total INT DEFAULT 0,
+                bar_sales_total INT DEFAULT 0,
+                ticket_sales_total INT DEFAULT 0,
                 status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'active',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -56,7 +61,39 @@ class EventsMysqlDB {
             
             // Add status column if it doesn't exist (for existing tables)
             try {
-                $this->pdo->exec("ALTER TABLE events ADD COLUMN status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'active'");
+                $this->pdo->exec("ALTER TABLE event_data ADD COLUMN status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'active'");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            // Add cover_photo column if it doesn't exist (for existing tables)
+            try {
+                $this->pdo->exec("ALTER TABLE event_data ADD COLUMN cover_photo VARCHAR(500)");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            // Add new fields for events management
+            try {
+                $this->pdo->exec("ALTER TABLE event_data ADD COLUMN manager_comments TEXT");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            try {
+                $this->pdo->exec("ALTER TABLE event_data ADD COLUMN door_sales_total INT DEFAULT 0");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            try {
+                $this->pdo->exec("ALTER TABLE event_data ADD COLUMN bar_sales_total INT DEFAULT 0");
+            } catch (PDOException $e) {
+                // Column probably already exists, ignore error
+            }
+            
+            try {
+                $this->pdo->exec("ALTER TABLE event_data ADD COLUMN ticket_sales_total INT DEFAULT 0");
             } catch (PDOException $e) {
                 // Column probably already exists, ignore error
             }        } catch (PDOException $e) {
@@ -67,7 +104,7 @@ class EventsMysqlDB {
     // All the same methods as EventsDB.php but for MySQL
     public function selectAll($conditions = [], $orderBy = null, $limit = null, $offset = 0) {
         try {
-            $sql = "SELECT * FROM events";
+            $sql = "SELECT * FROM event_data";
             $params = [];
             
             if (!empty($conditions)) {
@@ -99,7 +136,7 @@ class EventsMysqlDB {
     
     public function selectById($id) {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM events WHERE id = :id");
+            $stmt = $this->pdo->prepare("SELECT * FROM event_data WHERE id = :id");
             $stmt->execute(['id' => $id]);
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -114,7 +151,7 @@ class EventsMysqlDB {
             $fields = array_keys($data);
             $placeholders = array_map(function($field) { return ":$field"; }, $fields);
             
-            $sql = "INSERT INTO events (" . implode(", ", $fields) . ") VALUES (" . implode(", ", $placeholders) . ")";
+            $sql = "INSERT INTO event_data (" . implode(", ", $fields) . ") VALUES (" . implode(", ", $placeholders) . ")";
             
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($data);
@@ -133,7 +170,7 @@ class EventsMysqlDB {
                 $setClause[] = "$field = :$field";
             }
             
-            $sql = "UPDATE events SET " . implode(", ", $setClause) . " WHERE id = :id";
+            $sql = "UPDATE event_data SET " . implode(", ", $setClause) . " WHERE id = :id";
             $data['id'] = $id;
             
             $stmt = $this->pdo->prepare($sql);
@@ -148,7 +185,7 @@ class EventsMysqlDB {
     
     public function delete($id) {
         try {
-            $stmt = $this->pdo->prepare("DELETE FROM events WHERE id = :id");
+            $stmt = $this->pdo->prepare("DELETE FROM event_data WHERE id = :id");
             $stmt->execute(['id' => $id]);
             
             return $stmt->rowCount() > 0;
@@ -160,7 +197,7 @@ class EventsMysqlDB {
     
     public function count($conditions = []) {
         try {
-            $sql = "SELECT COUNT(*) as count FROM events";
+            $sql = "SELECT COUNT(*) as count FROM event_data";
             $params = [];
             
             if (!empty($conditions)) {
@@ -185,7 +222,7 @@ class EventsMysqlDB {
     
     public function search($searchTerm) {
         try {
-            $sql = "SELECT * FROM events WHERE 
+            $sql = "SELECT * FROM event_data WHERE 
                     event_name LIKE :term OR 
                     club LIKE :term OR 
                     short_description LIKE :term OR 
@@ -204,7 +241,7 @@ class EventsMysqlDB {
     
     public function getUpcomingEvents($limit = 10) {
         try {
-            $sql = "SELECT * FROM events WHERE event_date >= CURDATE() ORDER BY event_date ASC LIMIT :limit";
+            $sql = "SELECT * FROM event_data WHERE event_date >= CURDATE() ORDER BY event_date ASC LIMIT :limit";
             
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -219,7 +256,7 @@ class EventsMysqlDB {
     
     public function getEventsByDateRange($startDate, $endDate) {
         try {
-            $sql = "SELECT * FROM events WHERE event_date BETWEEN :start_date AND :end_date ORDER BY event_date ASC";
+            $sql = "SELECT * FROM event_data WHERE event_date BETWEEN :start_date AND :end_date ORDER BY event_date ASC";
             
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
@@ -236,7 +273,7 @@ class EventsMysqlDB {
     
     public function getEventsByClub($club) {
         try {
-            $sql = "SELECT * FROM events WHERE club = :club ORDER BY event_date DESC";
+            $sql = "SELECT * FROM event_data WHERE club = :club ORDER BY event_date DESC";
             
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute(['club' => $club]);
@@ -256,12 +293,12 @@ class EventsMysqlDB {
             $stats['total_events'] = $this->count();
             
             // Events by club
-            $sql = "SELECT club, COUNT(*) as count FROM events GROUP BY club ORDER BY count DESC";
+            $sql = "SELECT club, COUNT(*) as count FROM event_data GROUP BY club ORDER BY count DESC";
             $stmt = $this->pdo->query($sql);
             $stats['events_by_club'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Upcoming events count
-            $sql = "SELECT COUNT(*) as count FROM events WHERE event_date >= CURDATE()";
+            $sql = "SELECT COUNT(*) as count FROM event_data WHERE event_date >= CURDATE()";
             $stmt = $this->pdo->query($sql);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             $stats['upcoming_events'] = (int)$result['count'];
@@ -270,6 +307,27 @@ class EventsMysqlDB {
             
         } catch (PDOException $e) {
             throw new Exception("Stats query failed: " . $e->getMessage());
+        }
+    }
+    
+    // Get total count of all events
+    public function getTotalCount() {
+        try {
+            return $this->count();
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+    
+    // Get count of active/upcoming events
+    public function getActiveCount() {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM event_data WHERE status = 'active'";
+            $stmt = $this->pdo->query($sql);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int)$result['count'];
+        } catch (Exception $e) {
+            return 0;
         }
     }
     

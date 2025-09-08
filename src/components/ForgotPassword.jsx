@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebase";
 import { Link } from "react-router-dom";
+import logoUrl from "../pictures/logo.png";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ export default function ForgotPassword() {
         <div>
           <img
             className="mx-auto h-20 w-auto"
-            src="src/pictures/logo.png"
+            src={logoUrl}
             alt="Your Company"
           />
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">

@@ -5,12 +5,16 @@ import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 import EditProfile from "./EditProfile";
+import { authenticatedGet, authenticatedPost } from "../utils/apiUtils";
+import { clearTokens } from "../utils/tokenManager";
+
 
 
 
 
 
 export default function MyProfile() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,10 +60,10 @@ export default function MyProfile() {
       formData.append("submissionId", profile.submissionId);
       if (fileInputs.photo) formData.append("photo", fileInputs.photo);
       if (fileInputs.taxForm) formData.append("taxForm", fileInputs.taxForm);
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/edit_talent.php`, {
-        method: "POST",
-        body: formData,
-      });
+      
+      // Use authenticated fetch with FormData
+      const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, formData);
+      
       const text = await res.text();
       let result;
       try {
@@ -89,21 +93,25 @@ export default function MyProfile() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      clearTokens(); // Clear stored tokens
       navigate("/");
     } catch (error) {
-      // Logout failed - handle silently
+      // Logout failed - still clear tokens and navigate
+      clearTokens();
+      navigate("/");
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete your profile?")) return;
+  const handleDeleteRequest = async () => {
+    if (!window.confirm("Are you sure you want to request deletion of your profile? This will send a request to our team for review.")) return;
     setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/backend/delete_talent.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ submissionId: profile.submissionId }),
+      const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/request-deletion`, {
+        submissionId: profile.submissionId,
+        firstName: profile.firstName,
+        lastName: profile.lastName
       });
+      
       const text = await res.text();
       let result;
       try {
@@ -114,12 +122,12 @@ export default function MyProfile() {
         return;
       }
       if (result.status === "success") {
-        setModalTitle("Profile deleted");
-        setModalMessage("Your profile has been deleted");
+        setModalTitle("Deletion Request Sent");
+        setModalMessage("Your deletion request has been sent to our team. We will review your request and contact you if needed.");
         setShowModal(true);
-        handleLogout(); 
+        setShouldReload(false);
       } else {
-        alert(result.message || "Failed to delete profile");
+        alert(result.message || "Failed to send deletion request");
       }
     } catch (err) {
       alert("Error: " + err.message);
@@ -135,8 +143,8 @@ export default function MyProfile() {
       return;
     }
 
-    fetch(
-      `${import.meta.env.VITE_API_DOMAIN}/backend/get_talent.php?submissionId=${encodeURIComponent(
+    authenticatedGet(
+      `${import.meta.env.VITE_API_DOMAIN}/talent/get?submissionId=${encodeURIComponent(
         submissionId
       )}`
     )
@@ -144,11 +152,11 @@ export default function MyProfile() {
         if (!res.ok) throw new Error("Failed to fetch profile data");
         return res.json();
       })
-      .then((data) => {
-        if (!data || data.status === "error" || !data.submissionId) {
-          setError(data.message || "Profile not found.");
+      .then((res) => {
+        if (!res || res.status === "error" || !res.data.submissionId) {
+          setError(res.data.message || "Profile not found.");
         } else {
-          setProfile(data);
+          setProfile(res.data);
         }
         setLoading(false);
       })
@@ -166,21 +174,28 @@ export default function MyProfile() {
 
   const backendBase = import.meta.env.VITE_API_DOMAIN;
   const photoUrl = profile.files?.photo
-    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.photo}`
+    ? `${backendBase}/uploads/${profile.submissionId}/${profile.files.photo}`
     : null;
   const pdfUrl = profile.files?.taxForm
-    ? `${backendBase}/backend/uploads/${profile.submissionId}/${profile.files.taxForm}`
+    ? `${backendBase}/uploads/${profile.submissionId}/${profile.files.taxForm}`
     : null;
   const performerImages = Array.isArray(profile.files?.performerImages)
     ? profile.files.performerImages
     : [];
-  // Portfolio removed
+  
+  // Debug: Let's see what's in the files object
+  console.log('Profile files:', profile.files);
+  console.log('Performer images:', performerImages);
+ 
 
   return (
     <div className="relative max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-10">
       <h2 className="text-3xl font-bold text-yellow-500 mb-6 text-center">
         Welcome, {profile.firstName || ''}
       </h2>
+      
+
+      
       <div className="absolute top-3 right-3 z-10">
         <button onClick={handleLogout} title="Logout" type="button">
           <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
@@ -207,77 +222,99 @@ export default function MyProfile() {
         />
       ) : (
         <>
-          {/* Profile fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 mb-8">
-            {Object.entries(profile).map(([key, value]) => {
-              if (key === "files" || key === "submissionId" || key === "timestamp" || key === "portfolio") return null;
+          {/* Public Information Section */}
+          <div className="bg-white rounded-lg p-6 mb-8 border border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+              Public Profile Information
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+              {/* Public fields */}
+              <ProfileItem label="First Name" value={profile.firstName || "no data"} />
+              <ProfileItem label="Last Name" value={profile.lastName || "no data"} />
+              <ProfileItem label="Stage / Performer Name" value={profile.performerName || "no data"} />
+              <ProfileItem label="Your Role" value={profile.role || "no data"} />
+              <ProfileItem label="Instagram" value={profile.instagram || "no data"} />
+              <ProfileItem label="Facebook" value={profile.facebook || "no data"} />
+              <ProfileItem label="SoundCloud" value={profile.soundcloud || "no data"} />
+              <ProfileItem label="Spotify" value={profile.spotify || "no data"} />
+              <ProfileItem label="Youtube" value={profile.youtube || "no data"} />
+              <ProfileItem label="Tiktok" value={profile.tiktok || "no data"} />
+              <ProfileItem label="City of Origin" value={profile.city || "no data"} />
+              <ProfileItem label="Country" value={profile.country || "no data"} />
               
-              // Special handling for updated_at field
-              if (key === "updated_at") {
-                const formattedTime = formatAmericanTimestamp(value);
-                return <ProfileItem key={key} label="Last Updated" value={formattedTime} />;
-              }
-              
-              const displayValue = value === null || value === undefined || value === "" ? "no data" : value;
-              return <ProfileItem key={key} label={key} value={displayValue} />;
-            })}
-            {/* Photo */}
-            {photoUrl && (
+              {/* Brief BIO - full width */}
               <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">Profile Photo:</span>
-                <img
-                  src={photoUrl}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full object-cover ring-2 ring-indigo-300 mt-2"
-                />
+                <ProfileItem label="Brief BIO" value={profile.bio || "no data"} />
               </div>
-            )}
-            {/* Performer Images */}
-            {performerImages.length > 0 && (
-              <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">Performer Images:</span>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {performerImages.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={`${backendBase}/backend/uploads/${profile.submissionId}/${img}`}
-                      alt={`Performer ${idx + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
-                    />
-                  ))}
+              
+              {/* Performer Images */}
+              {performerImages.length > 0 && (
+                <div className="sm:col-span-2">
+                  <span className="block text-sm font-semibold text-gray-600">Performer Images / LOGO:</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {performerImages.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
+                        alt={`Performer ${idx + 1}`}
+                        className="w-20 h-20 object-cover rounded-lg ring-1 ring-indigo-200"
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            {/* Tax Form */}
-            {pdfUrl && (
-              <div className="sm:col-span-2">
-                <span className="block text-sm font-semibold text-gray-600">Tax Form (PDF):</span>
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 underline text-sm mt-1 inline-block"
-                >
-                  Download
-                </a>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+
+          {/* Private Information Section */}
+          <div className="bg-gray-200 rounded-lg p-6 mb-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-300 pb-2">
+              Private Information
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
+              <ProfileItem label="Phone" value={profile.phone || "no data"} />
+              <ProfileItem label="Email" value={profile.email || "no data"} />
+              <ProfileItem label="Form of Payment" value={profile.paymentMethod || "no data"} />
+              <ProfileItem label="Venmo Name" value={profile.venmo || "no data"} />
+              
+              {/* Special handling for updated_at field */}
+              {profile.updated_at && (
+                <div className="sm:col-span-2">
+                  <ProfileItem label="Last Updated" value={formatAmericanTimestamp(profile.updated_at)} />
+                </div>
+              )}
+              
+              {/* Tax Form */}
+              {pdfUrl && (
+                <div className="sm:col-span-2">
+                  <span className="block text-sm font-semibold text-gray-600">Uploaded W9 (tax form):</span>
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 underline text-sm mt-1 inline-block"
+                  >
+                    Download W9 Form
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
           <div className="mt-10 flex justify-center gap-4">
             <button
               type="button"
               onClick={handleEdit}
-              className="px-6 py-2 rounded-lg bg-yellow-400 text-white text-sm font-medium shadow hover:bg-indigo-700 transition"
+              className="px-6 py-2 rounded-lg bg-yellow-400 text-black text-sm font-medium shadow hover:bg-indigo-700 transition"
             >
               Edit
             </button>
             <button
               type="button"
-              onClick={handleDelete}
-              className="px-6 py-2 rounded-lg bg-red-500 text-white text-sm font-medium shadow hover:bg-red-600 transition"
+              onClick={handleDeleteRequest}
+              className="px-6 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium shadow hover:bg-orange-600 transition"
               disabled={saving}
             >
-              {saving ? "Deleting..." : "Delete"}
+              {saving ? "Sending..." : "Request Profile Deletion"}
             </button>
           </div>
         </>
@@ -287,13 +324,8 @@ export default function MyProfile() {
         setOpen={(open) => {
           setShowModal(open);
           if (!open && shouldReload) {
-            if (shouldReload === "redirect") {
-              setShouldReload(false);
-              navigate("/");
-            } else {
-              setShouldReload(false);
-              window.location.reload();
-            }
+            setShouldReload(false);
+            window.location.reload();
           }
         }}
         title={modalTitle}

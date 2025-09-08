@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
+import logoUrl from "../pictures/logo.png";
 
 // API Configuration
-const API_BASE_URL = "http://localhost/talent-backend/api.php";
+const API_BASE_URL = `${import.meta.env.VITE_API_DOMAIN}/events`;
 
 export default function EventsContentManager() {
   const navigate = useNavigate();
@@ -27,8 +28,15 @@ export default function EventsContentManager() {
     additional_information: "",
     eagle_xl: "No",
     status: "draft",
+    cover_photo: null,
+    manager_comments: "",
+    door_sales_total: 0,
+    bar_sales_total: 0,
+    ticket_sales_total: 0,
+    has_cover: "no",
   });
   const [formErrors, setFormErrors] = useState({});
+  const [coverPhotoPreview, setCoverPhotoPreview] = useState(null);
 
   // Function to format date and time to New York timezone
   const formatDateNY = (dateString) => {
@@ -105,7 +113,7 @@ export default function EventsContentManager() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}?route=events`);
+      const response = await fetch(`${API_BASE_URL}`);
       const data = await response.json();
 
       if (data.success) {
@@ -125,18 +133,21 @@ export default function EventsContentManager() {
     setLoading(true);
     setError(null);
     try {
-      // Convert form data to API format
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Convert form data to API format and append to FormData
       const apiData = {
         club: eventData.club,
         event_name: eventData.event_name,
         event_date: eventData.event_date,
-        doors_open_time: eventData.cover_start_time,
+        doors_open_time: eventData.has_cover === "yes" ? eventData.cover_start_time : eventData.start_hour,
         show_start_time: eventData.start_hour,
         show_end_time: eventData.end_hour,
-        cover_charge: eventData.cover_value
+        cover_charge: eventData.has_cover === "yes" && eventData.cover_value
           ? `$${eventData.cover_value}`
           : "Free",
-        cover_charge_details: eventData.cover_value
+        cover_charge_details: eventData.has_cover === "yes" && eventData.cover_value
           ? `$${eventData.cover_value} cover charge`
           : "No cover charge",
         advance_tickets_url: eventData.ticket_link || "",
@@ -144,12 +155,24 @@ export default function EventsContentManager() {
           eventData.eagle_xl === "Yes" ? eventData.additional_information : "",
         short_description: eventData.event_description,
         long_description: eventData.additional_information,
+        manager_comments: eventData.manager_comments || "",
+        door_sales_total: eventData.door_sales_total || 0,
+        bar_sales_total: eventData.bar_sales_total || 0,
+        ticket_sales_total: eventData.ticket_sales_total || 0,
+        status: eventData.status || "draft",
       };
 
-      const response = await fetch(`${API_BASE_URL}?route=events`, {
+      // Append JSON data
+      formDataToSend.append('eventData', JSON.stringify(apiData));
+      
+      // Append cover photo if present
+      if (eventData.cover_photo) {
+        formDataToSend.append('cover_photo', eventData.cover_photo);
+      }
+
+      const response = await fetch(`${API_BASE_URL}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apiData),
+        body: formDataToSend, // Send FormData instead of JSON
       });
 
       const data = await response.json();
@@ -174,41 +197,99 @@ export default function EventsContentManager() {
     setLoading(true);
     setError(null);
     try {
-      // Convert form data to API format
-      const apiData = {
-        club: eventData.club,
-        event_name: eventData.event_name,
-        event_date: eventData.event_date,
-        doors_open_time: eventData.cover_start_time,
-        show_start_time: eventData.start_hour,
-        show_end_time: eventData.end_hour,
-        cover_charge: eventData.cover_value
-          ? `$${eventData.cover_value}`
-          : "Free",
-        cover_charge_details: eventData.cover_value
-          ? `$${eventData.cover_value} cover charge`
-          : "No cover charge",
-        advance_tickets_url: eventData.ticket_link || "",
-        eagle_xl:
-          eventData.eagle_xl === "Yes" ? eventData.additional_information : "",
-        short_description: eventData.event_description,
-        long_description: eventData.additional_information,
-      };
+      // Check if we have a new cover photo to upload
+      if (eventData.cover_photo) {
+        // Create FormData for file upload
+        const formDataToSend = new FormData();
+        
+        // Convert form data to API format and append to FormData
+        const apiData = {
+          club: eventData.club,
+          event_name: eventData.event_name,
+          event_date: eventData.event_date,
+          doors_open_time: eventData.has_cover === "yes" ? eventData.cover_start_time : eventData.start_hour,
+          show_start_time: eventData.start_hour,
+          show_end_time: eventData.end_hour,
+          cover_charge: eventData.has_cover === "yes" && eventData.cover_value
+            ? `$${eventData.cover_value}`
+            : "Free",
+          cover_charge_details: eventData.has_cover === "yes" && eventData.cover_value
+            ? `$${eventData.cover_value} cover charge`
+            : "No cover charge",
+          advance_tickets_url: eventData.ticket_link || "",
+          eagle_xl:
+            eventData.eagle_xl === "Yes" ? eventData.additional_information : "",
+          short_description: eventData.event_description,
+          long_description: eventData.additional_information,
+          manager_comments: eventData.manager_comments || "",
+          door_sales_total: eventData.door_sales_total || 0,
+          bar_sales_total: eventData.bar_sales_total || 0,
+          ticket_sales_total: eventData.ticket_sales_total || 0,
+          status: eventData.status || "draft",
+        };
 
-      const response = await fetch(`${API_BASE_URL}?route=events&id=${eventId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apiData),
-      });
+        // Append JSON data
+        formDataToSend.append('eventData', JSON.stringify(apiData));
+        
+        // Append cover photo
+        formDataToSend.append('cover_photo', eventData.cover_photo);
 
-      const data = await response.json();
+        const response = await fetch(`${API_BASE_URL}?id=${eventId}`, {
+          method: "PUT",
+          body: formDataToSend, // Send FormData instead of JSON
+        });
 
-      if (data.success) {
-        await loadEvents(); // Reload to get updated data
-        return true;
+        const data = await response.json();
+
+        if (data.success) {
+          await loadEvents(); // Reload to get updated data
+          return true;
+        } else {
+          setError(data.message || "Failed to update event");
+          return false;
+        }
       } else {
-        setError(data.message || "Failed to update event");
-        return false;
+        // No new cover photo, send JSON update
+        const apiData = {
+          club: eventData.club,
+          event_name: eventData.event_name,
+          event_date: eventData.event_date,
+          doors_open_time: eventData.has_cover === "yes" ? eventData.cover_start_time : eventData.start_hour,
+          show_start_time: eventData.start_hour,
+          show_end_time: eventData.end_hour,
+          cover_charge: eventData.has_cover === "yes" && eventData.cover_value
+            ? `$${eventData.cover_value}`
+            : "Free",
+          cover_charge_details: eventData.has_cover === "yes" && eventData.cover_value
+            ? `$${eventData.cover_value} cover charge`
+            : "No cover charge",
+          advance_tickets_url: eventData.ticket_link || "",
+          eagle_xl:
+            eventData.eagle_xl === "Yes" ? eventData.additional_information : "",
+          short_description: eventData.event_description,
+          long_description: eventData.additional_information,
+          manager_comments: eventData.manager_comments || "",
+          door_sales_total: eventData.door_sales_total || 0,
+          bar_sales_total: eventData.bar_sales_total || 0,
+          ticket_sales_total: eventData.ticket_sales_total || 0,
+          status: eventData.status || "draft",
+        };
+
+        const response = await fetch(`${API_BASE_URL}?id=${eventId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(apiData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadEvents(); // Reload to get updated data
+          return true;
+        } else {
+          setError(data.message || "Failed to update event");
+          return false;
+        }
       }
     } catch (err) {
       console.error("Error updating event:", err);
@@ -227,7 +308,7 @@ export default function EventsContentManager() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}?route=events&id=${eventId}`, {
+      const response = await fetch(`${API_BASE_URL}?id=${eventId}`, {
         method: "DELETE",
       });
 
@@ -273,6 +354,36 @@ export default function EventsContentManager() {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        setFormErrors((prev) => ({ ...prev, cover_photo: "Please select a valid image file (JPEG, PNG, GIF)" }));
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors((prev) => ({ ...prev, cover_photo: "Image size must be less than 5MB" }));
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, cover_photo: file }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => setCoverPhotoPreview(e.target.result);
+      reader.readAsDataURL(file);
+
+      // Clear any previous errors
+      if (formErrors.cover_photo) {
+        setFormErrors((prev) => ({ ...prev, cover_photo: "" }));
+      }
+    }
+  };
+
   const validateForm = () => {
     const errors = {};
 
@@ -283,40 +394,29 @@ export default function EventsContentManager() {
     if (!formData.event_date) errors.event_date = "Event date is required";
     if (!formData.start_hour) errors.start_hour = "Start time is required";
     if (!formData.end_hour) errors.end_hour = "End time is required";
-    if (!formData.cover_start_time)
-      errors.cover_start_time = "Cover start time is required";
     if (!formData.event_description.trim())
       errors.event_description = "Event description is required";
 
-    // Cover value validation
-    if (!formData.cover_value) {
-      errors.cover_value = "Cover value is required";
-    } else if (
-      isNaN(formData.cover_value) ||
-      parseFloat(formData.cover_value) < 0
-    ) {
-      errors.cover_value = "Cover value must be a valid positive number";
+    // Conditional cover fields validation
+    if (formData.has_cover === "yes") {
+      if (!formData.cover_start_time)
+        errors.cover_start_time = "Cover start time is required";
+      
+      // Cover value validation
+      if (!formData.cover_value) {
+        errors.cover_value = "Cover value is required";
+      } else if (
+        isNaN(formData.cover_value) ||
+        parseFloat(formData.cover_value) < 0
+      ) {
+        errors.cover_value = "Cover value must be a valid positive number";
+      }
     }
 
     // URL validation
     if (formData.ticket_link && !isValidUrl(formData.ticket_link)) {
       errors.ticket_link =
         "Please enter a valid URL (e.g., https://example.com)";
-    }
-
-    // Time validation
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (formData.start_hour && !timeRegex.test(formData.start_hour)) {
-      errors.start_hour = "Please use HH:MM format (e.g., 20:00)";
-    }
-    if (formData.end_hour && !timeRegex.test(formData.end_hour)) {
-      errors.end_hour = "Please use HH:MM format (e.g., 02:00)";
-    }
-    if (
-      formData.cover_start_time &&
-      !timeRegex.test(formData.cover_start_time)
-    ) {
-      errors.cover_start_time = "Please use HH:MM format (e.g., 20:00)";
     }
 
     return errors;
@@ -368,8 +468,15 @@ export default function EventsContentManager() {
         additional_information: "",
         eagle_xl: "No",
         status: "draft",
+        cover_photo: null,
+        manager_comments: "",
+        door_sales_total: 0,
+        bar_sales_total: 0,
+        ticket_sales_total: 0,
+        has_cover: "no",
       });
       setFormErrors({});
+      setCoverPhotoPreview(null);
       setShowCreateForm(false);
     }
   };
@@ -391,8 +498,24 @@ export default function EventsContentManager() {
       ticket_link: event.advance_tickets_url || "",
       additional_information: event.long_description || "",
       eagle_xl: event.eagle_xl ? "Yes" : "No",
-      status: "published", // API events are published
+      status: event.status || "draft", // Use actual status from database
+      cover_photo: null, // Don't set the file object, just show preview
+      manager_comments: event.manager_comments || "",
+      door_sales_total: event.door_sales_total || 0,
+      bar_sales_total: event.bar_sales_total || 0,
+      ticket_sales_total: event.ticket_sales_total || 0,
+      has_cover: event.cover_charge && event.cover_charge !== "Free" ? "yes" : "no",
     });
+    
+    // Set cover photo preview if event has one
+    if (event.cover_photo) {
+      // Use the correct domain for production
+      const apiDomain = import.meta.env.VITE_API_DOMAIN || 'https://luckyhospitality.com';
+      setCoverPhotoPreview(`${apiDomain}${event.cover_photo}`);
+    } else {
+      setCoverPhotoPreview(null);
+    }
+    
     setFormErrors({});
     setShowCreateForm(true);
   };
@@ -417,32 +540,39 @@ export default function EventsContentManager() {
       additional_information: "",
       eagle_xl: "No",
       status: "draft",
+      cover_photo: null,
+      manager_comments: "",
+      door_sales_total: 0,
+      bar_sales_total: 0,
+      ticket_sales_total: 0,
+      has_cover: "no",
     });
     setFormErrors({});
+    setCoverPhotoPreview(null);
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
+              <img
+                className="h-12 w-auto"
+                src={logoUrl}
+                alt="Lucky Hospitality"
+              />
               <button
                 onClick={() => navigate("/admin-dashboard")}
                 className="mr-4 text-gray-600 hover:text-gray-900"
               >
                 ← Back to Dashboard
               </button>
-              <img
-                className="h-12 w-auto"
-                src="/src/pictures/logo.png"
-                alt="Lucky Hospitality"
-              />
-              <h1 className="ml-4 text-2xl font-bold text-gray-900">
-                Events Content Manager
-              </h1>
             </div>
+            <h1 className="text-2xl font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+              Events Content Manager
+            </h1>
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
@@ -454,7 +584,7 @@ export default function EventsContentManager() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Manage Events</h2>
@@ -509,7 +639,7 @@ export default function EventsContentManager() {
                 {editingEvent ? "Edit Event" : "Create New Event"}
               </h3>
               <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                🕐 New York Time (ET/EST)
+                🕐 Washington DC (ET/EST)
               </div>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -589,7 +719,7 @@ export default function EventsContentManager() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Start Time * (NY Time - HH:MM)
+                    Start Time * (NY Time)
                   </label>
                   <input
                     type="time"
@@ -604,7 +734,7 @@ export default function EventsContentManager() {
                     }`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Example: 8:00 PM = 20:00
+                    Example: 8:00 PM
                   </p>
                   {formErrors.start_hour && (
                     <p className="text-red-500 text-xs mt-1">
@@ -614,7 +744,7 @@ export default function EventsContentManager() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    End Time * (NY Time - HH:MM)
+                    End Time * (NY Time)
                   </label>
                   <input
                     type="time"
@@ -627,7 +757,7 @@ export default function EventsContentManager() {
                     }`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Example: 2:00 AM = 02:00
+                    Example: 2:00 AM
                   </p>
                   {formErrors.end_hour && (
                     <p className="text-red-500 text-xs mt-1">
@@ -638,57 +768,78 @@ export default function EventsContentManager() {
               </div>
 
               {/* Cover Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cover Start Time * (NY Time - HH:MM)
-                  </label>
-                  <input
-                    type="time"
-                    name="cover_start_time"
-                    value={formData.cover_start_time}
-                    onChange={handleInputChange}
-                    placeholder="20:00"
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.cover_start_time
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    When cover charge begins
-                  </p>
-                  {formErrors.cover_start_time && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.cover_start_time}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cover Value * (USD)
-                  </label>
-                  <input
-                    type="number"
-                    name="cover_value"
-                    value={formData.cover_value}
-                    onChange={handleInputChange}
-                    placeholder="25"
-                    min="0"
-                    step="0.01"
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.cover_value
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    }`}
-                  />
-                  {formErrors.cover_value && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {formErrors.cover_value}
-                    </p>
-                  )}
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cover *
+                </label>
+                <select
+                  name="has_cover"
+                  value={formData.has_cover}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Whether this event has a cover charge
+                </p>
               </div>
+
+              {/* Cover Start Time and Value - Only show if has_cover is "yes" */}
+              {formData.has_cover === "yes" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cover Start Time * (NY Time)
+                    </label>
+                    <input
+                      type="time"
+                      name="cover_start_time"
+                      value={formData.cover_start_time}
+                      onChange={handleInputChange}
+                      placeholder="20:00"
+                      className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        formErrors.cover_start_time
+                          ? "border-red-300"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      When cover charge begins
+                    </p>
+                    {formErrors.cover_start_time && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.cover_start_time}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Cover Value * (USD)
+                    </label>
+                    <input
+                      type="number"
+                      name="cover_value"
+                      value={formData.cover_value}
+                      onChange={handleInputChange}
+                      placeholder="25"
+                      min="0"
+                      step="0.01"
+                      className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        formErrors.cover_value
+                          ? "border-red-300"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    {formErrors.cover_value && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {formErrors.cover_value}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Conditional Eagle XL Field */}
               {formData.club === "District Eagle" && (
@@ -728,6 +879,75 @@ export default function EventsContentManager() {
                 {formErrors.event_description && (
                   <p className="text-red-500 text-xs mt-1">
                     {formErrors.event_description}
+                  </p>
+                )}
+              </div>
+
+              {/* Cover Photo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cover Photo
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors">
+                  <div className="space-y-1 text-center">
+                    {coverPhotoPreview ? (
+                      <div className="mb-4">
+                        <img
+                          src={coverPhotoPreview}
+                          alt="Cover preview"
+                          className="mx-auto h-32 w-auto rounded-lg shadow-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCoverPhotoPreview(null);
+                            setFormData(prev => ({ ...prev, cover_photo: null }));
+                          }}
+                          className="mt-2 text-sm text-red-600 hover:text-red-800"
+                        >
+                          Remove photo
+                        </button>
+                      </div>
+                    ) : (
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 48 48"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                    <div className="flex text-sm text-gray-600">
+                      <label
+                        htmlFor="cover_photo"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500"
+                      >
+                        <span>{coverPhotoPreview ? 'Change photo' : 'Upload a cover photo'}</span>
+                        <input
+                          id="cover_photo"
+                          name="cover_photo"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG, GIF up to 5MB
+                    </p>
+                  </div>
+                </div>
+                {formErrors.cover_photo && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.cover_photo}
                   </p>
                 )}
               </div>
@@ -789,6 +1009,70 @@ export default function EventsContentManager() {
                 </select>
               </div>
 
+              {/* Manager Comments */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Manager Comments
+                </label>
+                <textarea
+                  name="manager_comments"
+                  value={formData.manager_comments}
+                  onChange={handleInputChange}
+                  rows={3}
+                  placeholder="Internal notes and comments..."
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Sales Totals */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Door Sales Total ($)
+                  </label>
+                  <input
+                    type="number"
+                    name="door_sales_total"
+                    value={formData.door_sales_total}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bar Sales Total ($)
+                  </label>
+                  <input
+                    type="number"
+                    name="bar_sales_total"
+                    value={formData.bar_sales_total}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ticket Sales Total ($)
+                  </label>
+                  <input
+                    type="number"
+                    name="ticket_sales_total"
+                    value={formData.ticket_sales_total}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
               <div className="flex gap-4">
                 <button
                   type="submit"
@@ -818,22 +1102,49 @@ export default function EventsContentManager() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Event Details
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cover Photo
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Club
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date & Time (NY)
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Event Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cover (NY Time)
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Event Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Start Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    End Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cover Start Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cover Value
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Event Description
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ticket Link
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Additional Information
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Manager Comments
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Sales Totals ($)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -841,22 +1152,42 @@ export default function EventsContentManager() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {events.map((event) => (
                   <tr key={event.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {event.event_name}
+                    {/* Cover Photo */}
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex-shrink-0 h-12 w-12">
+                        {event.cover_photo ? (
+                          <img
+                            className="h-12 w-12 rounded-lg object-cover shadow-sm border border-gray-200"
+                            src={`${import.meta.env.VITE_API_DOMAIN || 'https://luckyhospitality.com'}${event.cover_photo}`}
+                            alt={`${event.event_name} cover`}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className={`h-12 w-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center ${event.cover_photo ? 'hidden' : 'flex'}`}
+                        >
+                          <svg
+                            className="h-6 w-6 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
                         </div>
-                        <div className="text-sm text-gray-500 max-w-xs truncate">
-                          {event.event_description}
-                        </div>
-                        {event.eagle_xl === "Yes" && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mt-1">
-                            Eagle XL
-                          </span>
-                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    
+                    {/* Club */}
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           event.club === "BUNKER"
@@ -867,20 +1198,76 @@ export default function EventsContentManager() {
                         {event.club}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>{formatDateNY(event.event_date)}</div>
-                      <div className="text-xs text-gray-500">
-                        {formatTimeNY(event.show_start_time)} -{" "}
-                        {formatTimeNY(event.show_end_time)}
+                    
+                    {/* Event Name */}
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900 max-w-xs">
+                        {event.event_name}
+                        {event.eagle_xl === "Yes" && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 ml-2">
+                            Eagle XL
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>{event.cover_charge}</div>
-                      <div className="text-xs text-gray-500">
-                        from {formatTimeNY(event.doors_open_time)}
+                    
+                    {/* Event Date */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDateNY(event.event_date)}
+                    </td>
+                    
+                    {/* Start Time */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatTimeNY(event.show_start_time)}
+                    </td>
+                    
+                    {/* End Time */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatTimeNY(event.show_end_time)}
+                    </td>
+                    
+                    {/* Cover Start Time */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {event.cover_charge !== "Free" ? formatTimeNY(event.doors_open_time) : "-"}
+                    </td>
+                    
+                    {/* Cover Value */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {event.cover_charge}
+                    </td>
+                    
+                    {/* Event Description */}
+                    <td className="px-4 py-4 text-sm text-gray-900 max-w-xs">
+                      <div className="truncate" title={event.short_description}>
+                        {event.short_description}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    
+                    {/* Ticket Link */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm">
+                      {event.advance_tickets_url ? (
+                        <a
+                          href={event.advance_tickets_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Link
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    
+                    {/* Additional Information */}
+                    <td className="px-4 py-4 text-sm text-gray-900 max-w-xs">
+                      <div className="truncate" title={event.long_description || "No additional info"}>
+                        {event.long_description || <span className="text-gray-400 italic">-</span>}
+                      </div>
+                    </td>
+                    
+                    {/* Status */}
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           event.status === "active"
@@ -895,29 +1282,48 @@ export default function EventsContentManager() {
                         {event.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleEdit(event)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                      {event.ticket_link && (
-                        <a
-                          href={event.ticket_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-900 ml-4"
+                    
+                    {/* Manager Comments */}
+                    <td className="px-4 py-4 text-sm text-gray-900 max-w-xs">
+                      <div className="truncate" title={event.manager_comments || "No comments"}>
+                        {event.manager_comments || <span className="text-gray-400 italic">-</span>}
+                      </div>
+                    </td>
+                    
+                    {/* Sales Totals */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="space-y-1">
+                        <div className="text-xs">
+                          <span className="font-medium">Door:</span> ${event.door_sales_total || 0}
+                        </div>
+                        <div className="text-xs">
+                          <span className="font-medium">Bar:</span> ${event.bar_sales_total || 0}
+                        </div>
+                        <div className="text-xs">
+                          <span className="font-medium">Tickets:</span> ${event.ticket_sales_total || 0}
+                        </div>
+                        <div className="text-xs font-semibold border-t pt-1 mt-1">
+                          <span className="font-medium">Total:</span> ${(event.door_sales_total || 0) + (event.bar_sales_total || 0) + (event.ticket_sales_total || 0)}
+                        </div>
+                      </div>
+                    </td>
+                    
+                    {/* Actions */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex flex-col space-y-1">
+                        <button
+                          onClick={() => handleEdit(event)}
+                          className="text-indigo-600 hover:text-indigo-900"
                         >
-                          Tickets
-                        </a>
-                      )}
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

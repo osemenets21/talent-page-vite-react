@@ -13,25 +13,25 @@ import Modal from "./Modal";
 
 export default function TalentForm() {
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
+    firstName: "Test",
+    lastName: "Test",
+    phone: "5757578525",
     email: "",
-    instagram: "",
-    facebook: "",
-    soundcloud: "",
-    spotify: "",
-    youtube: "",
-    tiktok: "",
+    instagram: "Test",
+    facebook: "Test",
+    soundcloud: "Test",
+    spotify: "Test",
+    youtube: "Test",
+    tiktok: "Test",
     performerName: "",
-    city: "",
+    city: "Test",
     country: "USA",
-    bio: "",
+    bio: "Test",
     role: "DJ",
     roleOther: "",
     paymentMethod: "Venmo",
-    venmo: "",
-    zelle: "",
+    venmo: "Test",
+    zelle: "Test",
     submissionId: generateId(),
   });
 
@@ -200,17 +200,30 @@ export default function TalentForm() {
     });
     formData.append("timestamp", usaTimestamp);
 
-    // Append files
+    // Append files with proper naming
     formData.append("photo", photo);
-    formData.append("taxForm", taxForm);
+    
+    // Rename tax form to have consistent naming
+    if (taxForm) {
+      const taxFormExtension = taxForm.name.split('.').pop();
+      const renamedTaxForm = new File([taxForm], `tax_form.${taxFormExtension}`, {
+        type: taxForm.type
+      });
+      formData.append("taxForm", renamedTaxForm);
+    }
 
+    // Rename performer images with consistent numbering
     performerImages.forEach((file, index) => {
-      formData.append("performerImages[]", file);
+      const fileExtension = file.name.split('.').pop();
+      const renamedFile = new File([file], `performer_${index + 1}.${fileExtension}`, {
+        type: file.type
+      });
+      formData.append("performerImages[]", renamedFile);
     });
 
     try {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
-      const response = await fetch(`${apiDomain}/backend/talent_submit.php`, {
+      const response = await fetch(`${apiDomain}/talent/submit`, {
         method: "POST",
         body: formData,
       });
@@ -528,7 +541,6 @@ export default function TalentForm() {
                 accept=".pdf"
                 setFile={setTaxForm}
                 required
-                renameWithForm={form}
               />
             </div>
           </div>

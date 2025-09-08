@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
+import logoUrl from "../pictures/logo.png";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState("");
@@ -31,7 +32,7 @@ export default function SignUpForm() {
         <div>
           <img
             className="mx-auto h-30 w-auto"
-            src="/src/pictures/logo.png"
+            src={logoUrl}
             alt="Your Company"
           />
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">

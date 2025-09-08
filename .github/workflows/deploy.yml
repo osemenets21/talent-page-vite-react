@@ -1,0 +1,41 @@
+name: Build & Deploy to GoDaddy (FTP)
+
+on:
+  push:
+    branches: [ main ]   # change if your default branch is different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Remove this Node section if your site is pure HTML/CSS (no build step)
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install & Build
+        # For plain HTML sites, delete this whole step.
+        run: |
+          npm ci
+          npm run build
+
+      # Deploy only the build output (adjust local-dir if different)
+      - name: Upload via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: build/            # React/Vite default. If plain HTML, use: ./
+          server-dir: public_html/luckyhospitality.com/     # or your subfolder, e.g. public_html/luckyhospitality.com/
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**

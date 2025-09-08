@@ -103,7 +103,6 @@ export default function LoginForm() {
           onSubmit={handleLogin}
           className="bg-white space-y-6 px-6 py-8 shadow sm:rounded-lg sm:px-10"
         >
-          <p>Test 2</p>
           <div>
             <label
               htmlFor="email"

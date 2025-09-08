@@ -1,0 +1,17 @@
+{
+    "name": "olegm/backend",
+    "autoload": {
+        "psr-4": {
+            "Olegm\\Backend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Oleh Semenets",
+            "email": "oleg.min.vin@gmail.com"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.11"
+    }
+}

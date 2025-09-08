@@ -1,2 +1,0 @@
-[24-Jul-2025 00:09:45 UTC] PHP Warning:  file(/home/t88edkw7n10h/public_html/takeoverpresents.com/submissions/talent_data.json): Failed to open stream: No such file or directory in /home/t88edkw7n10h/public_html/takeoverpresents.com/get_talent.php on line 12
-[24-Jul-2025 00:09:45 UTC] PHP Warning:  foreach() argument must be of type array|object, bool given in /home/t88edkw7n10h/public_html/takeoverpresents.com/get_talent.php on line 13

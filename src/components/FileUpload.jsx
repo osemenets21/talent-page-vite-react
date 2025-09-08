@@ -6,7 +6,6 @@ export default function FileUpload({
   accept,
   setFile,
   required = false,
-  renameWithForm,
   multiple = false, 
 }) {
   const [fileNames, setFileNames] = useState([]);
@@ -20,15 +19,7 @@ export default function FileUpload({
       setFile(selectedFiles);
       setFileNames(selectedFiles.map((file) => file.name));
     } else {
-      let file = selectedFiles[0];
-
-      if (renameWithForm && label.toLowerCase().includes("w9")) {
-        const { firstName, lastName } = renameWithForm;
-        const year = new Date().getFullYear();
-        const newName = `${firstName}_${lastName}_${year}_W9.pdf`.replace(/\s+/g, "_");
-        file = new File([file], newName, { type: file.type });
-      }
-
+      const file = selectedFiles[0];
       setFile(file);
       setFileNames([file.name]);
     }

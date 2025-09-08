@@ -30,49 +30,26 @@ export default function PhotoCropModal({
     setCroppedAreaPixels(croppedPixels);
   }, []);
 
-  // const handleCrop = async () => {
-  //   if (!imageSrc || !croppedAreaPixels) return;
-  //   try {
-  //     const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-  //     onCropDone(croppedBlob);
-  //     setOpen(false);
-  //   } catch (err) {
-  //     console.error("Cropping failed:", err);
-  //   }
-  // };
-
   const handleCrop = async () => {
     if (!imageSrc || !croppedAreaPixels) return;
-
     try {
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-
-      const renamedFile = new File([croppedBlob], "profile_photo.jpg", {
-        type: "image/jpeg",
+      
+      // Get the original file extension, default to jpg if not available
+      const originalExtension = imageFile?.name?.split('.').pop() || 'jpg';
+      
+      // Create a File object from the cropped blob with proper naming
+      const croppedFile = new File([croppedBlob], `profile_photo.${originalExtension}`, {
+        type: croppedBlob.type || "image/jpeg",
       });
-
-      const formData = new FormData();
-      formData.append("photo", renamedFile);
-      formData.append("submissionId", localStorage.getItem("submissionId")); // ← ensure this is set beforehand
-
-      const response = await fetch(
-        "https://takeoverpresents.com/takeoverpresents.com/talent_submit.php",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const result = await response.json();
-
-      if (result.status === "success") {
-        onCropDone(renamedFile);
-        setOpen(false);
-      } else {
-        alert("Upload failed: " + (result.message || "Unknown error"));
-      }
+      
+      // Just return the cropped file to the parent component
+      // Don't upload it immediately - let the form submission handle that
+      onCropDone(croppedFile);
+      setOpen(false);
     } catch (err) {
-      alert("Cropping or upload failed.");
+      console.error("Cropping failed:", err);
+      alert("Cropping failed. Please try again.");
     }
   };
 
@@ -122,7 +99,7 @@ export default function PhotoCropModal({
               onClick={handleCrop}
               className="px-4 py-1 rounded bg-indigo-600 text-white text-sm"
             >
-              Crop & Save
+              Crop Photo
             </button>
           </div>
         </Dialog.Panel>

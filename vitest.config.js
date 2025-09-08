@@ -14,4 +14,14 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',  // your PHP backend
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''), // strip /api prefix
+      },
+    },
+  },
 })

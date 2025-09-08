@@ -3,6 +3,9 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { isAdmin } from "../config/adminConfig";
+import { saveTokens as saveTokensToLocalStorage } from "../utils/tokenManager";
+import { authenticatedGet } from "../utils/apiUtils";
+import logoUrl from "../pictures/logo.png";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,6 +17,9 @@ export default function LoginForm() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      const tokenResponse = userCredential._tokenResponse;
+      
+      await saveTokensToLocalStorage(tokenResponse);
       
       // Check if user is admin
       if (isAdmin(user.email)) {
@@ -22,20 +28,58 @@ export default function LoginForm() {
         return;
       }
       
+      console.log("setting timeout")
+      // Wait for auth state to be properly established
+      //await new Promise(resolve => setTimeout(resolve, 2000));
+      
       // Regular user - check if profile exists in backend
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
-      const res = await fetch(`${apiDomain}/backend/get_talent_by_email.php?email=${email}`);
-      if (!res.ok) throw new Error("Failed to fetch profile data");
-      const userData = await res.json();
-      if (userData.submissionId) {
-        // Store submissionId for MyProfile
-        localStorage.setItem("submissionId", userData.submissionId);
-        navigate("/my-profile");
-      } else {
+      try {
+        console.log('Checking for existing profile for email:', email);
+        
+        // Use a custom fetch approach to avoid 404 errors in console
+        let token = null;
+        
+        // Get the current user's token
+        if (user) {
+          token = await user.getIdToken();
+        }
+        
+        const response = await fetch(`${apiDomain}/talent/get`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.status === "success" && result.data) {
+            // Store submissionId for MyProfile to use
+            localStorage.setItem("submissionId", result.data.submissionId);
+            console.log('Existing profile found, redirecting to profile page');
+            navigate("/my-profile");
+          } else {
+            console.log('No profile data found, redirecting to registration');
+            navigate("/register-talent");
+          }
+        } else if (response.status === 404) {
+          // Expected case - user hasn't created a profile yet
+          console.log('No existing profile found, redirecting to talent registration');
+          navigate("/register-talent");
+        } else {
+          console.log(`Profile check returned ${response.status}, redirecting to registration`);
+          navigate("/register-talent");
+        }
+      } catch (apiError) {
+        console.log('Profile check failed, redirecting to registration');
+        // If API call fails, assume profile doesn't exist and go to talent form
         navigate("/register-talent");
       }
     } catch (error) {
+      console.error('Login error:', error);
       alert("Login failed: " + error.message);
     }
   };
@@ -44,10 +88,10 @@ export default function LoginForm() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <img
+         <img
             className="mx-auto h-40 w-auto"
-            src="/src/pictures/logo.png"
-            alt="Your Company"
+            src={logoUrl}                 
+            alt="Lucky Hospitality"
           />
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
             Sign in to your account
@@ -79,7 +123,6 @@ export default function LoginForm() {
             </div>
           </div>
           
-
           <div>
             <label
               htmlFor="password"
@@ -101,17 +144,6 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <div className="flex justify-between items-center">
-            <div className="text-sm">
-              <Link
-                to="/forgot-password"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Forgot password?
-              </Link>
-            </div>
-          </div>
-
           <div>
             <button
               type="submit"
@@ -121,8 +153,17 @@ export default function LoginForm() {
             </button>
           </div>
 
+          <div className="flex items-center justify-between">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-indigo-600 hover:text-indigo-500"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+
           <p className="text-center text-sm text-gray-500">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               to="/signup"
               className="font-semibold text-indigo-600 hover:text-indigo-500"

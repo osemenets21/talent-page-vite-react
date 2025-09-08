@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          local-dir: build/                          # for React/Vite. If plain HTML: ./
+          local-dir: dist/                          # for React/Vite. If plain HTML: ./
           server-dir: public_html/luckyhospitality.com/  # adjust if needed
           exclude: |
             **/.git*

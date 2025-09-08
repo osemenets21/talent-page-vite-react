@@ -32,33 +32,49 @@ export default function LoginForm() {
       // Wait for auth state to be properly established
       //await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Regular user - check if profile exists in backend using authenticated API
+      // Regular user - check if profile exists in backend
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
       try {
-        console.log('Attempting to fetch profile for email:', email);
-        const res = await authenticatedGet(`${apiDomain}/talent/get`);
-        console.log('Profile fetch response:', res);
-        if (res.ok) {
-          const result = await res.json();
-          console.log('Profile fetch result:', result);
+        console.log('Checking for existing profile for email:', email);
+        
+        // Use a custom fetch approach to avoid 404 errors in console
+        let token = null;
+        
+        // Get the current user's token
+        if (user) {
+          token = await user.getIdToken();
+        }
+        
+        const response = await fetch(`${apiDomain}/talent/get`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
           if (result.status === "success" && result.data) {
             // Store submissionId for MyProfile to use
             localStorage.setItem("submissionId", result.data.submissionId);
-            // Profile exists, go to profile page
+            console.log('Existing profile found, redirecting to profile page');
             navigate("/my-profile");
           } else {
-            console.log('Profile not found, redirecting to registration');
-            // Profile doesn't exist, go to talent form
+            console.log('No profile data found, redirecting to registration');
             navigate("/register-talent");
           }
+        } else if (response.status === 404) {
+          // Expected case - user hasn't created a profile yet
+          console.log('No existing profile found, redirecting to talent registration');
+          navigate("/register-talent");
         } else {
-          console.error('API call failed with status:', res.status);
-          // Error or profile not found, go to talent form
+          console.log(`Profile check returned ${response.status}, redirecting to registration`);
           navigate("/register-talent");
         }
       } catch (apiError) {
-        console.error('API call error:', apiError);
+        console.log('Profile check failed, redirecting to registration');
         // If API call fails, assume profile doesn't exist and go to talent form
         navigate("/register-talent");
       }

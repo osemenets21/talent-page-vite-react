@@ -142,13 +142,29 @@ function handleEventRoutes($pathParts, $method) {
     try {
         require_once __DIR__ . '/event-content-manager/EventsMysqlDB.php';
         $db = new EventsMysqlDB('localhost', 'event_db', 'event_user', 'ZLK&h,Dc5Hvn');
+        // Test the connection by trying a simple query
+        $db->getTotalCount();
     } catch (Exception $e) {
+        // Log the error for debugging
+        error_log("MySQL connection failed: " . $e->getMessage());
         try {
             require_once __DIR__ . '/event-content-manager/EventsDB.php';
             $db = new EventsDB();
         } catch (Exception $e2) {
-            require_once __DIR__ . '/event-content-manager/EventsFileDB.php';
-            $db = new EventsFileDB();
+            error_log("EventsDB fallback failed: " . $e2->getMessage());
+            try {
+                require_once __DIR__ . '/event-content-manager/EventsFileDB.php';
+                $db = new EventsFileDB();
+            } catch (Exception $e3) {
+                error_log("EventsFileDB fallback failed: " . $e3->getMessage());
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false, 
+                    'error' => 'Database connection failed',
+                    'details' => $e->getMessage()
+                ]);
+                return;
+            }
         }
     }
     
@@ -234,79 +250,102 @@ function handleEventRoutes($pathParts, $method) {
         $input = json_decode(file_get_contents('php://input'), true);
     }
     
-    switch ($method) {
-        case 'GET':
-            handleEventGet($db);
-            break;
-            
-        case 'POST':
-            handleEventPost($db, $input);
-            break;
-            
-        case 'PUT':
-            handleEventPut($db, $input);
-            break;
-            
-        case 'DELETE':
-            handleEventDelete($db);
-            break;
-            
-        default:
-            http_response_code(405);
-            echo json_encode(['error' => 'Method not allowed']);
+    try {
+        switch ($method) {
+            case 'GET':
+                handleEventGet($db);
+                break;
+                
+            case 'POST':
+                handleEventPost($db, $input);
+                break;
+                
+            case 'PUT':
+                handleEventPut($db, $input);
+                break;
+                
+            case 'DELETE':
+                handleEventDelete($db);
+                break;
+                
+            default:
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
+        }
+    } catch (Exception $e) {
+        error_log("Event routing error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Event processing failed',
+            'details' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]);
     }
 }
 
 function handleEventGet($db) {
     header('Content-Type: application/json');
     
-    // Handle stats request
-    if (isset($_GET['stats']) || strpos($_SERVER['REQUEST_URI'], '/events/stats') !== false) {
-        try {
-            $totalEvents = $db->getTotalCount();
-            $activeEvents = $db->getActiveCount();
-            echo json_encode([
-                'success' => true, 
-                'total' => $totalEvents,
-                'active' => $activeEvents
-            ]);
-        } catch (Exception $e) {
-            echo json_encode([
-                'success' => true, 
-                'total' => 0,
-                'active' => 0
-            ]);
+    try {
+        // Handle stats request
+        if (isset($_GET['stats']) || strpos($_SERVER['REQUEST_URI'], '/events/stats') !== false) {
+            try {
+                $totalEvents = $db->getTotalCount();
+                $activeEvents = $db->getActiveCount();
+                echo json_encode([
+                    'success' => true, 
+                    'total' => $totalEvents,
+                    'active' => $activeEvents
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'success' => true, 
+                    'total' => 0,
+                    'active' => 0
+                ]);
+            }
+            return;
         }
-        return;
-    }
-    
-    if (isset($_GET['search'])) {
-        $events = $db->search($_GET['search']);
-    } elseif (isset($_GET['club'])) {
-        $events = $db->getEventsByClub($_GET['club']);
-    } elseif (isset($_GET['upcoming'])) {
-        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-        $events = $db->getUpcomingEvents($limit);
-    } elseif (isset($_GET['start_date']) && isset($_GET['end_date'])) {
-        $events = $db->getEventsByDateRange($_GET['start_date'], $_GET['end_date']);
-    } elseif (isset($_GET['id'])) {
-        $event = $db->selectById($_GET['id']);
-        if ($event) {
-            echo json_encode(['success' => true, 'event' => $event]);
+
+        if (isset($_GET['search'])) {
+            $events = $db->search($_GET['search']);
+        } elseif (isset($_GET['club'])) {
+            $events = $db->getEventsByClub($_GET['club']);
+        } elseif (isset($_GET['upcoming'])) {
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+            $events = $db->getUpcomingEvents($limit);
+        } elseif (isset($_GET['start_date']) && isset($_GET['end_date'])) {
+            $events = $db->getEventsByDateRange($_GET['start_date'], $_GET['end_date']);
+        } elseif (isset($_GET['id'])) {
+            $event = $db->selectById($_GET['id']);
+            if ($event) {
+                echo json_encode(['success' => true, 'event' => $event]);
+            } else {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Event not found']);
+            }
+            return;
         } else {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'Event not found']);
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
+            $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+            $orderBy = isset($_GET['order_by']) ? $_GET['order_by'] : 'start_date DESC';
+            
+            $events = $db->selectAll([], $orderBy, $limit, $offset);
         }
-        return;
-    } else {
-        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
-        $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
-        $orderBy = isset($_GET['order_by']) ? $_GET['order_by'] : 'event_date DESC';
+
+        echo json_encode(['success' => true, 'events' => $events]);
         
-        $events = $db->selectAll([], $orderBy, $limit, $offset);
+    } catch (Exception $e) {
+        error_log("handleEventGet error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Failed to load events',
+            'details' => $e->getMessage()
+        ]);
     }
-    
-    echo json_encode(['success' => true, 'events' => $events]);
 }
 
 function handleEventPost($db, $input) {

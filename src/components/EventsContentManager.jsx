@@ -509,7 +509,9 @@ export default function EventsContentManager() {
     
     // Set cover photo preview if event has one
     if (event.cover_photo) {
-      setCoverPhotoPreview(`http://localhost:8000${event.cover_photo}`);
+      // Use the correct domain for production
+      const apiDomain = import.meta.env.VITE_API_DOMAIN || 'https://luckyhospitality.com';
+      setCoverPhotoPreview(`${apiDomain}${event.cover_photo}`);
     } else {
       setCoverPhotoPreview(null);
     }
@@ -1156,7 +1158,7 @@ export default function EventsContentManager() {
                         {event.cover_photo ? (
                           <img
                             className="h-12 w-12 rounded-lg object-cover shadow-sm border border-gray-200"
-                            src={`http://localhost:8000${event.cover_photo}`}
+                            src={`${import.meta.env.VITE_API_DOMAIN || 'https://luckyhospitality.com'}${event.cover_photo}`}
                             alt={`${event.event_name} cover`}
                             onError={(e) => {
                               e.target.style.display = 'none';

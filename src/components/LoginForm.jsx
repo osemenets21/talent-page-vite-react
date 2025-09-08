@@ -97,6 +97,7 @@ export default function LoginForm() {
             Sign in to your account
           </h2>
         </div>
+        <p>Test</p>
 
         <form
           onSubmit={handleLogin}

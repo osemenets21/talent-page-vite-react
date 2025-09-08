@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Remove this Node section if your site is pure HTML/CSS (no build step)
+      # Remove the next 2 steps if your site is pure HTML/CSS (no build step)
       - name: Use Node
         uses: actions/setup-node@v4
         with:
@@ -19,22 +19,21 @@ jobs:
           cache: 'npm'
 
       - name: Install & Build
-        # For plain HTML sites, delete this whole step.
         run: |
           npm ci
           npm run build
 
       # Deploy only the build output (adjust local-dir if different)
       - name: Upload via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          local-dir: build/            # React/Vite default. If plain HTML, use: ./
-          server-dir: public_html/luckyhospitality.com/     # or your subfolder, e.g. public_html/luckyhospitality.com/
+          local-dir: build/                          # for React/Vite. If plain HTML: ./
+          server-dir: public_html/luckyhospitality.com/  # adjust if needed
           exclude: |
             **/.git*
             **/.github/**

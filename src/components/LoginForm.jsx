@@ -97,12 +97,13 @@ export default function LoginForm() {
             Sign in to your account
           </h2>
         </div>
-        <p>Test</p>
+        
 
         <form
           onSubmit={handleLogin}
           className="bg-white space-y-6 px-6 py-8 shadow sm:rounded-lg sm:px-10"
         >
+          <p>Test 2</p>
           <div>
             <label
               htmlFor="email"

@@ -7,36 +7,56 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-${{ github.ref }}
+      cancel-in-progress: true
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
-      - name: Install & Build
+      - name: Install & Build (Vite)
         run: |
           npm ci
-          npm run build   # Vite -> outputs to dist/
+          npm run build   # outputs to dist/
 
-      - name: Upload via FTPS
+      # --- Frontend (Vite) to site root ---
+      - name: Deploy frontend (dist) to site root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}        # 132.148.216.245
-          username: ${{ secrets.FTP_USERNAME }}    # deploy@takeoverpresents.com
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          local-dir: dist/                         # ONLY deploy the build
-          server-dir: ./                           # FTP user's root = site root
-          dangerous-clean-slate: true              # remove leftovers from bad deploys
-          exclude: |                               # extra safety
-            **/.git**
-            **/.github/**
+          local-dir: dist/
+          server-dir: ./                        # FTP user's root = site root
+          dangerous-clean-slate: true           # clean stale FRONTEND files only
+          exclude: |
+            backend/**                          # don't touch backend
+            .well-known/**
+
+      # --- Backend (PHP) to /backend ---
+      - name: Deploy backend (PHP) to /backend
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: backend/                   # from your repo
+          server-dir: ./backend/                # into site/backend/
+          dangerous-clean-slate: false          # DO NOT wipe uploads/submissions
+          exclude: |
+            uploads/**
+            submissions/**
             **/.env*
-            **/src/**
-            **/public/**
-            **/node_modules/**
+            **/*.log
+            **/.DS_Store

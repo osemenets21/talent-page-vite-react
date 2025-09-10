@@ -88,6 +88,7 @@ export default function LoginForm() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         <div>
+          <p>test</p>
          <img
             className="mx-auto h-40 w-auto"
             src={logoUrl}                 

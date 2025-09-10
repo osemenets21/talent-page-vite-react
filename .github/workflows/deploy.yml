@@ -2,7 +2,7 @@ name: Build & Deploy to GoDaddy (FTP)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
@@ -33,11 +33,11 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps                 # FTPS OK for small, static build
+          protocol: ftps # FTPS OK for small, static build
           port: 21
-          local-dir: dist/               # deploy only the built files
-          server-dir: ./                 # FTP user starts in site root
-          dangerous-clean-slate: false   # don't touch backend/
+          local-dir: dist/ # deploy only the built files
+          server-dir: ./ # FTP user starts in site root
+          dangerous-clean-slate: false # don't touch backend/
 
       # --- Backend (PHP) -> /backend ---
       - name: Deploy backend (PHP) to /backend
@@ -46,11 +46,11 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp                  # more stable on GoDaddy for PHP/.htaccess
+          protocol: ftp # more stable on GoDaddy for PHP/.htaccess
           port: 21
-          local-dir: backend/            # from your repo
-          server-dir: ./backend/         # into site/backend/
-          dangerous-clean-slate: false   # keep user data
+          local-dir: backend/ # from your repo
+          server-dir: ./backend/ # into site/backend/
+          dangerous-clean-slate: false # keep user data
           log-level: verbose
           exclude: |
             uploads/**

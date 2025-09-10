@@ -24,38 +24,40 @@ jobs:
       - name: Install & Build (Vite)
         run: |
           npm ci
-          npm run build   # outputs dist/
+          npm run build   # outputs to dist/
 
-      # Frontend -> site root (do NOT clean-slate)
+      # --- Frontend (Vite) -> site root ---
       - name: Deploy frontend (dist) to site root
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftps                 # FTPS OK for small, static build
           port: 21
-          local-dir: dist/
-          server-dir: ./                         # FTP user's root = /public_html/luckyhospitality.com/
-          dangerous-clean-slate: false           # <— important: don't delete backend
-          exclude: |
-            .well-known/**
+          local-dir: dist/               # deploy only the built files
+          server-dir: ./                 # FTP user starts in site root
+          dangerous-clean-slate: false   # don't touch backend/
 
-      # Backend -> /backend (keep uploads/submissions)
+      # --- Backend (PHP) -> /backend ---
       - name: Deploy backend (PHP) to /backend
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp                  # more stable on GoDaddy for PHP/.htaccess
           port: 21
-          local-dir: backend/
-          server-dir: ./backend/
-          dangerous-clean-slate: false
+          local-dir: backend/            # from your repo
+          server-dir: ./backend/         # into site/backend/
+          dangerous-clean-slate: false   # keep user data
+          log-level: verbose
           exclude: |
             uploads/**
             submissions/**
             **/.env*
             **/*.log
             **/.DS_Store
+            test*.php
+            debug*.php
+            add-test-data.php

@@ -30,9 +30,13 @@ try {
     
     // Try to get talent by email first (from JWT), then by submissionId
     if ($email) {
+        error_log("[DEBUG] Searched email: '" . $email . "'");
         $talent = $db->selectByEmail($email);
+        error_log("[DEBUG] Query result: " . print_r($talent, true));
     } else if ($submissionId) {
+        error_log("[DEBUG] Searched submissionId: '" . $submissionId . "'");
         $talent = $db->selectBySubmissionId($submissionId);
+        error_log("[DEBUG] Query result: " . print_r($talent, true));
     } else {
         $talent = null;
     }

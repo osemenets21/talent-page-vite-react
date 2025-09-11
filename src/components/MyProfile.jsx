@@ -106,12 +106,14 @@ export default function MyProfile() {
     if (!window.confirm("Are you sure you want to request deletion of your profile? This will send a request to our team for review.")) return;
     setSaving(true);
     try {
-      const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/request-deletion`, {
-        submissionId: profile.submissionId,
-        firstName: profile.firstName,
-        lastName: profile.lastName
-      });
-      
+      const formData = new FormData();
+      formData.append("submissionId", profile.submissionId);
+      formData.append("firstName", profile.firstName);
+      formData.append("lastName", profile.lastName);
+      const res = await authenticatedPost(
+        `${import.meta.env.VITE_API_DOMAIN}/talent/request-deletion`,
+        formData
+      );
       const text = await res.text();
       let result;
       try {

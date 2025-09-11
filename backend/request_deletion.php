@@ -42,15 +42,15 @@ require __DIR__ . '/../vendor/autoload.php'; // request-deletion.php is in backe
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// ---------- Gmail SMTP config (App Password) ----------
-$smtpHost = 'smtp.gmail.com';
-$smtpUser = getenv('SMTP_USER') ?: 'oleg@luckyhospitality.com';
-$smtpPass = getenv('SMTP_PASS') ?: 'xrfv dgcv yano xwxr'; 
-$smtpPort = (int) (getenv('SMTP_PORT') ?: 587); // 465 also works with SMTPS
-$smtpEnc  = getenv('SMTP_SECURE') ?: PHPMailer::ENCRYPTION_STARTTLS;   // use ENCRYPTION_SMTPS if port 465
+
+// ---------- GoDaddy SMTP relay config ----------
+$smtpHost = 'localhost';
+$smtpPort = 25;
+$smtpAuth = false;
+$smtpEnc  = false; // No encryption
 
 $toEmail   = 'oleg@luckyhospitality.com';
-$fromEmail = 'oleg@luckyhospitality.com'; // MUST match/auth user for Gmail
+$fromEmail = 'oleg@luckyhospitality.com';
 $fromName  = 'Lucky Hospitality';
 
 // ---------- Build email ----------
@@ -75,11 +75,10 @@ try {
     // Transport
     $mail->isSMTP();
     $mail->Host       = $smtpHost;
-    $mail->SMTPAuth   = true;
-    $mail->Username   = $smtpUser;
-    $mail->Password   = $smtpPass;         // e.g., glzdbezbyynrzehm (no spaces needed)
-    $mail->SMTPSecure = $smtpEnc;          // STARTTLS for 587
     $mail->Port       = $smtpPort;
+    $mail->SMTPAuth   = $smtpAuth;
+    // No username/password for GoDaddy relay
+    // No encryption for GoDaddy relay
 
     // Headers
     $mail->CharSet = 'UTF-8';

@@ -4,6 +4,14 @@ declare(strict_types=1);
 // ---------- Basic headers ----------
 header('Content-Type: application/json');
 
+error_reporting(E_ALL);
+ini_set('log_errors', '1');
+$root = rtrim($_SERVER['DOCUMENT_ROOT'], '/');            // e.g. /home/USER/public_html
+$logFile = $root . '/php-error.log';
+if (!file_exists($logFile)) { @touch($logFile); @chmod($logFile, 0644); }
+ini_set('error_log', $logFile);
+error_log("request-deletion start @ " . date('c'));
+
 // Optional CORS (enable if not already handled at server level)
 // header('Access-Control-Allow-Origin: https://luckyhospitality.com');
 // header('Access-Control-Allow-Credentials: true');
@@ -58,6 +66,12 @@ $plainBody =
 $mail = new PHPMailer(true);
 
 try {
+
+    $mail->SMTPDebug = 2; // 0=off, 2=client logs
+    $mail->Debugoutput = function ($str, $level) { error_log("SMTP[$level]: " . $str); };
+    
+    
+    
     // Transport
     $mail->isSMTP();
     $mail->Host       = $smtpHost;

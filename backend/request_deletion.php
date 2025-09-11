@@ -43,15 +43,12 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 
-// ---------- GoDaddy SMTP relay config ----------
-$smtpHost = 'localhost';
-$smtpPort = 25;
-$smtpAuth = false;
-$smtpEnc  = false; // No encryption
-
+// ---------- Gmail SMTP config (App Password) ----------
 $toEmail   = 'oleg@luckyhospitality.com';
 $fromEmail = 'oleg@luckyhospitality.com';
 $fromName  = 'Lucky Hospitality';
+// Use your actual 16-character Gmail App Password below (no spaces)
+$gmailAppPassword = 'pxoh ztzx smvp ogsq';
 
 // ---------- Build email ----------
 $subject = 'Profile Deletion Request';
@@ -69,23 +66,19 @@ try {
 
     $mail->SMTPDebug = 2; // 0=off, 2=client logs
     $mail->Debugoutput = function ($str, $level) { error_log("SMTP[$level]: " . $str); };
-    
-    
-    
-    // Transport
+
     $mail->isSMTP();
-    $mail->Host       = $smtpHost;
-    $mail->Port       = $smtpPort;
-    $mail->SMTPAuth   = $smtpAuth;
-    // No username/password for GoDaddy relay
-    // No encryption for GoDaddy relay
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->Port       = 587;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = $fromEmail;
+    $mail->Password   = $gmailAppPassword;
 
     // Headers
     $mail->CharSet = 'UTF-8';
     $mail->setFrom($fromEmail, $fromName);
     $mail->addAddress($toEmail);
-    // Optional: have replies go elsewhere (e.g., support)
-    // $mail->addReplyTo('support@luckyhospitality.com', 'Support');
 
     // Body
     $mail->isHTML(false);

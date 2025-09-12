@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 // --- DEBUG: Force error display and logging ---
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 error_log("DEBUG: request_deletion.php started");
-declare(strict_types=1);
 
 // ---------- Basic headers ----------
 header('Content-Type: application/json');

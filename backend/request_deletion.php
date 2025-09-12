@@ -37,18 +37,14 @@ if ($submissionId === '' || $firstName === '' || $lastName === '') {
     exit;
 }
 
-// ---------- Load PHPMailer ----------
-require __DIR__ . '/../vendor/autoload.php'; // request-deletion.php is in backend/talent/
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// ---------- Load SendGrid ----------
+require __DIR__ . '/../vendor/autoload.php'; // Composer autoload
 
 
-// ---------- Gmail SMTP config (App Password) ----------
+// ---------- SendGrid config ----------
 $toEmail   = 'oleg@luckyhospitality.com';
 $fromEmail = 'oleg@luckyhospitality.com';
 $fromName  = 'Lucky Hospitality';
-// Use your actual 16-character Gmail App Password below (no spaces)
-$gmailAppPassword = 'pxoh ztzx smvp ogsq';
 
 // ---------- Build email ----------
 $subject = 'Profile Deletion Request';
@@ -58,41 +54,33 @@ $plainBody =
     "First Name:    {$firstName}\n" .
     "Last Name:     {$lastName}\n\n" .
     "Please review and process this request.";
+$htmlBody = nl2br(htmlentities($plainBody));
 
-// ---------- Send ----------
-$mail = new PHPMailer(true);
-
+// ---------- Send with SendGrid ----------
+$email = new \SendGrid\Mail\Mail();
+$email->setFrom($fromEmail, $fromName);
+$email->setSubject($subject);
+$email->addTo($toEmail, $fromName);
+$email->addContent("text/plain", $plainBody);
+$email->addContent("text/html", $htmlBody);
+$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
 try {
-
-    $mail->SMTPDebug = 2; // 0=off, 2=client logs
-    $mail->Debugoutput = function ($str, $level) { error_log("SMTP[$level]: " . $str); };
-
-    $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
-    $mail->Port       = 587;
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->SMTPAuth   = true;
-    $mail->Username   = $fromEmail;
-    $mail->Password   = $gmailAppPassword;
-
-    // Headers
-    $mail->CharSet = 'UTF-8';
-    $mail->setFrom($fromEmail, $fromName);
-    $mail->addAddress($toEmail);
-
-    // Body
-    $mail->isHTML(false);
-    $mail->Subject = $subject;
-    $mail->Body    = $plainBody;
-
-    $mail->send();
-
-    echo json_encode([
-        'status'  => 'success',
-        'message' => 'Deletion request sent. Our team will review your request.'
-    ]);
+    $response = $sendgrid->send($email);
+    if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Deletion request sent. Our team will review your request.'
+        ]);
+    } else {
+        error_log('SendGrid error: ' . $response->statusCode() . ' ' . $response->body());
+        http_response_code(500);
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'Failed to send email. Please try again later.'
+        ]);
+    }
 } catch (Exception $e) {
-    error_log('Deletion email failed: ' . $mail->ErrorInfo);
+    error_log('SendGrid exception: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',

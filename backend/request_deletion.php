@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+
+// Load environment variables (if using env.php, uncomment below)
 require_once __DIR__ . '/env.php';
 
 // --- DEBUG: Force error display and logging ---
@@ -40,19 +42,18 @@ if ($submissionId === '' || $firstName === '' || $lastName === '') {
     exit;
 }
 
-// ---------- Load PHPMailer ----------
+// ---------- Load AWS SDK ----------
 require __DIR__ . '/../vendor/autoload.php';
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+use Aws\Ses\SesClient;
+use Aws\Exception\AwsException;
 
-// ---------- SES SMTP config ----------
+// ---------- SES API config ----------
 $toEmail   = 'oleg@luckyhospitality.com';
 $fromEmail = 'oleg@luckyhospitality.com';
 $fromName  = 'Lucky Hospitality';
-$smtpHost = 'email-smtp.us-east-1.amazonaws.com'; // Change if your SES region is different
-$smtpUser = 'AKIAQHSVOQ6YEGHVVOVC';
-$smtpPass = 'BCW2/HGBTA4rMzeeDdFWl3NT5T4fcwvSxJh28I1R6QIN';
-$smtpPort = 587;
+$awsRegion = 'us-east-2'; // Ohio region
+$awsKey    = getenv('AWS_ACCESS_KEY_ID');
+$awsSecret = getenv('AWS_SECRET_ACCESS_KEY');
 
 // ---------- Build email ----------
 $subject = 'Profile Deletion Request';
@@ -63,30 +64,42 @@ $plainBody =
     "Last Name:     {$lastName}\n\n" .
     "Please review and process this request.";
 
-// ---------- Send with PHPMailer/SES SMTP ----------
-$mail = new PHPMailer(true);
+// ---------- Send with AWS SES API ----------
+$SesClient = new SesClient([
+    'version'     => '2010-12-01',
+    'region'      => $awsRegion,
+    'credentials' => [
+        'key'    => $awsKey,
+        'secret' => $awsSecret,
+    ],
+]);
+
 try {
-    $mail->isSMTP();
-    $mail->Host       = $smtpHost;
-    $mail->SMTPAuth   = true;
-    $mail->Username   = $smtpUser;
-    $mail->Password   = $smtpPass;
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port       = $smtpPort;
-
-    $mail->setFrom($fromEmail, $fromName);
-    $mail->addAddress($toEmail);
-    $mail->Subject = $subject;
-    $mail->Body    = $plainBody;
-    $mail->AltBody = $plainBody;
-
-    $mail->send();
+    $result = $SesClient->sendEmail([
+        'Source' => $fromEmail,
+        'Destination' => [
+            'ToAddresses' => [$toEmail],
+        ],
+        'Message' => [
+            'Subject' => [
+                'Data' => $subject,
+                'Charset' => 'UTF-8',
+            ],
+            'Body' => [
+                'Text' => [
+                    'Data' => $plainBody,
+                    'Charset' => 'UTF-8',
+                ],
+            ],
+        ],
+        // 'ReplyToAddresses' => [$fromEmail],
+    ]);
     echo json_encode([
         'status'  => 'success',
         'message' => 'Deletion request sent. Our team will review your request.'
     ]);
-} catch (Exception $e) {
-    error_log('SES email failed: ' . $mail->ErrorInfo);
+} catch (AwsException $e) {
+    error_log('SES API error: ' . $e->getAwsErrorMessage());
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',

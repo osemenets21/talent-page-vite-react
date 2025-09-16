@@ -18,6 +18,7 @@ ini_set('error_log', $logFile);
 error_log("request-deletion start @ " . date('c'));
 
 
+
 // ---------- Method check ----------
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);

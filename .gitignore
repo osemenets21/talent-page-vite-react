@@ -26,3 +26,10 @@ dist-ssr
 *.sln
 *.sw?
 backend/vendor/*sendgrid.env
+
+
+# Ignore environment variable files
+.env
+
+# Ignore PHP/composer dependencies
+vendor/

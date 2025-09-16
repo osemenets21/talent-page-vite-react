@@ -17,12 +17,7 @@ if (!file_exists($logFile)) { @touch($logFile); @chmod($logFile, 0644); }
 ini_set('error_log', $logFile);
 error_log("request-deletion start @ " . date('c'));
 
-// Optional CORS (enable if not already handled at server level)
-// header('Access-Control-Allow-Origin: https://luckyhospitality.com');
-// header('Access-Control-Allow-Credentials: true');
-// header('Access-Control-Allow-Methods: POST, OPTIONS');
-// header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-// if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') { http_response_code(204); exit; }
+
 
 // ---------- Method check ----------
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
@@ -42,14 +37,18 @@ if ($submissionId === '' || $firstName === '' || $lastName === '') {
     exit;
 }
 
-// ---------- Load SendGrid ----------
-require __DIR__ . '/../vendor/autoload.php'; // Composer autoload
+// ---------- Load AWS SDK ----------
+require __DIR__ . '/../vendor/autoload.php';
+use Aws\Ses\SesClient;
+use Aws\Exception\AwsException;
 
-
-// ---------- SendGrid config ----------
+// ---------- SES API config ----------
 $toEmail   = 'oleg@luckyhospitality.com';
 $fromEmail = 'oleg@luckyhospitality.com';
 $fromName  = 'Lucky Hospitality';
+$awsRegion = 'us-east-2'; // Ohio region
+$awsKey    = getenv('AWS_ACCESS_KEY_ID');
+$awsSecret = getenv('AWS_SECRET_ACCESS_KEY');
 
 // ---------- Build email ----------
 $subject = 'Profile Deletion Request';
@@ -59,33 +58,43 @@ $plainBody =
     "First Name:    {$firstName}\n" .
     "Last Name:     {$lastName}\n\n" .
     "Please review and process this request.";
-$htmlBody = nl2br(htmlentities($plainBody));
 
-// ---------- Send with SendGrid ----------
-$email = new \SendGrid\Mail\Mail();
-$email->setFrom($fromEmail, $fromName);
-$email->setSubject($subject);
-$email->addTo($toEmail, $fromName);
-$email->addContent("text/plain", $plainBody);
-$email->addContent("text/html", $htmlBody);
-$sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+// ---------- Send with AWS SES API ----------
+$SesClient = new SesClient([
+    'version'     => '2010-12-01',
+    'region'      => $awsRegion,
+    'credentials' => [
+        'key'    => $awsKey,
+        'secret' => $awsSecret,
+    ],
+]);
+
 try {
-    $response = $sendgrid->send($email);
-    if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
-        echo json_encode([
-            'status'  => 'success',
-            'message' => 'Deletion request sent. Our team will review your request.'
-        ]);
-    } else {
-        error_log('SendGrid error: ' . $response->statusCode() . ' ' . $response->body());
-        http_response_code(500);
-        echo json_encode([
-            'status'  => 'error',
-            'message' => 'Failed to send email. Please try again later.'
-        ]);
-    }
-} catch (Exception $e) {
-    error_log('SendGrid exception: ' . $e->getMessage());
+    $result = $SesClient->sendEmail([
+        'Source' => $fromEmail,
+        'Destination' => [
+            'ToAddresses' => [$toEmail],
+        ],
+        'Message' => [
+            'Subject' => [
+                'Data' => $subject,
+                'Charset' => 'UTF-8',
+            ],
+            'Body' => [
+                'Text' => [
+                    'Data' => $plainBody,
+                    'Charset' => 'UTF-8',
+                ],
+            ],
+        ],
+        // 'ReplyToAddresses' => [$fromEmail],
+    ]);
+    echo json_encode([
+        'status'  => 'success',
+        'message' => 'Deletion request sent. Our team will review your request.'
+    ]);
+} catch (AwsException $e) {
+    error_log('SES API error: ' . $e->getAwsErrorMessage());
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',

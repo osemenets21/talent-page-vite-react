@@ -2,6 +2,8 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+error_log("[DEBUG] Searched email: '" . $email . "'");
+error_log("[DEBUG] Query result: " . print_r($talent, true));
 
 // header('Access-Control-Allow-Origin: *');
 // header('Access-Control-Allow-Methods: *');

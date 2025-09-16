@@ -1,6 +1,7 @@
 {
   "require": {
     "sendgrid/sendgrid": "^8.1",
-    "phpmailer/phpmailer": "^6.10"
+    "phpmailer/phpmailer": "^6.10",
+    "aws/aws-sdk-php": "^3.356"
   }
 }

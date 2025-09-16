@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 
-// Load environment variables (if using env.php, uncomment below)
 require_once __DIR__ . '/env.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 // --- DEBUG: Force error display and logging ---
 ini_set('display_errors', 1);

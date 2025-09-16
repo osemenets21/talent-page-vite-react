@@ -5,10 +5,10 @@ error_reporting(E_ALL);
 error_log("[DEBUG] Searched email: '" . $email . "'");
 error_log("[DEBUG] Query result: " . print_r($talent, true));
 
-// header('Access-Control-Allow-Origin: *');
-// header('Access-Control-Allow-Methods: *');
-// header('Access-Control-Allow-Headers: *');
-// header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: *');
+header('Access-Control-Allow-Headers: *');
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);

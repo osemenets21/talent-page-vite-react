@@ -670,6 +670,10 @@ export default function TalentForm() {
             });
             const data = await res.json();
             setShowW9Modal(false);
+            setModalTitle('W9 Request Sent');
+            setModalMessage('Your request for a W9 form has been sent to the manager. You may now continue filling out your profile.');
+            setIsSuccessModal(true);
+            setShowModal(true);
           } catch (err) {
             setW9Error('Failed to send request. Please try again.');
           } finally {

@@ -693,7 +693,8 @@ export default function TalentForm() {
                 onChange={e => {
                   setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
                 }}
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="mt-1 h-5 w-5 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
+                style={{ borderRadius: 4 }}
               />
               <span>{text}<span className="text-red-500 ml-1">*</span></span>
             </label>
@@ -705,7 +706,8 @@ export default function TalentForm() {
               required
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="mt-1 h-5 w-5 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
+              style={{ borderRadius: 4 }}
             />
             <span>
               I agree to the{' '}

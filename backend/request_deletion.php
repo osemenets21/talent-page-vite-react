@@ -49,7 +49,7 @@ use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
 // ---------- SES API config ----------
-$toEmail   = 'zach@bunkerdc.com';
+$toEmails  = ['zach@bunkerdc.com', 'oleg@luckyhospitality.com'];
 $fromEmail = 'zach@bunkerdc.com';
 $fromName  = 'Lucky Hospitality';
 $awsRegion = 'us-east-2'; // Ohio region
@@ -79,7 +79,7 @@ try {
     $result = $SesClient->sendEmail([
         'Source' => $fromEmail,
         'Destination' => [
-            'ToAddresses' => [$toEmail],
+            'ToAddresses' => $toEmails,
         ],
         'Message' => [
             'Subject' => [

@@ -1,5 +1,3 @@
-// ...existing code...
-// Role-specific agreements
 const ROLE_AGREEMENTS = {
   DJ: [
     'I confirm I am legally allowed to perform as a DJ in the USA.',
@@ -27,6 +25,7 @@ import { ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase";
 import { DocumentArrowUpIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import W9RequestModal from "./W9RequestModal";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
@@ -642,96 +641,46 @@ export default function TalentForm() {
                   Request W9 Tax Form from manager
                 </button>
               )}
-      {/* W9 Request Modal */}
-      {showW9Modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
-            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowW9Modal(false)}>
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-            <h2 className="text-lg font-semibold mb-4">Request W9 Tax Form</h2>
-            <div className="space-y-3">
-              <input
-                type="text"
-                placeholder="First Name"
-                className="w-full border rounded px-3 py-2"
-                value={w9Form.firstName}
-                onChange={e => setW9Form(f => ({ ...f, firstName: e.target.value }))}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Last Name"
-                className="w-full border rounded px-3 py-2"
-                value={w9Form.lastName}
-                onChange={e => setW9Form(f => ({ ...f, lastName: e.target.value }))}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full border rounded px-3 py-2"
-                value={w9Form.email}
-                onChange={e => setW9Form(f => ({ ...f, email: e.target.value }))}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Phone Number"
-                className="w-full border rounded px-3 py-2"
-                value={w9Form.phone}
-                onChange={e => setW9Form(f => ({ ...f, phone: e.target.value }))}
-                required
-              />
-              {w9Error && <p className="text-xs text-red-500">{w9Error}</p>}
-              <button
-                className={`w-full mt-2 py-2 rounded bg-blue-600 text-white font-semibold ${isRequestingW9 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={
-                  isRequestingW9 ||
-                  !w9Form.firstName.trim() ||
-                  !w9Form.lastName.trim() ||
-                  !w9Form.email.trim() ||
-                  !w9Form.phone.trim()
-                }
-                onClick={async () => {
-                  setW9Error('');
-                  if (!w9Form.firstName.trim() || !w9Form.lastName.trim() || !w9Form.email.trim() || !w9Form.phone.trim()) {
-                    setW9Error('All fields are required.');
-                    return;
-                  }
-                  setIsRequestingW9(true);
-                  try {
-                    const apiUrl = '/backend/request_w9.php';
-                    const res = await fetch(apiUrl, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                      body: new URLSearchParams({
-                        firstName: w9Form.firstName,
-                        lastName: w9Form.lastName,
-                        email: w9Form.email,
-                        phone: w9Form.phone,
-                        submissionId: form.submissionId
-                      })
-                    });
-                    const data = await res.json();
-                    setModalTitle(data.status === 'success' ? 'Request Sent' : 'Request Failed');
-                    setModalMessage(data.message || (data.status === 'success' ? 'Your request for a W9 form has been sent to the manager.' : 'Failed to send request. Please try again.'));
-                    setIsSuccessModal(data.status === 'success');
-                    setShowModal(true);
-                    setShowW9Modal(false);
-                  } catch (err) {
-                    setW9Error('Failed to send request. Please try again.');
-                  } finally {
-                    setIsRequestingW9(false);
-                  }
-                }}
-              >
-                {isRequestingW9 ? 'Sending...' : 'Send request'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <W9RequestModal
+        open={showW9Modal}
+        onClose={() => setShowW9Modal(false)}
+        w9Form={w9Form}
+        setW9Form={setW9Form}
+        w9Error={w9Error}
+        isRequestingW9={isRequestingW9}
+        onRequest={async () => {
+          setW9Error("");
+          if (!w9Form.firstName.trim() || !w9Form.lastName.trim() || !w9Form.email.trim() || !w9Form.phone.trim()) {
+            setW9Error("All fields are required.");
+            return;
+          }
+          setIsRequestingW9(true);
+          try {
+            const apiUrl = '/backend/request_w9.php';
+            const res = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                firstName: w9Form.firstName,
+                lastName: w9Form.lastName,
+                email: w9Form.email,
+                phone: w9Form.phone,
+                submissionId: form.submissionId
+              })
+            });
+            const data = await res.json();
+            setModalTitle(data.status === 'success' ? 'Request Sent' : 'Request Failed');
+            setModalMessage(data.message || (data.status === 'success' ? 'Your request for a W9 form has been sent to the manager.' : 'Failed to send request. Please try again.'));
+            setIsSuccessModal(data.status === 'success');
+            setShowModal(true);
+            setShowW9Modal(false);
+          } catch (err) {
+            setW9Error('Failed to send request. Please try again.');
+          } finally {
+            setIsRequestingW9(false);
+          }
+        }}
+      />
             </div>
           </div>
         </div>

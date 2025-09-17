@@ -589,24 +589,24 @@ export default function TalentForm() {
                 Do you have W9 tax form already? <span className="text-red-500 ml-1">*</span>
               </label>
               <div className="flex gap-6 mb-4">
-                <label className="flex items-center gap-1">
+                <label className="flex items-center gap-1 text-black">
                   <input
                     type="radio"
                     name="hasW9"
                     value="yes"
-                    className="appearance-none h-5 w-5 border border-gray-300 rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
+                    className="appearance-none h-5 w-5 border  rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
                     checked={hasW9 === true}
                     onChange={() => setHasW9(true)}
                     required
                   />
                   Yes
                 </label>
-                <label className="flex items-center gap-1">
+                <label className="flex items-center gap-1 text-black">
                   <input
                     type="radio"
                     name="hasW9"
                     value="no"
-                    className="appearance-none h-5 w-5 border border-gray-300 rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
+                    className="appearance-none h-5 w-5 border  rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
                     checked={hasW9 === false}
                     onChange={() => setHasW9(false)}
                     required

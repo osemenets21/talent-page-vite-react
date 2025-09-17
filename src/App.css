@@ -1,3 +1,6 @@
+input, textarea {
+  color: #111 !important;
+}
 #root {
   padding: 1rem;
 }

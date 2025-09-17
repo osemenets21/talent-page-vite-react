@@ -86,7 +86,7 @@ try {
             'data' => $legacyFormat
         ]);
     } else {
-        http_response_code(404);
+        // Always return 200 OK, even if not found
         $searchParam = $email ? "email: $email" : "submissionId: $submissionId";
         echo json_encode([
             'status' => 'error',

@@ -62,15 +62,14 @@ export default function LoginForm() {
             console.log('Existing profile found, redirecting to profile page');
             navigate("/my-profile");
           } else {
-            console.log('No profile data found, redirecting to registration');
+            // No alert, just redirect
             navigate("/register-talent");
           }
         } else if (response.status === 404) {
           // Expected case - user hasn't created a profile yet
-          console.log('No existing profile found, redirecting to talent registration');
           navigate("/register-talent");
         } else {
-          console.log(`Profile check returned ${response.status}, redirecting to registration`);
+          // For any other error, also just redirect
           navigate("/register-talent");
         }
       } catch (apiError) {

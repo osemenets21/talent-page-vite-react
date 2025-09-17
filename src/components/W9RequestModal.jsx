@@ -27,7 +27,7 @@ export default function W9RequestModal({
             <input
               type="text"
               placeholder="First Name"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-black placeholder-gray-400"
               value={w9Form.firstName}
               onChange={e => setW9Form(f => ({ ...f, firstName: e.target.value }))}
               required
@@ -38,7 +38,7 @@ export default function W9RequestModal({
             <input
               type="text"
               placeholder="Last Name"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-black placeholder-gray-400"
               value={w9Form.lastName}
               onChange={e => setW9Form(f => ({ ...f, lastName: e.target.value }))}
               required
@@ -49,7 +49,7 @@ export default function W9RequestModal({
             <input
               type="email"
               placeholder="Email"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-black placeholder-gray-400"
               value={w9Form.email}
               onChange={e => setW9Form(f => ({ ...f, email: e.target.value }))}
               required
@@ -60,7 +60,7 @@ export default function W9RequestModal({
             <input
               type="text"
               placeholder="Phone Number"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-black placeholder-gray-400"
               value={w9Form.phone}
               onChange={e => setW9Form(f => ({ ...f, phone: e.target.value }))}
               required

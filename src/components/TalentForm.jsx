@@ -500,11 +500,11 @@ export default function TalentForm() {
                   const validation = validateBioText(newBio);
                   setBioError(validation.error);
                 }}
-                className={`mt-2 block w-full rounded-md border px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600 ${
+                className={`mt-2 block w-full rounded-md border px-3 py-2 text-sm text-black shadow-sm focus:ring-2 focus:ring-indigo-600 ${
                   bioError
                     ? "border-red-300 focus:ring-red-600"
                     : "border-gray-300"
-                }`}
+                } placeholder-gray-400`}
               />
               {bioError && (
                 <p className="text-xs text-red-500 mt-1">{bioError}</p>
@@ -801,7 +801,7 @@ function Input({
           required={required}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-black shadow-sm focus:ring-2 focus:ring-indigo-600 placeholder-gray-400"
         />
         {showHint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
       </div>

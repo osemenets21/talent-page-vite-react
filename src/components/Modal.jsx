@@ -3,6 +3,8 @@ import { CheckIcon } from '@heroicons/react/24/outline'
 import React from 'react';
 
 export default function ({ open, setOpen, title, message }) {
+  const safeTitle = typeof title === 'string' ? title : '';
+  const safeMessage = typeof message === 'string' ? message : '';
   return (
     <Dialog open={open} onClose={setOpen} className="relative z-50">
       <DialogBackdrop className="fixed inset-0 bg-black/30" />
@@ -14,10 +16,10 @@ export default function ({ open, setOpen, title, message }) {
           </div>
           <div className="mt-3 text-center">
             <DialogTitle as="h3" className="text-lg font-semibold text-gray-900">
-              {title}
+              {safeTitle}
             </DialogTitle>
             <div className="mt-2 text-sm text-gray-600">
-              {message}
+              {safeMessage}
             </div>
           </div>
           <div className="mt-5">

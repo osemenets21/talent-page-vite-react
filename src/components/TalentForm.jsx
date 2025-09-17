@@ -594,7 +594,7 @@ export default function TalentForm() {
                     type="radio"
                     name="hasW9"
                     value="yes"
-                    className="text-gray-900"
+                    className="appearance-none h-5 w-5 border border-gray-300 rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
                     checked={hasW9 === true}
                     onChange={() => setHasW9(true)}
                     required
@@ -606,7 +606,7 @@ export default function TalentForm() {
                     type="radio"
                     name="hasW9"
                     value="no"
-                    className="text-gray-900"
+                    className="appearance-none h-5 w-5 border border-gray-300 rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
                     checked={hasW9 === false}
                     onChange={() => setHasW9(false)}
                     required

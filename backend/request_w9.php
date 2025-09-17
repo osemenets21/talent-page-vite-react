@@ -18,9 +18,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 $firstName    = trim($_POST['firstName'] ?? '');
 $lastName     = trim($_POST['lastName'] ?? '');
 $email        = trim($_POST['email'] ?? '');
+$phone        = trim($_POST['phone'] ?? '');
 $submissionId = trim($_POST['submissionId'] ?? '');
 
-if ($firstName === '' || $lastName === '' || $email === '' || $submissionId === '') {
+if ($firstName === '' || $lastName === '' || $email === '' || $phone === '' || $submissionId === '') {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
     exit;
@@ -42,7 +43,8 @@ $plainBody =
     "Submission ID: {$submissionId}\n" .
     "First Name:    {$firstName}\n" .
     "Last Name:     {$lastName}\n" .
-    "Email:         {$email}\n\n" .
+    "Email:         {$email}\n" .
+    "Phone:         {$phone}\n\n" .
     "Please send the W9 form to this user.";
 
 $SesClient = new SesClient([

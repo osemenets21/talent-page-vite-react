@@ -1,3 +1,26 @@
+// Role-specific agreements
+const ROLE_AGREEMENTS = {
+  DJ: [
+    'I confirm I am legally allowed to perform as a DJ in the USA.',
+    'I agree to provide my own DJ equipment if required.',
+    'I understand I must arrive at least 30 minutes before my set.'
+  ],
+  'Drag Queen': [
+    'I confirm I am legally allowed to perform as a Drag Queen in the USA.',
+    'I agree to provide my own costumes and makeup.',
+    'I understand I must attend the rehearsal if scheduled.'
+  ],
+  Dancer: [
+    'I confirm I am legally allowed to perform as a Dancer in the USA.',
+    'I agree to provide my own costumes and props.',
+    'I understand I must follow the choreography as directed.'
+  ],
+  Host: [
+    'I confirm I am legally allowed to work as a Host in the USA.',
+    'I agree to follow the event script and schedule.',
+    'I understand I am responsible for guest engagement.'
+  ]
+};
 import React, { useState, useEffect } from "react";
 import { ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase";
@@ -12,6 +35,7 @@ import PhotoCropModal from "./PhotoCropModal";
 import Modal from "./Modal";
 
 export default function TalentForm() {
+  // ...existing code...
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -35,7 +59,7 @@ export default function TalentForm() {
     submissionId: generateId(),
   });
 
-  // Portfolio removed
+
   const [photo, setPhoto] = useState(null);
   const [taxForm, setTaxForm] = useState(null);
   const navigate = useNavigate();
@@ -48,14 +72,15 @@ export default function TalentForm() {
   const [modalMessage, setModalMessage] = useState("");
   const [isSuccessModal, setIsSuccessModal] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  // Track which role agreements are checked
+  const [roleAgreementsChecked, setRoleAgreementsChecked] = useState({});
   const [bioError, setBioError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Function to validate bio text to prevent repetitive content
+
   const validateBioText = (text) => {
     if (!text || text.length < 3) return { isValid: true, error: "" };
 
-    // Check for repetitive characters (more than 10 consecutive same characters)
     const repetitiveChars = /(.)\1{9,}/;
     if (repetitiveChars.test(text)) {
       return {
@@ -148,6 +173,19 @@ export default function TalentForm() {
 
   const submitTalentProfile = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
+
+
+    // Check role-specific agreements
+    const role = form.role;
+    const agreements = ROLE_AGREEMENTS[role] || [];
+    const allChecked = agreements.every((_, idx) => roleAgreementsChecked[idx]);
+    if (agreements.length > 0 && !allChecked) {
+      setModalTitle("Role Agreements Required");
+      setModalMessage("You must agree to all required terms for your role before submitting.");
+      setIsSuccessModal(false);
+      setShowModal(true);
+      return;
+    }
 
     if (!agreeTerms) {
       setModalTitle("Terms Required");
@@ -547,6 +585,22 @@ export default function TalentForm() {
         </div>
 
         <div className="border-t border-gray-200 px-4 pt-4 sm:px-8">
+          {/* Role-specific agreements */}
+          {(ROLE_AGREEMENTS[form.role] || []).map((text, idx) => (
+            <label key={idx} className="flex items-start text-sm text-gray-700 gap-2 mb-2">
+              <input
+                type="checkbox"
+                required
+                checked={!!roleAgreementsChecked[idx]}
+                onChange={e => {
+                  setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
+                }}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span>{text}<span className="text-red-500 ml-1">*</span></span>
+            </label>
+          ))}
+          {/* General agreement */}
           <label className="flex items-start text-sm text-gray-700 gap-2">
             <input
               type="checkbox"
@@ -556,14 +610,14 @@ export default function TalentForm() {
               className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
             <span>
-              I agree to the{" "}
+              I agree to the{' '}
               <a
                 href="https://drive.google.com/file/d/1Wp36AhlsiazCJTvflEqH4YYucS3dF3hw/view?usp=sharing"
                 target="_blank"
                 className="underline text-indigo-600"
               >
                 Terms & Conditions and Privacy Policy
-              </a>{" "}
+              </a>{' '}
               and understand that my data will be collected for profile
               submission purposes.
               <span className="text-red-500 ml-1">*</span>

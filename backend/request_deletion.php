@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 
 require_once __DIR__ . '/env.php';
@@ -97,13 +100,11 @@ try {
         'message' => 'Deletion request sent. Our team will review your request.'
     ]);
 } catch (AwsException $e) {
-    error_log('SES API error: ' . $e->getAwsErrorMessage());
+   error_log('SES API error: ' . $e->getAwsErrorMessage());
     error_log('SES Exception: ' . $e->getMessage());
-    // Remove or comment out the next line to avoid memory errors:
-    // error_log(print_r($e, true));
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',
-        'message' => 'Failed to send email. Please try again later.'
+        'message' => 'Failed to send email. SES error: ' . $e->getAwsErrorMessage() . ' | ' . $e->getMessage()
     ]);
 }

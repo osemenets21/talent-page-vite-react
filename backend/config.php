@@ -1,13 +1,10 @@
 <?php
-// Database Configuration for GoDaddy hosting - Both Databases
 
-// Talent Database Configuration
 $talent_host = 'localhost';
 $talent_dbname = 'talent_db';
 $talent_username = 'talent_user';
 $talent_password = 'en(x5z@ADuv*';
 
-// Events Database Configuration  
 $events_host = 'localhost';
 $events_dbname = 'event_db';
 $events_username = 'event_user';
@@ -15,14 +12,14 @@ $events_password = 'ZLK&h,Dc5Hvn';
 
 $charset = 'utf8mb4';
 
-// PDO options
+
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
-// Create Talent Database Connection
+
 try {
     $talent_dsn = "mysql:host=$talent_host;dbname=$talent_dbname;charset=$charset";
     $talent_pdo = new PDO($talent_dsn, $talent_username, $talent_password, $options);
@@ -33,7 +30,7 @@ try {
     exit;
 }
 
-// Create Events Database Connection
+
 try {
     $events_dsn = "mysql:host=$events_host;dbname=$events_dbname;charset=$charset";
     $events_pdo = new PDO($events_dsn, $events_username, $events_password, $options);
@@ -44,7 +41,7 @@ try {
     exit;
 }
 
-// Helper function to get the appropriate database connection
+
 function getDatabase($type = 'talent') {
     global $talent_pdo, $events_pdo;
     
@@ -59,14 +56,13 @@ function getDatabase($type = 'talent') {
     }
 }
 
-// For backward compatibility with existing code that expects $pdo
+
 $pdo = $talent_pdo;
 
-// Database table names
+
 $TALENT_TABLE = 'talent_data';  
 $EVENTS_TABLE = 'event_data';
 
-// CORS headers for production
 $allowed_origins = [
     'https://luckyhospitality.com',
     'https://www.luckyhospitality.com'

@@ -48,7 +48,7 @@ export default function PhotoCropModal({
       onCropDone(croppedFile);
       setOpen(false);
     } catch (err) {
-      console.error("Cropping failed:", err);
+  // ...removed console.error
       alert("Cropping failed. Please try again.");
     }
   };

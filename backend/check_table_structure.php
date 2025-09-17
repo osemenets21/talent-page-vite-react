@@ -5,11 +5,11 @@ header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 try {
-    // Check table structure
+  
     $pdo = new PDO('mysql:host=localhost;dbname=event_db;charset=utf8mb4', 'event_user', 'ZLK&h,Dc5Hvn');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Get table structure
+  
     $stmt = $pdo->query('DESCRIBE event_data');
     $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

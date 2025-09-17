@@ -151,7 +151,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         });
       }
       
-      console.log('Appending photo file:', renamedPhotoFile?.name, renamedPhotoFile?.size);
+  // ...removed console.log
       formData.append("photo", renamedPhotoFile);
     }
     
@@ -161,12 +161,12 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
       const renamedTaxForm = new File([fileInputs.taxForm], `tax_form.${taxFormExtension}`, {
         type: fileInputs.taxForm.type
       });
-      console.log('Appending tax form:', renamedTaxForm?.name);
+  // ...removed console.log
       formData.append("taxForm", renamedTaxForm);
     }
     
     if (filesChanged.performerImages && fileInputs.performerImages && fileInputs.performerImages.length > 0) {
-      console.log('Appending performer images:', fileInputs.performerImages.length);
+  // ...removed console.log
       // Rename performer images with consistent numbering
       fileInputs.performerImages.forEach((file, index) => {
         const fileExtension = file.name.split('.').pop();

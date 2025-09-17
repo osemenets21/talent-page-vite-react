@@ -1,5 +1,4 @@
 <?php
-// MySQL-based file deletion handler
 error_reporting(0);
 ini_set('display_errors', 0);
 
@@ -13,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'TalentMysqlDB.php';
 
 try {
-    // Get JSON input
     $input = json_decode(file_get_contents('php://input'), true);
     
     $submissionId = $input['submissionId'] ?? null;

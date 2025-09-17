@@ -28,7 +28,7 @@ export default function LoginForm() {
         return;
       }
       
-      console.log("setting timeout")
+  // ...removed console.log
       // Wait for auth state to be properly established
       //await new Promise(resolve => setTimeout(resolve, 2000));
       
@@ -36,7 +36,7 @@ export default function LoginForm() {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
       try {
-        console.log('Checking for existing profile for email:', email);
+  // ...removed console.log
         
         // Use a custom fetch approach to avoid 404 errors in console
         let token = null;
@@ -59,7 +59,7 @@ export default function LoginForm() {
           if (result.status === "success" && result.data) {
             // Store submissionId for MyProfile to use
             localStorage.setItem("submissionId", result.data.submissionId);
-            console.log('Existing profile found, redirecting to profile page');
+            // ...removed console.log
             navigate("/my-profile");
           } else {
             // No alert, just redirect
@@ -73,12 +73,12 @@ export default function LoginForm() {
           navigate("/register-talent");
         }
       } catch (apiError) {
-        console.log('Profile check failed, redirecting to registration');
+  // ...removed console.log
         // If API call fails, assume profile doesn't exist and go to talent form
         navigate("/register-talent");
       }
     } catch (error) {
-      console.error('Login error:', error);
+  // ...removed console.error
       alert("Login failed: " + error.message);
     }
   };

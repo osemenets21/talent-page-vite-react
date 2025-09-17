@@ -1,9 +1,7 @@
 import { getValidIdToken, refreshIdToken, clearTokens, getStoredIdToken } from './tokenManager';
 import { auth } from '../firebase';
 
-/**
- * Enhanced fetch wrapper that handles authentication and automatic token refresh
- */
+
 export const authenticatedFetch = async (url, options = {}) => {
   const maxRetries = 2;
   let retryCount = 0;
@@ -21,7 +19,7 @@ export const authenticatedFetch = async (url, options = {}) => {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     } else {
-      console.warn('Making request without token');
+  // ...removed console.warn
     }
     
     return fetch(url, {
@@ -39,11 +37,11 @@ export const authenticatedFetch = async (url, options = {}) => {
       try {
         token = await auth.currentUser.getIdToken();
       } catch (freshTokenError) {
-        console.warn('Failed to get fresh token, using stored token:', freshTokenError);
+  // ...removed console.warn
         // Fall back to stored token
       }
     } else {
-      console.log('No current user, using stored token:', token ? token.substring(0, 50) + '...' : 'No token');
+  // ...removed console.log
     }
     
     let response = await makeRequest(token);
@@ -51,25 +49,25 @@ export const authenticatedFetch = async (url, options = {}) => {
     // If we get 401 and haven't retried yet, try to refresh token
     if (response.status === 401 && retryCount < maxRetries) {
       retryCount++;
-      console.log('Received 401, attempting to refresh token...', await response.json());
+  // ...removed console.log
       
       try {
         // Try to refresh the token
         token = await refreshIdToken();
-        console.log('Token refreshed, retrying request...');
+  // ...removed console.log
         
         // Retry the request with new token
         response = await makeRequest(token);
-        console.log('Retry request response status:', response.status);
+  // ...removed console.log
         
         if (response.status === 401) {
           // Still 401 after refresh, clear tokens and throw error
-          console.error('Still unauthorized after token refresh');
+          // ...removed console.error
           clearTokens();
           throw new Error('Authentication failed - please log in again');
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
+  // ...removed console.error
         clearTokens();
         throw new Error('Authentication failed - please log in again');
       }
@@ -77,14 +75,12 @@ export const authenticatedFetch = async (url, options = {}) => {
     
     return response;
   } catch (error) {
-    console.error('Authenticated fetch error:', error);
+  // ...removed console.error
     throw error;
   }
 };
 
-/**
- * Wrapper for GET requests with authentication
- */
+
 export const authenticatedGet = async (url, options = {}) => {
   return authenticatedFetch(url, {
     ...options,
@@ -92,9 +88,7 @@ export const authenticatedGet = async (url, options = {}) => {
   });
 };
 
-/**
- * Wrapper for POST requests with authentication
- */
+
 export const authenticatedPost = async (url, data, options = {}) => {
   const isFormData = data instanceof FormData;
   
@@ -109,9 +103,7 @@ export const authenticatedPost = async (url, data, options = {}) => {
   });
 };
 
-/**
- * Wrapper for PUT requests with authentication
- */
+
 export const authenticatedPut = async (url, data, options = {}) => {
   return authenticatedFetch(url, {
     ...options,
@@ -120,9 +112,7 @@ export const authenticatedPut = async (url, data, options = {}) => {
   });
 };
 
-/**
- * Wrapper for DELETE requests with authentication
- */
+
 export const authenticatedDelete = async (url, options = {}) => {
   return authenticatedFetch(url, {
     ...options,

@@ -123,7 +123,7 @@ export default function SupervisorPanel() {
         }
         setLoading(false);
       } catch (err) {
-        console.error('Failed to load talents:', err);
+  // ...removed console.error
         setError(err.message);
         setLoading(false);
       }
@@ -147,7 +147,7 @@ export default function SupervisorPanel() {
       }
       
       const result = await response.json();
-      console.log('Delete result:', result);
+  // ...removed console.log
       
       if (result.status === "success") {
         setTalents((prev) => prev.filter((t) => t.submissionId !== submissionId));
@@ -155,7 +155,7 @@ export default function SupervisorPanel() {
         alert(result.message || "Delete failed");
       }
     } catch (err) {
-      console.error('Delete error:', err);
+  // ...removed console.error
       alert("Error: " + err.message);
     }
     setActionLoading(false);
@@ -229,7 +229,7 @@ export default function SupervisorPanel() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Edit response error:', response.status, errorText);
+  // ...removed console.error
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
@@ -249,11 +249,11 @@ export default function SupervisorPanel() {
         setEditIdx(null);
         alert("Talent updated successfully!");
       } else {
-        console.error('Edit failed:', result);
+  // ...removed console.error
         alert(result.message || "Update failed");
       }
     } catch (err) {
-      console.error('Edit error:', err);
+  // ...removed console.error
       alert("Error: " + err.message);
     }
     setActionLoading(false);

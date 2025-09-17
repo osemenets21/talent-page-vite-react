@@ -122,7 +122,7 @@ export default function EventsContentManager() {
         setError("Failed to load events");
       }
     } catch (err) {
-      console.error("Error loading events:", err);
+  // ...removed console.error
       setError("Failed to connect to server");
     } finally {
       setLoading(false);
@@ -185,7 +185,7 @@ export default function EventsContentManager() {
         return false;
       }
     } catch (err) {
-      console.error("Error creating event:", err);
+  // ...removed console.error
       setError("Failed to create event");
       return false;
     } finally {
@@ -292,7 +292,7 @@ export default function EventsContentManager() {
         }
       }
     } catch (err) {
-      console.error("Error updating event:", err);
+  // ...removed console.error
       setError("Failed to update event");
       return false;
     } finally {
@@ -322,7 +322,7 @@ export default function EventsContentManager() {
         return false;
       }
     } catch (err) {
-      console.error("Error deleting event:", err);
+  // ...removed console.error
       setError("Failed to delete event");
       return false;
     } finally {
@@ -340,7 +340,7 @@ export default function EventsContentManager() {
       await signOut(auth);
       navigate("/");
     } catch (error) {
-      console.error("Error signing out:", error);
+  // ...removed console.error
     }
   };
 

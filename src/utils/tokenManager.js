@@ -6,9 +6,7 @@ export const TOKEN_STORAGE_KEYS = {
   TOKEN_EXPIRY: 'firebase_token_expiry'
 };
 
-/**
- * Save tokens to localStorage after successful authentication
- */
+
 export const saveTokens = async (tokenResponse) => {
   try {    
     const expiryTime = Date.now() + (60 * 60 * 1000); // 1 hour from now
@@ -17,21 +15,15 @@ export const saveTokens = async (tokenResponse) => {
     localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refreshToken);
     localStorage.setItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY, expiryTime.toString());
     
-    console.log('Tokens saved successfully', {
-      tokenPreview: tokenResponse.idToken.substring(0, 50) + '...',
-      hasRefreshToken: !!tokenResponse.refreshToken,
-      expiryTime: new Date(expiryTime).toLocaleString()
-    });
+    
     return { idToken: tokenResponse.idToken, refreshToken: tokenResponse.refreshToken };
   } catch (error) {
-    console.error('Error saving tokens:', error);
+  
     throw error;
   }
 };
 
-/**
- * Get current ID token, refresh if necessary
- */
+
 export const getValidIdToken = async () => {
   try {
     const currentUser = auth.currentUser;
@@ -56,21 +48,16 @@ export const getValidIdToken = async () => {
     
     return idToken;
   } catch (error) {
-    console.error('Error getting valid ID token:', error);
     throw error;
   }
 };
 
-/**
- * Get stored ID token (may be expired)
- */
+
 export const getStoredIdToken = () => {
   return localStorage.getItem(TOKEN_STORAGE_KEYS.ID_TOKEN);
 };
 
-/**
- * Check if stored token is expired
- */
+
 export const isTokenExpired = () => {
   const expiry = localStorage.getItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
   if (!expiry) return true;
@@ -78,31 +65,23 @@ export const isTokenExpired = () => {
   return Date.now() >= parseInt(expiry);
 };
 
-/**
- * Clear all stored tokens
- */
+
 export const clearTokens = () => {
   localStorage.removeItem(TOKEN_STORAGE_KEYS.ID_TOKEN);
   localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
   localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
-  console.log('Tokens cleared');
 };
 
-/**
- * Refresh ID token using refresh token
- */
+
 export const refreshIdToken = async () => {
   try {
     const currentUser = auth.currentUser;
     
     if (!currentUser) {
-      console.error('No authenticated user for token refresh');
+  // ...removed console.error
       throw new Error('No authenticated user for token refresh');
     }
-
-    console.log('Attempting to refresh token for user:', currentUser.email);
     
-    // Firebase handles refresh token automatically when we call getIdToken(true)
     const newIdToken = await currentUser.getIdToken(true);
     
     // Update stored tokens
@@ -110,14 +89,9 @@ export const refreshIdToken = async () => {
     localStorage.setItem(TOKEN_STORAGE_KEYS.ID_TOKEN, newIdToken);
     localStorage.setItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY, expiryTime.toString());
     
-    console.log('Token refreshed successfully', {
-      tokenPreview: newIdToken.substring(0, 50) + '...',
-      newExpiryTime: new Date(expiryTime).toLocaleString()
-    });
+    
     return newIdToken;
   } catch (error) {
-    console.error('Error refreshing token:', error);
-    // If refresh fails, clear tokens and redirect to login
     clearTokens();
     throw error;
   }

@@ -186,8 +186,8 @@ export default function MyProfile() {
     : [];
   
   // Debug: Let's see what's in the files object
-  console.log('Profile files:', profile.files);
-  console.log('Performer images:', performerImages);
+  // ...removed console.log
+  // ...removed console.log
  
 
   return (

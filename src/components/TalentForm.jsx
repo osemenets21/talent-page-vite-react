@@ -1,3 +1,5 @@
+  const [hasW9, setHasW9] = useState(null); // null, true, or false
+  const [isRequestingW9, setIsRequestingW9] = useState(false);
 // Role-specific agreements
 const ROLE_AGREEMENTS = {
   DJ: [
@@ -209,7 +211,7 @@ export default function TalentForm() {
 
     setIsSubmitting(true);
 
-    if (!taxForm || !photo) {
+    if (hasW9 !== true || !taxForm || !photo) {
       setModalTitle("Files Required");
       setModalMessage("Upload your profile photo and tax form W9");
       setIsSuccessModal(false);
@@ -574,12 +576,81 @@ export default function TalentForm() {
               )}
             </div>
             <div className="pt-5">
-              <FileUpload
-                label="Upload W9 (PDF)"
-                accept=".pdf"
-                setFile={setTaxForm}
-                required
-              />
+              {/* W9 Question */}
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Do you have W9 tax form already? <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="flex gap-6 mb-4">
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="hasW9"
+                    value="yes"
+                    checked={hasW9 === true}
+                    onChange={() => setHasW9(true)}
+                    required
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="hasW9"
+                    value="no"
+                    checked={hasW9 === false}
+                    onChange={() => setHasW9(false)}
+                    required
+                  />
+                  No
+                </label>
+              </div>
+              {/* If Yes, show upload */}
+              {hasW9 === true && (
+                <FileUpload
+                  label="Upload W9 (PDF)"
+                  accept=".pdf"
+                  setFile={setTaxForm}
+                  required
+                />
+              )}
+              {/* If No, show request button */}
+              {hasW9 === false && (
+                <button
+                  type="button"
+                  disabled={isRequestingW9}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors mt-2"
+                  onClick={async () => {
+                    setIsRequestingW9(true);
+                    try {
+                      const apiUrl = '/backend/request_w9.php';
+                      const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                          firstName: form.firstName,
+                          lastName: form.lastName,
+                          email: form.email,
+                          submissionId: form.submissionId
+                        })
+                      });
+                      const data = await res.json();
+                      setModalTitle(data.status === 'success' ? 'Request Sent' : 'Request Failed');
+                      setModalMessage(data.message || (data.status === 'success' ? 'Your request for a W9 form has been sent to the manager.' : 'Failed to send request. Please try again.'));
+                      setIsSuccessModal(data.status === 'success');
+                      setShowModal(true);
+                    } catch (err) {
+                      setModalTitle('Request Failed');
+                      setModalMessage('Failed to send request. Please try again.');
+                      setIsSuccessModal(false);
+                      setShowModal(true);
+                    } finally {
+                      setIsRequestingW9(false);
+                    }
+                  }}
+                >
+                  {isRequestingW9 ? 'Requesting...' : 'Request W9 Tax Form from manager'}
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -49,8 +49,8 @@ use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
 // ---------- SES API config ----------
-$toEmail   = 'oleg@luckyhospitality.com';
-$fromEmail = 'oleg@luckyhospitality.com';
+$toEmail   = 'zach@bunkerdc.com';
+$fromEmail = 'zach@bunkerdc.com';
 $fromName  = 'Lucky Hospitality';
 $awsRegion = 'us-east-2'; // Ohio region
 $awsKey    = getenv('AWS_ACCESS_KEY_ID');

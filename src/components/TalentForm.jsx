@@ -669,10 +669,6 @@ export default function TalentForm() {
               })
             });
             const data = await res.json();
-            setModalTitle(data.status === 'success' ? 'Request Sent' : 'Request Failed');
-            setModalMessage(data.message || (data.status === 'success' ? 'Your request for a W9 form has been sent to the manager.' : 'Failed to send request. Please try again.'));
-            setIsSuccessModal(data.status === 'success');
-            setShowModal(true);
             setShowW9Modal(false);
           } catch (err) {
             setW9Error('Failed to send request. Please try again.');

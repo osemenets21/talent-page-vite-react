@@ -9,7 +9,6 @@ require __DIR__ . '/vendor/autoload.php';
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-trigger_error('Test error log', E_USER_WARNING); // Remove after confirming errors show up
 
 // ---------- Basic headers ----------
 header('Content-Type: application/json');
@@ -99,6 +98,8 @@ try {
     ]);
 } catch (AwsException $e) {
     error_log('SES API error: ' . $e->getAwsErrorMessage());
+    error_log('SES Exception: ' . $e->getMessage());
+    error_log(print_r($e, true));
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',

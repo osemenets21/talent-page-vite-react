@@ -38,6 +38,14 @@ import Modal from "./Modal";
 export default function TalentForm() {
   const [hasW9, setHasW9] = useState(null); // null, true, or false
   const [isRequestingW9, setIsRequestingW9] = useState(false);
+  const [showW9Modal, setShowW9Modal] = useState(false);
+  const [w9Form, setW9Form] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  });
+  const [w9Error, setW9Error] = useState('');
   // ...existing code...
   const [form, setForm] = useState({
     firstName: "",
@@ -587,6 +595,7 @@ export default function TalentForm() {
                     type="radio"
                     name="hasW9"
                     value="yes"
+                    className="text-gray-900"
                     checked={hasW9 === true}
                     onChange={() => setHasW9(true)}
                     required
@@ -598,6 +607,7 @@ export default function TalentForm() {
                     type="radio"
                     name="hasW9"
                     value="no"
+                    className="text-gray-900"
                     checked={hasW9 === false}
                     onChange={() => setHasW9(false)}
                     required
@@ -618,40 +628,110 @@ export default function TalentForm() {
               {hasW9 === false && (
                 <button
                   type="button"
-                  disabled={isRequestingW9}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors mt-2"
-                  onClick={async () => {
-                    setIsRequestingW9(true);
-                    try {
-                      const apiUrl = '/backend/request_w9.php';
-                      const res = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                          firstName: form.firstName,
-                          lastName: form.lastName,
-                          email: form.email,
-                          submissionId: form.submissionId
-                        })
-                      });
-                      const data = await res.json();
-                      setModalTitle(data.status === 'success' ? 'Request Sent' : 'Request Failed');
-                      setModalMessage(data.message || (data.status === 'success' ? 'Your request for a W9 form has been sent to the manager.' : 'Failed to send request. Please try again.'));
-                      setIsSuccessModal(data.status === 'success');
-                      setShowModal(true);
-                    } catch (err) {
-                      setModalTitle('Request Failed');
-                      setModalMessage('Failed to send request. Please try again.');
-                      setIsSuccessModal(false);
-                      setShowModal(true);
-                    } finally {
-                      setIsRequestingW9(false);
-                    }
+                  onClick={() => {
+                    setW9Form({
+                      firstName: form.firstName,
+                      lastName: form.lastName,
+                      email: form.email,
+                      phone: form.phone
+                    });
+                    setShowW9Modal(true);
                   }}
                 >
-                  {isRequestingW9 ? 'Requesting...' : 'Request W9 Tax Form from manager'}
+                  Request W9 Tax Form from manager
                 </button>
               )}
+      {/* W9 Request Modal */}
+      {showW9Modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowW9Modal(false)}>
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+            <h2 className="text-lg font-semibold mb-4">Request W9 Tax Form</h2>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="First Name"
+                className="w-full border rounded px-3 py-2"
+                value={w9Form.firstName}
+                onChange={e => setW9Form(f => ({ ...f, firstName: e.target.value }))}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                className="w-full border rounded px-3 py-2"
+                value={w9Form.lastName}
+                onChange={e => setW9Form(f => ({ ...f, lastName: e.target.value }))}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full border rounded px-3 py-2"
+                value={w9Form.email}
+                onChange={e => setW9Form(f => ({ ...f, email: e.target.value }))}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Phone Number"
+                className="w-full border rounded px-3 py-2"
+                value={w9Form.phone}
+                onChange={e => setW9Form(f => ({ ...f, phone: e.target.value }))}
+                required
+              />
+              {w9Error && <p className="text-xs text-red-500">{w9Error}</p>}
+              <button
+                className={`w-full mt-2 py-2 rounded bg-blue-600 text-white font-semibold ${isRequestingW9 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={
+                  isRequestingW9 ||
+                  !w9Form.firstName.trim() ||
+                  !w9Form.lastName.trim() ||
+                  !w9Form.email.trim() ||
+                  !w9Form.phone.trim()
+                }
+                onClick={async () => {
+                  setW9Error('');
+                  if (!w9Form.firstName.trim() || !w9Form.lastName.trim() || !w9Form.email.trim() || !w9Form.phone.trim()) {
+                    setW9Error('All fields are required.');
+                    return;
+                  }
+                  setIsRequestingW9(true);
+                  try {
+                    const apiUrl = '/backend/request_w9.php';
+                    const res = await fetch(apiUrl, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                      body: new URLSearchParams({
+                        firstName: w9Form.firstName,
+                        lastName: w9Form.lastName,
+                        email: w9Form.email,
+                        phone: w9Form.phone,
+                        submissionId: form.submissionId
+                      })
+                    });
+                    const data = await res.json();
+                    setModalTitle(data.status === 'success' ? 'Request Sent' : 'Request Failed');
+                    setModalMessage(data.message || (data.status === 'success' ? 'Your request for a W9 form has been sent to the manager.' : 'Failed to send request. Please try again.'));
+                    setIsSuccessModal(data.status === 'success');
+                    setShowModal(true);
+                    setShowW9Modal(false);
+                  } catch (err) {
+                    setW9Error('Failed to send request. Please try again.');
+                  } finally {
+                    setIsRequestingW9(false);
+                  }
+                }}
+              >
+                {isRequestingW9 ? 'Sending...' : 'Send request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
             </div>
           </div>
         </div>

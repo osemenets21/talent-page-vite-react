@@ -99,7 +99,8 @@ try {
 } catch (AwsException $e) {
     error_log('SES API error: ' . $e->getAwsErrorMessage());
     error_log('SES Exception: ' . $e->getMessage());
-    error_log(print_r($e, true));
+    // Remove or comment out the next line to avoid memory errors:
+    // error_log(print_r($e, true));
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',

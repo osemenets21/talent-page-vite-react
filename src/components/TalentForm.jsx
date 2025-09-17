@@ -709,7 +709,7 @@ export default function TalentForm() {
               className="mt-1 h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
               style={{ borderRadius: 4 }}
             />
-            <span>
+            <p>
               I agree to the{' '}
               <a
                 href="https://drive.google.com/file/d/1Wp36AhlsiazCJTvflEqH4YYucS3dF3hw/view?usp=sharing"
@@ -721,7 +721,7 @@ export default function TalentForm() {
               and understand that my data will be collected for profile
               submission purposes.
               <span className="text-red-500 ml-1">*</span>
-            </span>
+            </p>
           </label>
         </div>
 

@@ -1,5 +1,4 @@
-  const [hasW9, setHasW9] = useState(null); // null, true, or false
-  const [isRequestingW9, setIsRequestingW9] = useState(false);
+// ...existing code...
 // Role-specific agreements
 const ROLE_AGREEMENTS = {
   DJ: [
@@ -37,6 +36,8 @@ import PhotoCropModal from "./PhotoCropModal";
 import Modal from "./Modal";
 
 export default function TalentForm() {
+  const [hasW9, setHasW9] = useState(null); // null, true, or false
+  const [isRequestingW9, setIsRequestingW9] = useState(false);
   // ...existing code...
   const [form, setForm] = useState({
     firstName: "",

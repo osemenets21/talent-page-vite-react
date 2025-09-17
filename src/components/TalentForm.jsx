@@ -752,8 +752,12 @@ export default function TalentForm() {
         setOpen={(open) => {
           setShowModal(open);
           if (!open && isSuccessModal) {
-            // Navigate to profile page after successful submission
             navigate("/my-profile");
+          }
+          if (!open) {
+            setModalTitle("");
+            setModalMessage("");
+            setIsSuccessModal(false);
           }
         }}
         title={modalTitle}

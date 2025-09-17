@@ -43,7 +43,6 @@ if ($submissionId === '' || $firstName === '' || $lastName === '') {
 }
 
 // ---------- Load AWS SDK ----------
-require __DIR__ . '/../vendor/autoload.php';
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 

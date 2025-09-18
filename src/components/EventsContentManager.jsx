@@ -655,7 +655,7 @@ export default function EventsContentManager() {
                     onChange={handleInputChange}
                     className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                       formErrors.club ? "border-red-300" : "border-gray-300"
-                    }`}
+                    } text-black`}
                   >
                     <option value="District Eagle">District Eagle</option>
                     <option value="BUNKER">BUNKER</option>
@@ -677,10 +677,8 @@ export default function EventsContentManager() {
                     onChange={handleInputChange}
                     placeholder="Enter event name"
                     className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.event_name
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    }`}
+                      formErrors.event_name ? "border-red-300" : "border-gray-300"
+                    } text-black`}
                   />
                   {formErrors.event_name && (
                     <p className="text-red-500 text-xs mt-1">
@@ -703,10 +701,8 @@ export default function EventsContentManager() {
                     onChange={handleInputChange}
                     min={getCurrentDateNY()}
                     className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.event_date
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    }`}
+                      formErrors.event_date ? "border-red-300" : "border-gray-300"
+                    } text-black`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     New York timezone
@@ -728,10 +724,8 @@ export default function EventsContentManager() {
                     onChange={handleInputChange}
                     placeholder="20:00"
                     className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      formErrors.start_hour
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    }`}
+                      formErrors.start_hour ? "border-red-300" : "border-gray-300"
+                    } text-black`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Example: 8:00 PM
@@ -754,7 +748,7 @@ export default function EventsContentManager() {
                     placeholder="02:00"
                     className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                       formErrors.end_hour ? "border-red-300" : "border-gray-300"
-                    }`}
+                    } text-black`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Example: 2:00 AM
@@ -776,7 +770,7 @@ export default function EventsContentManager() {
                   name="has_cover"
                   value={formData.has_cover}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                 >
                   <option value="no">No</option>
                   <option value="yes">Yes</option>
@@ -800,10 +794,8 @@ export default function EventsContentManager() {
                       onChange={handleInputChange}
                       placeholder="20:00"
                       className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                        formErrors.cover_start_time
-                          ? "border-red-300"
-                          : "border-gray-300"
-                      }`}
+                        formErrors.cover_start_time ? "border-red-300" : "border-gray-300"
+                      } text-black`}
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       When cover charge begins
@@ -827,10 +819,8 @@ export default function EventsContentManager() {
                       min="0"
                       step="0.01"
                       className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                        formErrors.cover_value
-                          ? "border-red-300"
-                          : "border-gray-300"
-                      }`}
+                        formErrors.cover_value ? "border-red-300" : "border-gray-300"
+                      } text-black`}
                     />
                     {formErrors.cover_value && (
                       <p className="text-red-500 text-xs mt-1">
@@ -851,7 +841,7 @@ export default function EventsContentManager() {
                     name="eagle_xl"
                     value={formData.eagle_xl}
                     onChange={handleInputChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -871,10 +861,8 @@ export default function EventsContentManager() {
                   rows={4}
                   placeholder="Describe the event, performers, special features..."
                   className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    formErrors.event_description
-                      ? "border-red-300"
-                      : "border-gray-300"
-                  }`}
+                    formErrors.event_description ? "border-red-300" : "border-gray-300"
+                  } text-black`}
                 />
                 {formErrors.event_description && (
                   <p className="text-red-500 text-xs mt-1">
@@ -964,10 +952,8 @@ export default function EventsContentManager() {
                   onChange={handleInputChange}
                   placeholder="https://tickets.example.com/event-name"
                   className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    formErrors.ticket_link
-                      ? "border-red-300"
-                      : "border-gray-300"
-                  }`}
+                    formErrors.ticket_link ? "border-red-300" : "border-gray-300"
+                  } text-black`}
                 />
                 {formErrors.ticket_link && (
                   <p className="text-red-500 text-xs mt-1">
@@ -987,7 +973,7 @@ export default function EventsContentManager() {
                   onChange={handleInputChange}
                   rows={3}
                   placeholder="Dress code, age restrictions, special notes..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                 />
               </div>
 
@@ -1000,7 +986,7 @@ export default function EventsContentManager() {
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                 >
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
@@ -1020,7 +1006,7 @@ export default function EventsContentManager() {
                   onChange={handleInputChange}
                   rows={3}
                   placeholder="Internal notes and comments..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                 />
               </div>
 
@@ -1038,7 +1024,7 @@ export default function EventsContentManager() {
                     min="0"
                     step="1"
                     placeholder="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                   />
                 </div>
                 <div>
@@ -1053,7 +1039,7 @@ export default function EventsContentManager() {
                     min="0"
                     step="1"
                     placeholder="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                   />
                 </div>
                 <div>
@@ -1068,7 +1054,7 @@ export default function EventsContentManager() {
                     min="0"
                     step="1"
                     placeholder="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
                   />
                 </div>
               </div>

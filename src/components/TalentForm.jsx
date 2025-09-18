@@ -219,7 +219,7 @@ export default function TalentForm() {
 
     setIsSubmitting(true);
 
-    if (hasW9 !== true || !taxForm || !photo) {
+    if (!photo) {
       setModalTitle("Files Required");
       setModalMessage("Upload your profile photo and tax form W9");
       setIsSuccessModal(false);

@@ -1,7 +1,7 @@
 // Admin configuration
 export const ADMIN_EMAILS = [
   "oleg@luckyhospitality.com",
-  "contact@bunker.com",
+  "contact@bunkerdc.com",
   "ryan@bunkerdc.com"
 ];
 
@@ -12,7 +12,8 @@ export const isAdmin = (email) => {
 export const getAdminRole = (email) => {
   const roles = {
     "oleg@luckyhospitality.com": "super_admin",
-    "supervisor@luckyhospitality.com": "supervisor",
+    "contact@bunkerdc.com": "super_admin",
+
   };
   return roles[email?.toLowerCase()] || null;
 };

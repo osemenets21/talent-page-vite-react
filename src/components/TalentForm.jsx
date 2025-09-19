@@ -275,11 +275,11 @@ export default function TalentForm() {
       const [showHint, setShowHint] = useState(false);
 
       // Use box-shadow for validation feedback
-      let boxShadow = undefined;
+      let border = undefined;
       if (error) {
-        boxShadow = '0 0 0 5px #ef4444'; // Tailwind red-500, bigger shadow
+        border = '3px solid #ef4444'; // Tailwind red-500, 3px border
       } else if (valid) {
-        boxShadow = '0 0 0 5px #22c55e'; // Tailwind green-500, bigger shadow
+        border = '3px solid #22c55e'; // Tailwind green-500, 3px border
       }
 
       return (
@@ -309,7 +309,7 @@ export default function TalentForm() {
               value={value}
               onChange={(e) => onChange(e.target.value)}
               className={`block w-full rounded-md px-3 py-2 text-sm text-black shadow-sm focus:ring-2 placeholder-gray-400`}
-              style={boxShadow ? { boxShadow } : {}}
+              style={border ? { border } : {}}
             />
             {showHint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
           </div>

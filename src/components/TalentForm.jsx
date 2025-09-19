@@ -518,7 +518,7 @@ export default function TalentForm() {
                   {inputErrors.music_genres && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.music_genres}</p>}
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-900 mb-1">
-                      Are you from Washington DC? <span className="text-red-500 ml-1">*</span>
+                      Are you from Washington, DC Area? <span className="text-red-500 ml-1">*</span>
                     </label>
                     <select
                       id="isFromDC-select"
@@ -610,7 +610,7 @@ export default function TalentForm() {
               valid={form.tiktok && !inputErrors.tiktok}
             />
             <Input
-              label="City of Origin"
+              label="Current City of Residence"
               id="city"
               value={form.city}
               onChange={(v) => setForm({ ...form, city: v })}

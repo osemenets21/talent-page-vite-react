@@ -965,9 +965,9 @@ function Input({
 }) {
   const [showHint, setShowHint] = useState(false);
 
-  let borderColor = "border-gray-300";
-  if (error) borderColor = "border-red-500 focus:ring-red-600";
-  else if (valid) borderColor = "border-green-500 focus:ring-green-600";
+  let borderColor = "border-gray-300 focus:ring-indigo-600";
+  if (error) borderColor = "border-red-500 focus:ring-red-500";
+  else if (valid) borderColor = "border-green-500 focus:ring-green-500";
 
   return (
     <div className={className}>
@@ -996,7 +996,6 @@ function Input({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={`block w-full rounded-md px-3 py-2 text-sm text-black shadow-sm focus:ring-2 placeholder-gray-400 ${borderColor}`}
-          style={error ? { outline: 'none', boxShadow: '0 0 0 2px #ef4444' } : valid ? { outline: 'none', boxShadow: '0 0 0 2px #22c55e' } : {}}
         />
         {showHint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
       </div>

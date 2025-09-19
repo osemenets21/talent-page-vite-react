@@ -277,9 +277,9 @@ export default function TalentForm() {
       // Use box-shadow for validation feedback
       let boxShadow = undefined;
       if (error) {
-        boxShadow = '0 0 0 2px #ef4444'; // Tailwind red-500
+        boxShadow = '0 0 0 5px #ef4444'; // Tailwind red-500, bigger shadow
       } else if (valid) {
-        boxShadow = '0 0 0 2px #22c55e'; // Tailwind green-500
+        boxShadow = '0 0 0 5px #22c55e'; // Tailwind green-500, bigger shadow
       }
 
       return (
@@ -477,7 +477,7 @@ export default function TalentForm() {
               onChange={(v) => setForm({ ...form, firstName: v })}
               required
               error={inputErrors.firstName}
-              valid={form.firstName && !inputErrors.firstName}
+              valid={form.firstName && !inputErrors.firstName && /^[A-Za-z\s'-]{2,100}$/.test(form.firstName.trim())}
             />
             {inputErrors.firstName && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.firstName}</p>}
             <Input
@@ -487,7 +487,7 @@ export default function TalentForm() {
               onChange={(v) => setForm({ ...form, lastName: v })}
               required
               error={inputErrors.lastName}
-              valid={form.lastName && !inputErrors.lastName}
+              valid={form.lastName && !inputErrors.lastName && /^[A-Za-z\s'-]{2,100}$/.test(form.lastName.trim())}
             />
             {inputErrors.lastName && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.lastName}</p>}
             <Input
@@ -498,7 +498,7 @@ export default function TalentForm() {
               className="sm:col-span-3"
               hint="Optional, but If entered this will take the place of first / last name on profile"
               error={inputErrors.performerName}
-              valid={form.performerName && !inputErrors.performerName}
+              valid={form.performerName !== undefined && !inputErrors.performerName && /^.{0,150}$/.test(form.performerName)}
             />
 
             <div className="sm:col-span-3">
@@ -541,7 +541,7 @@ export default function TalentForm() {
                     className="mt-2"
                     hint="e.g. House, Techno, Hip-Hop, Disco, Latin etc."
                     error={inputErrors.music_genres}
-                    valid={form.music_genres && !inputErrors.music_genres}
+                    valid={form.music_genres && !inputErrors.music_genres && /^.{1,255}$/.test(form.music_genres)}
                   />
                   {inputErrors.music_genres && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.music_genres}</p>}
                   <div className="mt-2">
@@ -581,7 +581,7 @@ export default function TalentForm() {
               }
               className="sm:col-span-2"
               error={inputErrors.instagram}
-              valid={form.instagram && !inputErrors.instagram}
+              valid={form.instagram && !inputErrors.instagram && /^@[a-zA-Z0-9._]{1,30}$/.test(form.instagram.trim())}
             />
             <Input
               label="Facebook"
@@ -645,7 +645,7 @@ export default function TalentForm() {
               className="sm:col-span-3"
               required
               error={inputErrors.city}
-              valid={form.city && !inputErrors.city}
+              valid={form.city && !inputErrors.city && /^.{2,100}$/.test(form.city.trim())}
             />
             {inputErrors.city && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.city}</p>}
             <Input
@@ -656,7 +656,7 @@ export default function TalentForm() {
               className="sm:col-span-3"
               required
               error={inputErrors.country}
-              valid={form.country && !inputErrors.country}
+              valid={form.country && !inputErrors.country && /^.{2,100}$/.test(form.country.trim())}
             />
             {inputErrors.country && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.country}</p>}
 
@@ -716,7 +716,7 @@ export default function TalentForm() {
                 onChange={(v) => setForm({ ...form, phone: v })}
                 required
                 error={inputErrors.phone}
-                valid={form.phone && !inputErrors.phone}
+                valid={form.phone && !inputErrors.phone && /^[0-9+\-() ]{7,20}$/.test(form.phone.trim())}
               />
               {inputErrors.phone && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.phone}</p>}
               <Input
@@ -726,7 +726,7 @@ export default function TalentForm() {
                 onChange={(v) => setForm({ ...form, email: v })}
                 required
                 error={inputErrors.email}
-                valid={form.email && !inputErrors.email}
+                valid={form.email && !inputErrors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())}
               />
               {inputErrors.email && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.email}</p>}
 
@@ -757,7 +757,7 @@ export default function TalentForm() {
                     className="sm:col-span-3"
                     required
                     error={inputErrors.venmo}
-                    valid={form.venmo && !inputErrors.venmo}
+                    valid={form.venmo && !inputErrors.venmo && /^.{0,150}$/.test(form.venmo)}
                   />
                   {inputErrors.venmo && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.venmo}</p>}
                 </>
@@ -772,7 +772,7 @@ export default function TalentForm() {
                     className="sm:col-span-3"
                     required
                     error={inputErrors.zelle}
-                    valid={form.zelle && !inputErrors.zelle}
+                    valid={form.zelle && !inputErrors.zelle && /^.{0,150}$/.test(form.zelle)}
                   />
                   {inputErrors.zelle && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.zelle}</p>}
                 </>

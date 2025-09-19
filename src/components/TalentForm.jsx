@@ -741,16 +741,21 @@ export default function TalentForm() {
 
         <div className="border-t border-gray-200 px-4 pt-4 sm:px-8">
           {/* Role-specific agreements */}
-          {(() => {
-            let agreements = ROLE_AGREEMENTS[form.role] || [];
-            if (form.role === "DJ" && isFromDC === false) {
-              agreements = [
-                ...agreements,
-                "I agree not to DJ within a 20-mile radius of Washington, DC for 45 days before and 45 days after any scheduled performance dates, unless otherwise agreed upon in advance."
-              ];
-            }
-            return agreements.map((text, idx) => (
-                <label key={idx} className="flex items-start text-sm text-gray-700 gap-2 mb-2">
+          <div className="flex flex-col gap-2 mt-2">
+            {(() => {
+              let agreements = ROLE_AGREEMENTS[form.role] || [];
+              if (form.role === "DJ" && isFromDC === false) {
+                agreements = [
+                  ...agreements,
+                  "I agree not to DJ within a 20-mile radius of Washington, DC for 45 days before and 45 days after any scheduled performance dates, unless otherwise agreed upon in advance."
+                ];
+              }
+              return agreements.map((text, idx) => (
+                <label
+                  key={idx}
+                  className="flex items-center gap-3 rounded-md px-2 py-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-gray-900 text-[15px] font-normal"
+                  style={{ minHeight: 44 }}
+                >
                   <input
                     type="checkbox"
                     required
@@ -758,37 +763,41 @@ export default function TalentForm() {
                     onChange={e => {
                       setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
                     }}
-                    className="mt-1 h-4 w-4 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
+                    className="h-5 w-5 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle mt-0.5"
                     style={{ borderRadius: 4 }}
                   />
-                  <span>{text}<span className="text-red-500 ml-1">*</span></span>
+                  <span className="leading-snug">{text}<span className="text-red-500 ml-1">*</span></span>
                 </label>
-            ));
-          })()}
-          {/* General agreement */}
-          <label className="flex items-start text-sm text-gray-700 gap-2">
-            <input
-              type="checkbox"
-              required
-              checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="mt-1 h-4 w-4 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
-              style={{ borderRadius: 4 }}
-            />
-            <p>
-              I agree to the{' '}
-              <a
-                href="https://drive.google.com/file/d/1Wp36AhlsiazCJTvflEqH4YYucS3dF3hw/view?usp=sharing"
-                target="_blank"
-                className="underline text-indigo-600"
-              >
-                Terms & Conditions and Privacy Policy
-              </a>{' '}
-              and understand that my data will be collected for profile
-              submission purposes.
-              <span className="text-red-500 ml-1">*</span>
-            </p>
-          </label>
+              ));
+            })()}
+            {/* General agreement */}
+            <label
+              className="flex items-center gap-3 rounded-md px-2 py-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-gray-900 text-[15px] font-normal"
+              style={{ minHeight: 44 }}
+            >
+              <input
+                type="checkbox"
+                required
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                className="h-5 w-5 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle mt-0.5"
+                style={{ borderRadius: 4 }}
+              />
+              <span className="leading-snug">
+                I agree to the{' '}
+                <a
+                  href="https://drive.google.com/file/d/1Wp36AhlsiazCJTvflEqH4YYucS3dF3hw/view?usp=sharing"
+                  target="_blank"
+                  className="underline text-indigo-600 font-medium"
+                >
+                  Terms & Conditions and Privacy Policy
+                </a>{' '}
+                and understand that my data will be collected for profile
+                submission purposes.
+                <span className="text-red-500 ml-1">*</span>
+              </span>
+            </label>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8 mt-2.5">

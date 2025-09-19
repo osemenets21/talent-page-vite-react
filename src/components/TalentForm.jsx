@@ -448,6 +448,7 @@ export default function TalentForm() {
                       <label className="flex items-center gap-1">
                         <input
                           id="isFromDC-yes"
+                          className="h-4 w-4"
                           type="radio"
                           name="isFromDC"
                           value="yes"
@@ -461,6 +462,7 @@ export default function TalentForm() {
                         <input
                           id="isFromDC-no"
                           type="radio"
+                          className="h-4 w-4"
                           name="isFromDC"
                           value="no"
                           checked={isFromDC === false}

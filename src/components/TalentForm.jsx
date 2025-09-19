@@ -82,7 +82,6 @@ export default function TalentForm() {
   const [modalMessage, setModalMessage] = useState("");
   const [isSuccessModal, setIsSuccessModal] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  // Track which role agreements are checked
   const [roleAgreementsChecked, setRoleAgreementsChecked] = useState({});
   const [bioError, setBioError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

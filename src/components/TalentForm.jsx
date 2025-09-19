@@ -194,17 +194,23 @@ export default function TalentForm() {
     } else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
       errors.email = "Enter a valid email address.";
     }
-    // First name
+    // First name: required, no numbers
     if (!form.firstName.trim()) {
       errors.firstName = "First name is required.";
+    } else if (/[0-9]/.test(form.firstName)) {
+      errors.firstName = "First name cannot include numbers.";
     }
-    // Last name
+    // Last name: required, no numbers
     if (!form.lastName.trim()) {
       errors.lastName = "Last name is required.";
+    } else if (/[0-9]/.test(form.lastName)) {
+      errors.lastName = "Last name cannot include numbers.";
     }
-    // City
+    // City: required, no numbers
     if (!form.city.trim()) {
       errors.city = "City is required.";
+    } else if (/[0-9]/.test(form.city)) {
+      errors.city = "City cannot include numbers.";
     }
     // Country
     if (!form.country.trim()) {

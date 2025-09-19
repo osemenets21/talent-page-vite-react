@@ -80,6 +80,7 @@ export default function TalentForm() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [roleAgreementsChecked, setRoleAgreementsChecked] = useState({});
   const [bioError, setBioError] = useState("");
+  const [inputErrors, setInputErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFromDC, setIsFromDC] = useState(null); // null, true, or false
   const [isFromDCError, setIsFromDCError] = useState("");
@@ -178,15 +179,73 @@ export default function TalentForm() {
     await submitTalentProfile();
   };
 
+
+  const validateInputs = () => {
+    const errors = {};
+    // Phone: only numbers, required
+    if (!form.phone.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (!/^[0-9]+$/.test(form.phone.trim())) {
+      errors.phone = "Phone number can only contain numbers.";
+    }
+    // Email: required, must contain @ and .
+    if (!form.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+    // First name
+    if (!form.firstName.trim()) {
+      errors.firstName = "First name is required.";
+    }
+    // Last name
+    if (!form.lastName.trim()) {
+      errors.lastName = "Last name is required.";
+    }
+    // City
+    if (!form.city.trim()) {
+      errors.city = "City is required.";
+    }
+    // Country
+    if (!form.country.trim()) {
+      errors.country = "Country is required.";
+    }
+    // Venmo/Zelle
+    if (form.paymentMethod === "Venmo" && !form.venmo.trim()) {
+      errors.venmo = "Venmo name is required.";
+    }
+    if (form.paymentMethod === "Zelle" && !form.zelle.trim()) {
+      errors.zelle = "Zelle email or phone is required.";
+    }
+    // Music genres for DJ
+    if (form.role === "DJ" && !form.music_genres.trim()) {
+      errors.music_genres = "Music genres are required for DJs.";
+    }
+    // Bio
+    if (!form.bio.trim()) {
+      errors.bio = "Bio is required.";
+    }
+    return errors;
+  };
+
   const submitTalentProfile = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
 
-
+    // Validate all inputs
+    const errors = validateInputs();
+    setInputErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      // Scroll to first error
+      const firstErrorKey = Object.keys(errors)[0];
+      const el = document.getElementById(firstErrorKey);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
 
     // Require "Are you from Washington DC?" for DJs
     if (form.role === "DJ" && isFromDC === null) {
       setIsFromDCError("Please answer if you are from Washington DC.");
-      document.getElementById("isFromDC-yes")?.focus();
+      document.getElementById("isFromDC-select")?.focus();
       return;
     } else {
       setIsFromDCError("");
@@ -384,6 +443,7 @@ export default function TalentForm() {
               onChange={(v) => setForm({ ...form, firstName: v })}
               required
             />
+            {inputErrors.firstName && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.firstName}</p>}
             <Input
               label="Last Name"
               id="lastName"
@@ -391,6 +451,7 @@ export default function TalentForm() {
               onChange={(v) => setForm({ ...form, lastName: v })}
               required
             />
+            {inputErrors.lastName && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.lastName}</p>}
             <Input
               label="Stage / Performer Name"
               id="performerName"
@@ -440,6 +501,7 @@ export default function TalentForm() {
                     className="mt-2"
                     hint="e.g. House, Techno, Hip-Hop, Disco, Latin etc."
                   />
+                  {inputErrors.music_genres && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.music_genres}</p>}
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-900 mb-1">
                       Are you from Washington DC? <span className="text-red-500 ml-1">*</span>
@@ -529,6 +591,7 @@ export default function TalentForm() {
               className="sm:col-span-3"
               required
             />
+            {inputErrors.city && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.city}</p>}
             <Input
               label="Country"
               id="country"
@@ -537,6 +600,7 @@ export default function TalentForm() {
               className="sm:col-span-3"
               required
             />
+            {inputErrors.country && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.country}</p>}
 
             <div className="sm:col-span-6">
               <label
@@ -594,6 +658,7 @@ export default function TalentForm() {
                 onChange={(v) => setForm({ ...form, phone: v })}
                 required
               />
+              {inputErrors.phone && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.phone}</p>}
               <Input
                 label="Email"
                 id="email"
@@ -601,6 +666,7 @@ export default function TalentForm() {
                 onChange={(v) => setForm({ ...form, email: v })}
                 required
               />
+              {inputErrors.email && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.email}</p>}
 
               <div className="sm:col-span-3">
                 <label className="block text-sm font-medium text-gray-900">
@@ -620,24 +686,30 @@ export default function TalentForm() {
               </div>
 
               {form.paymentMethod === "Venmo" && (
-                <Input
-                  label="Venmo Name"
-                  id="venmo"
-                  value={form.venmo}
-                  onChange={(v) => setForm({ ...form, venmo: v })}
-                  className="sm:col-span-3"
-                  required
-                />
+                <>
+                  <Input
+                    label="Venmo Name"
+                    id="venmo"
+                    value={form.venmo}
+                    onChange={(v) => setForm({ ...form, venmo: v })}
+                    className="sm:col-span-3"
+                    required
+                  />
+                  {inputErrors.venmo && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.venmo}</p>}
+                </>
               )}
               {form.paymentMethod === "Zelle" && (
-                <Input
-                  label="Zelle Email or Phone"
-                  id="zelle"
-                  value={form.zelle}
-                  onChange={(v) => setForm({ ...form, zelle: v })}
-                  className="sm:col-span-3"
-                  required
-                />
+                <>
+                  <Input
+                    label="Zelle Email or Phone"
+                    id="zelle"
+                    value={form.zelle}
+                    onChange={(v) => setForm({ ...form, zelle: v })}
+                    className="sm:col-span-3"
+                    required
+                  />
+                  {inputErrors.zelle && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.zelle}</p>}
+                </>
               )}
             </div>
             <div className="pt-5">

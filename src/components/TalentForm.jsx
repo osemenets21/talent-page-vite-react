@@ -182,54 +182,77 @@ export default function TalentForm() {
 
   const validateInputs = () => {
     const errors = {};
-    // Phone: only numbers, required
-    if (!form.phone.trim()) {
-      errors.phone = "Phone number is required.";
-    } else if (!/^[0-9]+$/.test(form.phone.trim())) {
-      errors.phone = "Phone number can only contain numbers.";
-    }
-    // Email: required, must contain @ and .
-    if (!form.email.trim()) {
-      errors.email = "Email is required.";
-    } else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
-      errors.email = "Enter a valid email address.";
-    }
-    // First name: required, no numbers
+    // First Name
     if (!form.firstName.trim()) {
       errors.firstName = "First name is required.";
-    } else if (/[0-9]/.test(form.firstName)) {
-      errors.firstName = "First name cannot include numbers.";
+    } else if (!/^[A-Za-z\s'-]{2,100}$/.test(form.firstName.trim())) {
+      errors.firstName = "First name must be 2-100 letters, spaces, apostrophes, or hyphens.";
     }
-    // Last name: required, no numbers
+    // Last Name
     if (!form.lastName.trim()) {
       errors.lastName = "Last name is required.";
-    } else if (/[0-9]/.test(form.lastName)) {
-      errors.lastName = "Last name cannot include numbers.";
+    } else if (!/^[A-Za-z\s'-]{2,100}$/.test(form.lastName.trim())) {
+      errors.lastName = "Last name must be 2-100 letters, spaces, apostrophes, or hyphens.";
     }
-    // City: required, no numbers
+    // Phone
+    if (!form.phone.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (!/^[0-9+\-() ]{7,20}$/.test(form.phone.trim())) {
+      errors.phone = "Phone must be 7-20 digits, +, -, (), or spaces.";
+    }
+    // Email
+    if (!form.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+    // Instagram
+    if (form.instagram && !/^@[a-zA-Z0-9._]{1,30}$/.test(form.instagram.trim())) {
+      errors.instagram = "Instagram must start with @ and be 1-30 letters, numbers, . or _.";
+    }
+    // Performer Name
+    if (form.performerName && !/^.{0,150}$/.test(form.performerName)) {
+      errors.performerName = "Performer name must be up to 150 characters.";
+    }
+    // City
     if (!form.city.trim()) {
       errors.city = "City is required.";
-    } else if (/[0-9]/.test(form.city)) {
-      errors.city = "City cannot include numbers.";
+    } else if (!/^.{2,100}$/.test(form.city.trim())) {
+      errors.city = "City must be 2-100 characters.";
     }
     // Country
     if (!form.country.trim()) {
       errors.country = "Country is required.";
-    }
-    // Venmo/Zelle
-    if (form.paymentMethod === "Venmo" && !form.venmo.trim()) {
-      errors.venmo = "Venmo name is required.";
-    }
-    if (form.paymentMethod === "Zelle" && !form.zelle.trim()) {
-      errors.zelle = "Zelle email or phone is required.";
-    }
-    // Music genres for DJ
-    if (form.role === "DJ" && !form.music_genres.trim()) {
-      errors.music_genres = "Music genres are required for DJs.";
+    } else if (!/^.{2,100}$/.test(form.country.trim())) {
+      errors.country = "Country must be 2-100 characters.";
     }
     // Bio
     if (!form.bio.trim()) {
       errors.bio = "Bio is required.";
+    } else if (!/^.{20,1500}$/.test(form.bio.trim())) {
+      errors.bio = "Bio must be 20-1500 characters.";
+    }
+    // Role Other
+    if (form.role === "Other" && form.roleOther && !/^.{0,100}$/.test(form.roleOther)) {
+      errors.roleOther = "Other role must be up to 100 characters.";
+    }
+    // Venmo
+    if (form.paymentMethod === "Venmo" && !form.venmo.trim()) {
+      errors.venmo = "Venmo name is required.";
+    } else if (form.venmo && !/^.{0,150}$/.test(form.venmo)) {
+      errors.venmo = "Venmo name must be up to 150 characters.";
+    }
+    // Zelle
+    if (form.paymentMethod === "Zelle" && !form.zelle.trim()) {
+      errors.zelle = "Zelle email or phone is required.";
+    } else if (form.zelle && !/^.{0,150}$/.test(form.zelle)) {
+      errors.zelle = "Zelle must be up to 150 characters.";
+    }
+    // Music genres for DJ
+    if (form.role === "DJ" && !form.music_genres.trim()) {
+      errors.music_genres = "Music genres are required for DJs.";
+    } else if (form.music_genres && !/^.{1,255}$/.test(form.music_genres)) {
+      errors.music_genres = "Music genres must be 1-255 characters.";
     }
     return errors;
   };
@@ -237,56 +260,61 @@ export default function TalentForm() {
   const submitTalentProfile = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
 
-    // Validate all inputs
-    const errors = validateInputs();
-    setInputErrors(errors);
-    if (Object.keys(errors).length > 0) {
-      // Scroll to first error
-      const firstErrorKey = Object.keys(errors)[0];
-      const el = document.getElementById(firstErrorKey);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
+    function Input({
+      label,
+      id,
+      value,
+      onChange,
+      className = "",
+      required = false,
+      type = "text",
+      hint,
+      error,
+      valid
+    }) {
+      const [showHint, setShowHint] = useState(false);
 
-    // Require "Are you from Washington DC?" for DJs
-    if (form.role === "DJ" && isFromDC === null) {
-      setIsFromDCError("Please answer if you are from Washington DC.");
-      document.getElementById("isFromDC-select")?.focus();
-      return;
-    } else {
-      setIsFromDCError("");
-    }
+      // Use box-shadow for validation feedback
+      let boxShadow = undefined;
+      if (error) {
+        boxShadow = '0 0 0 2px #ef4444'; // Tailwind red-500
+      } else if (valid) {
+        boxShadow = '0 0 0 2px #22c55e'; // Tailwind green-500
+      }
 
-    // Check role-specific agreements
-    const role = form.role;
-    const agreements = ROLE_AGREEMENTS[role] || [];
-    const allChecked = agreements.every((_, idx) => roleAgreementsChecked[idx]);
-    if (agreements.length > 0 && !allChecked) {
-      setModalTitle("Role Agreements Required");
-      setModalMessage("You must agree to all required terms for your role before submitting.");
-      setIsSuccessModal(false);
-      setShowModal(true);
-      return;
-    }
-
-    if (!agreeTerms) {
-      setModalTitle("Terms Required");
-      setModalMessage(
-        "You must agree to our terms and conditions before submitting."
+      return (
+        <div className={className}>
+          <label
+            htmlFor={id}
+            className="block text-sm font-medium text-gray-900 flex items-center gap-1"
+          >
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+            {hint && (
+              <button
+                type="button"
+                onClick={() => setShowHint(!showHint)}
+                className="ml-1 w-5 h-3 p-2 flex items-center justify-center rounded-full bg-red-200 text-xs font-bold text-gray-700 hover:bg-gray-300"
+                title="Show hint"
+              >
+                ?
+              </button>
+            )}
+          </label>
+          <div className="mt-2">
+            <input
+              type={type}
+              id={id}
+              required={required}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className={`block w-full rounded-md px-3 py-2 text-sm text-black shadow-sm focus:ring-2 placeholder-gray-400`}
+              style={boxShadow ? { boxShadow } : {}}
+            />
+            {showHint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
+          </div>
+        </div>
       );
-      setIsSuccessModal(false);
-      setShowModal(true);
-      return;
-    }
-
-    // Validate bio text
-    const bioValidation = validateBioText(form.bio);
-    if (!bioValidation.isValid) {
-      setModalTitle("Bio Validation Error");
-      setModalMessage(bioValidation.error);
-      setIsSuccessModal(false);
-      setShowModal(true);
-      return;
     }
 
     setIsSubmitting(true);

@@ -53,8 +53,6 @@ class TalentMysqlDB {
                 payment_method ENUM('Venmo', 'Zelle', 'PayPal', 'Bank Transfer', 'Cash') NOT NULL,
                 venmo VARCHAR(255),
                 zelle VARCHAR(255),
-                paypal VARCHAR(255),
-                bank_info TEXT,
                 photo_filename VARCHAR(255),
                 tax_form_filename VARCHAR(255),
                 performer_images JSON,
@@ -135,13 +133,11 @@ class TalentMysqlDB {
             $sql = "INSERT INTO {$this->tableName} (
                 submission_id, first_name, last_name, phone, email, instagram, facebook, 
                 soundcloud, spotify, youtube, tiktok, performer_name, city, country, bio, 
-                role, role_other, payment_method, venmo, zelle, paypal, bank_info,
-                photo_filename, tax_form_filename, performer_images, additional_files, status, notes
+                role, role_other, payment_method, venmo, zelle, photo_filename, tax_form_filename, performer_images, additional_files, status, notes
             ) VALUES (
                 :submission_id, :first_name, :last_name, :phone, :email, :instagram, :facebook,
                 :soundcloud, :spotify, :youtube, :tiktok, :performer_name, :city, :country, :bio,
-                :role, :role_other, :payment_method, :venmo, :zelle, :paypal, :bank_info,
-                :photo_filename, :tax_form_filename, :performer_images, :additional_files, :status, :notes
+                :role, :role_other, :payment_method, :venmo, :zelle, :photo_filename, :tax_form_filename, :performer_images, :additional_files, :status, :notes
             )";
             
             $stmt = $this->pdo->prepare($sql);
@@ -168,8 +164,6 @@ class TalentMysqlDB {
                 'payment_method' => $data['payment_method'] ?? $data['paymentMethod'] ?? 'Venmo',
                 'venmo' => $data['venmo'] ?? '',
                 'zelle' => $data['zelle'] ?? '',
-                'paypal' => $data['paypal'] ?? '',
-                'bank_info' => $data['bank_info'] ?? '',
                 'photo_filename' => $data['photo_filename'] ?? ($data['files']['photo'] ?? ''),
                 'tax_form_filename' => $data['tax_form_filename'] ?? ($data['files']['taxForm'] ?? ''),
                 'performer_images' => $data['performer_images'] ?? null,

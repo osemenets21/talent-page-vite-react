@@ -661,7 +661,7 @@ export default function TalentForm() {
                     type="radio"
                     name="hasW9"
                     value="yes"
-                    className="appearance-none h-3 w-3 border  rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
+                    className="appearance-none h-4 w-4 border  rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
                     checked={hasW9 === true}
                     onChange={() => setHasW9(true)}
                     required
@@ -673,7 +673,7 @@ export default function TalentForm() {
                     type="radio"
                     name="hasW9"
                     value="no"
-                    className="appearance-none h-3 w-3 border  rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
+                    className="appearance-none h-4 w-4 border  rounded-full checked:bg-black checked:border-black focus:ring-2 focus:ring-black transition-all duration-150 cursor-pointer align-middle"
                     checked={hasW9 === false}
                     onChange={() => setHasW9(false)}
                     required
@@ -782,7 +782,7 @@ export default function TalentForm() {
               required
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="mt-1 h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
+              className="mt-1 h-4 w-4 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
               style={{ borderRadius: 4 }}
             />
             <p>

@@ -419,7 +419,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                         className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-lg transition-colors"
                         title="Delete image"
                       >
-                        <XMarkIcon className="h-3 w-3" />
+                        <XMarkIcon className="h-4 w-4" />
                       </button>
                     </div>
                   ))}
@@ -519,7 +519,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                     className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors ml-2"
                     title="Delete tax form"
                   >
-                    <XMarkIcon className="h-3 w-3" />
+                    <XMarkIcon className="h-4 w-4" />
                   </button>
                 </div>
               )}

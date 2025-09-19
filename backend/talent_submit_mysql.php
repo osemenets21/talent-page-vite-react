@@ -128,7 +128,9 @@ try {
         'performer_images' => !empty($performerImages) ? json_encode($performerImages) : null,
         'additional_files' => !empty($additionalFiles) ? json_encode($additionalFiles) : null,
         'status' => 'pending',
-        'notes' => ''
+        'notes' => '',
+        'agreements' => isset($_POST['agreements']) ? json_encode($_POST['agreements']) : null,
+        'music_genres' => $_POST['music_genres'] ?? '',
     ];
 
     // 9. Save to MySQL database

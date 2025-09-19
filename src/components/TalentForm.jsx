@@ -67,6 +67,7 @@ export default function TalentForm() {
     venmo: "",
     zelle: "",
     submissionId: generateId(),
+    music_genres: ""
   });
 
 
@@ -233,6 +234,10 @@ export default function TalentForm() {
     for (const [key, value] of Object.entries(form)) {
       formData.append(key, value);
     }
+
+    // Add checked agreements as an array
+    const checkedAgreements = (ROLE_AGREEMENTS[form.role] || []).filter((_, idx) => roleAgreementsChecked[idx]);
+    formData.append('agreements', JSON.stringify(checkedAgreements));
 
     // Add NYC Eastern Time formatted timestamp
     const usaTimestamp = new Date().toLocaleString("en-US", {
@@ -406,6 +411,16 @@ export default function TalentForm() {
                     setForm({ ...form, roleOther: e.target.value })
                   }
                   className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm"
+                />
+              )}
+              {form.role === "DJ" && (
+                <Input
+                  label="Music Genres (comma separated)"
+                  id="music_genres"
+                  value={form.music_genres}
+                  onChange={(v) => setForm({ ...form, music_genres: v })}
+                  className="mt-2"
+                  hint="e.g. House, Techno, Hip-Hop, Disco, Latin etc."
                 />
               )}
             </div>

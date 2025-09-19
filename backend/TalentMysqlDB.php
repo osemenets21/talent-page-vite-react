@@ -59,6 +59,8 @@ class TalentMysqlDB {
                 additional_files JSON,
                 status ENUM('pending', 'approved', 'rejected', 'archived') DEFAULT 'pending',
                 notes TEXT,
+                agreements TEXT,
+                music_genres VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 INDEX idx_email (email),
@@ -133,11 +135,11 @@ class TalentMysqlDB {
             $sql = "INSERT INTO {$this->tableName} (
                 submission_id, first_name, last_name, phone, email, instagram, facebook, 
                 soundcloud, spotify, youtube, tiktok, performer_name, city, country, bio, 
-                role, role_other, payment_method, venmo, zelle, photo_filename, tax_form_filename, performer_images, additional_files, status, notes
+                role, role_other, payment_method, venmo, zelle, photo_filename, tax_form_filename, performer_images, additional_files, status, notes, agreements, music_genres
             ) VALUES (
                 :submission_id, :first_name, :last_name, :phone, :email, :instagram, :facebook,
                 :soundcloud, :spotify, :youtube, :tiktok, :performer_name, :city, :country, :bio,
-                :role, :role_other, :payment_method, :venmo, :zelle, :photo_filename, :tax_form_filename, :performer_images, :additional_files, :status, :notes
+                :role, :role_other, :payment_method, :venmo, :zelle, :photo_filename, :tax_form_filename, :performer_images, :additional_files, :status, :notes, :agreements, :music_genres
             )";
             
             $stmt = $this->pdo->prepare($sql);
@@ -169,7 +171,9 @@ class TalentMysqlDB {
                 'performer_images' => $data['performer_images'] ?? null,
                 'additional_files' => isset($data['additional_files']) ? json_encode($data['additional_files']) : null,
                 'status' => $data['status'] ?? 'pending',
-                'notes' => $data['notes'] ?? ''
+                'notes' => $data['notes'] ?? '',
+                'agreements' => isset($data['agreements']) ? json_encode($data['agreements']) : null,
+                'music_genres' => $data['music_genres'] ?? '',
             ];
             
             $stmt->execute($params);

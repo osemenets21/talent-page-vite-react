@@ -592,7 +592,7 @@ export default function TalentForm() {
               }
               className="sm:col-span-2"
               error={inputErrors.facebook}
-              valid={form.facebook && !inputErrors.facebook}
+              valid={form.facebook && !inputErrors.facebook && /^.{1,50}$/.test(form.facebook)}
             />
             <Input
               label="SoundCloud"
@@ -603,7 +603,7 @@ export default function TalentForm() {
               }
               className="sm:col-span-2"
               error={inputErrors.soundcloud}
-              valid={form.soundcloud && !inputErrors.soundcloud}
+              valid={form.soundcloud && !inputErrors.soundcloud && /^.{1,50}$/.test(form.soundcloud)}
             />
             <Input
               label="Spotify"
@@ -614,7 +614,7 @@ export default function TalentForm() {
               }
               className="sm:col-span-2"
               error={inputErrors.spotify}
-              valid={form.spotify && !inputErrors.spotify}
+              valid={form.spotify && !inputErrors.spotify && /^.{1,50}$/.test(form.spotify)}
             />
             <Input
               label="Youtube"
@@ -625,7 +625,7 @@ export default function TalentForm() {
               }
               className="sm:col-span-2"
               error={inputErrors.youtube}
-              valid={form.youtube && !inputErrors.youtube}
+              valid={form.youtube && !inputErrors.youtube && /^.{1,50}$/.test(form.youtube)}
             />
 
             <Input
@@ -635,7 +635,7 @@ export default function TalentForm() {
               onChange={(v) => setForm({ ...form, tiktok: extractUsername(v) })}
               className="sm:col-span-2"
               error={inputErrors.tiktok}
-              valid={form.tiktok && !inputErrors.tiktok}
+              valid={form.tiktok && !inputErrors.tiktok && /^.{1,50}$/.test(form.tiktok)}
             />
             <Input
               label="Current City of Residence"

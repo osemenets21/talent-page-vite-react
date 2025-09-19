@@ -445,7 +445,7 @@ export default function TalentForm() {
                       Are you from Washington DC? <span className="text-red-500 ml-1">*</span>
                     </label>
                     <div className="flex gap-4">
-                      <label className="flex items-center gap-1">
+                      <label className="flex items-center gap-1 text-black">
                         <input
                           id="isFromDC-yes"
                           className="h-4 w-4"
@@ -458,7 +458,7 @@ export default function TalentForm() {
                         />
                         Yes
                       </label>
-                      <label className="flex items-center gap-1">
+                      <label className="flex items-center gap-1 text-black">
                         <input
                           id="isFromDC-no"
                           type="radio"

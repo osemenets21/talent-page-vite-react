@@ -45,7 +45,6 @@ export default function TalentForm() {
     phone: ''
   });
   const [w9Error, setW9Error] = useState('');
-  // ...existing code...
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -86,6 +85,7 @@ export default function TalentForm() {
   const [roleAgreementsChecked, setRoleAgreementsChecked] = useState({});
   const [bioError, setBioError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFromDC, setIsFromDC] = useState(null); // null, true, or false
 
 
   const validateBioText = (text) => {
@@ -236,7 +236,14 @@ export default function TalentForm() {
     }
 
     // Add checked agreements as an array
-    const checkedAgreements = (ROLE_AGREEMENTS[form.role] || []).filter((_, idx) => roleAgreementsChecked[idx]);
+    let agreementsList = ROLE_AGREEMENTS[form.role] || [];
+    if (form.role === "DJ" && isFromDC === false) {
+      agreementsList = [
+        ...agreementsList,
+        "I agree not to DJ within a 20-mile radius of Washington, DC for 45 days before and 45 days after any scheduled performance dates, unless otherwise agreed upon in advance."
+      ];
+    }
+    const checkedAgreements = agreementsList.filter((_, idx) => roleAgreementsChecked[idx]);
     formData.append('agreements', JSON.stringify(checkedAgreements));
 
     // Add NYC Eastern Time formatted timestamp
@@ -393,7 +400,10 @@ export default function TalentForm() {
               <select
                 required
                 value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, role: e.target.value });
+                  if (e.target.value !== "DJ") setIsFromDC(null);
+                }}
                 className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
               >
                 <option>DJ</option>
@@ -414,14 +424,41 @@ export default function TalentForm() {
                 />
               )}
               {form.role === "DJ" && (
-                <Input
-                  label="Music Genres (comma separated)"
-                  id="music_genres"
-                  value={form.music_genres}
-                  onChange={(v) => setForm({ ...form, music_genres: v })}
-                  className="mt-2"
-                  hint="e.g. House, Techno, Hip-Hop, Disco, Latin etc."
-                />
+                <>
+                  <Input
+                    label="Music Genres (comma separated)"
+                    id="music_genres"
+                    value={form.music_genres}
+                    onChange={(v) => setForm({ ...form, music_genres: v })}
+                    className="mt-2"
+                    hint="e.g. House, Techno, Hip-Hop, Disco, Latin etc."
+                  />
+                  <div className="mt-2">
+                    <label className="block text-sm font-medium text-gray-900 mb-1">Are you from Washington DC?</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="isFromDC"
+                          value="yes"
+                          checked={isFromDC === true}
+                          onChange={() => setIsFromDC(true)}
+                        />
+                        Yes
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="isFromDC"
+                          value="no"
+                          checked={isFromDC === false}
+                          onChange={() => setIsFromDC(false)}
+                        />
+                        No
+                      </label>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 
@@ -698,21 +735,30 @@ export default function TalentForm() {
 
         <div className="border-t border-gray-200 px-4 pt-4 sm:px-8">
           {/* Role-specific agreements */}
-          {(ROLE_AGREEMENTS[form.role] || []).map((text, idx) => (
-            <label key={idx} className="flex items-start text-sm text-gray-700 gap-2 mb-2">
-              <input
-                type="checkbox"
-                required
-                checked={!!roleAgreementsChecked[idx]}
-                onChange={e => {
-                  setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
-                }}
-                className="mt-1 h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
-                style={{ borderRadius: 4 }}
-              />
-              <span>{text}<span className="text-red-500 ml-1">*</span></span>
-            </label>
-          ))}
+          {(() => {
+            let agreements = ROLE_AGREEMENTS[form.role] || [];
+            if (form.role === "DJ" && isFromDC === false) {
+              agreements = [
+                ...agreements,
+                "I agree not to DJ within a 20-mile radius of Washington, DC for 45 days before and 45 days after any scheduled performance dates, unless otherwise agreed upon in advance."
+              ];
+            }
+            return agreements.map((text, idx) => (
+              <label key={idx} className="flex items-start text-sm text-gray-700 gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  required
+                  checked={!!roleAgreementsChecked[idx]}
+                  onChange={e => {
+                    setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
+                  }}
+                  className="mt-1 h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
+                  style={{ borderRadius: 4 }}
+                />
+                <span>{text}<span className="text-red-500 ml-1">*</span></span>
+              </label>
+            ));
+          })()}
           {/* General agreement */}
           <label className="flex items-start text-sm text-gray-700 gap-2">
             <input

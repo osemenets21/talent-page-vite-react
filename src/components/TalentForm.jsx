@@ -444,34 +444,22 @@ export default function TalentForm() {
                     <label className="block text-sm font-medium text-gray-900 mb-1">
                       Are you from Washington DC? <span className="text-red-500 ml-1">*</span>
                     </label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center gap-1 text-black">
-                        <input
-                          id="isFromDC-yes"
-                          className="h-4 w-4"
-                          type="radio"
-                          name="isFromDC"
-                          value="yes"
-                          checked={isFromDC === true}
-                          onChange={() => setIsFromDC(true)}
-                          required={form.role === "DJ"}
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center gap-1 text-black">
-                        <input
-                          id="isFromDC-no"
-                          type="radio"
-                          className="h-4 w-4"
-                          name="isFromDC"
-                          value="no"
-                          checked={isFromDC === false}
-                          onChange={() => setIsFromDC(false)}
-                          required={form.role === "DJ"}
-                        />
-                        No
-                      </label>
-                    </div>
+                    <select
+                      id="isFromDC-select"
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-indigo-600"
+                      value={isFromDC === null ? "" : isFromDC ? "yes" : "no"}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val === "yes") setIsFromDC(true);
+                        else if (val === "no") setIsFromDC(false);
+                        else setIsFromDC(null);
+                      }}
+                      required={form.role === "DJ"}
+                    >
+                      <option value="" disabled>Select an option</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
                     {isFromDCError && (
                       <p className="text-xs text-red-500 mt-1">{isFromDCError}</p>
                     )}

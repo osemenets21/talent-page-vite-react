@@ -766,7 +766,7 @@ export default function TalentForm() {
                     className="h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle mt-0.5"
                     style={{ borderRadius: 4 }}
                   />
-                  <span className="leading-snug">{text}<span className="text-red-500 ml-1">*</span></span>
+                  <p className="leading-snug m-0">{text}<span className="text-red-500 ml-1">*</span></p>
                 </label>
               ));
             })()}
@@ -783,7 +783,7 @@ export default function TalentForm() {
                 className="h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle mt-0.5"
                 style={{ borderRadius: 4 }}
               />
-              <span className="leading-snug">
+              <p className="leading-snug m-0">
                 I agree to the{' '}
                 <a
                   href="https://drive.google.com/file/d/1Wp36AhlsiazCJTvflEqH4YYucS3dF3hw/view?usp=sharing"
@@ -795,7 +795,7 @@ export default function TalentForm() {
                 and understand that my data will be collected for profile
                 submission purposes.
                 <span className="text-red-500 ml-1">*</span>
-              </span>
+              </p>
             </label>
           </div>
         </div>

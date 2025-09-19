@@ -82,6 +82,7 @@ export default function TalentForm() {
   const [bioError, setBioError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFromDC, setIsFromDC] = useState(null); // null, true, or false
+  const [isFromDCError, setIsFromDCError] = useState("");
 
 
   const validateBioText = (text) => {
@@ -180,6 +181,16 @@ export default function TalentForm() {
   const submitTalentProfile = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
 
+
+
+    // Require "Are you from Washington DC?" for DJs
+    if (form.role === "DJ" && isFromDC === null) {
+      setIsFromDCError("Please answer if you are from Washington DC.");
+      document.getElementById("isFromDC-yes")?.focus();
+      return;
+    } else {
+      setIsFromDCError("");
+    }
 
     // Check role-specific agreements
     const role = form.role;
@@ -430,29 +441,38 @@ export default function TalentForm() {
                     hint="e.g. House, Techno, Hip-Hop, Disco, Latin etc."
                   />
                   <div className="mt-2">
-                    <label className="block text-sm font-medium text-gray-900 mb-1">Are you from Washington DC?</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-1">
+                      Are you from Washington DC? <span className="text-red-500 ml-1">*</span>
+                    </label>
                     <div className="flex gap-4">
                       <label className="flex items-center gap-1">
                         <input
+                          id="isFromDC-yes"
                           type="radio"
                           name="isFromDC"
                           value="yes"
                           checked={isFromDC === true}
                           onChange={() => setIsFromDC(true)}
+                          required={form.role === "DJ"}
                         />
                         Yes
                       </label>
                       <label className="flex items-center gap-1">
                         <input
+                          id="isFromDC-no"
                           type="radio"
                           name="isFromDC"
                           value="no"
                           checked={isFromDC === false}
                           onChange={() => setIsFromDC(false)}
+                          required={form.role === "DJ"}
                         />
                         No
                       </label>
                     </div>
+                    {isFromDCError && (
+                      <p className="text-xs text-red-500 mt-1">{isFromDCError}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -740,19 +760,19 @@ export default function TalentForm() {
               ];
             }
             return agreements.map((text, idx) => (
-              <label key={idx} className="flex items-start text-sm text-gray-700 gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  required
-                  checked={!!roleAgreementsChecked[idx]}
-                  onChange={e => {
-                    setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
-                  }}
-                  className="mt-1 h-3 w-3 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
-                  style={{ borderRadius: 4 }}
-                />
-                <span>{text}<span className="text-red-500 ml-1">*</span></span>
-              </label>
+                <label key={idx} className="flex items-start text-sm text-gray-700 gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={!!roleAgreementsChecked[idx]}
+                    onChange={e => {
+                      setRoleAgreementsChecked(prev => ({ ...prev, [idx]: e.target.checked }));
+                    }}
+                    className="mt-1 h-4 w-4 appearance-none border border-gray-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:ring-2 focus:ring-indigo-500 transition-all duration-150 cursor-pointer align-middle"
+                    style={{ borderRadius: 4 }}
+                  />
+                  <span>{text}<span className="text-red-500 ml-1">*</span></span>
+                </label>
             ));
           })()}
           {/* General agreement */}

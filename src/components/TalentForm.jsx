@@ -275,11 +275,13 @@ export default function TalentForm() {
       const [showHint, setShowHint] = useState(false);
 
       // Use box-shadow for validation feedback
-      let border = undefined;
+      let validationClass = '';
       if (error) {
-        border = '3px solid #ef4444'; // Tailwind red-500, 3px border
+        validationClass = 'border-5 border-red-500 focus:ring-red-500';
       } else if (valid) {
-        border = '3px solid #22c55e'; // Tailwind green-500, 3px border
+        validationClass = 'border-5 border-green-500 focus:ring-green-500';
+      } else {
+        validationClass = 'border border-gray-300 focus:ring-indigo-600';
       }
 
       return (
@@ -308,8 +310,7 @@ export default function TalentForm() {
               required={required}
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              className={`block w-full rounded-md px-3 py-2 text-sm text-black shadow-sm focus:ring-2 placeholder-gray-400`}
-              style={border ? { border } : {}}
+              className={`block w-full rounded-md px-3 py-2 text-sm text-black shadow-sm focus:ring-2 placeholder-gray-400 ${validationClass}`}
             />
             {showHint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
           </div>

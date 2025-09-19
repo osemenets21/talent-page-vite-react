@@ -753,7 +753,7 @@ export default function TalentForm() {
               return agreements.map((text, idx) => (
                 <label
                   key={idx}
-                  className="flex items-center gap-3 rounded-md px-2 py-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-gray-900 text-[15px] font-normal"
+                  className="flex items-between gap-3 rounded-md px-2 py-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-gray-900 text-[15px] font-normal"
                   style={{ minHeight: 44 }}
                 >
                   <input
@@ -772,7 +772,7 @@ export default function TalentForm() {
             })()}
             {/* General agreement */}
             <label
-              className="flex items-center gap-3 rounded-md px-2 py-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-gray-900 text-[15px] font-normal"
+              className="flex items-between gap-3 rounded-md px-2 py-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-gray-900 text-[15px] font-normal"
               style={{ minHeight: 44 }}
             >
               <input

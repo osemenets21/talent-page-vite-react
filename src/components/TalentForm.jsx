@@ -1,23 +1,19 @@
 const ROLE_AGREEMENTS = {
   DJ: [
-    'I confirm I am legally allowed to perform as a DJ in the USA.',
-    'I agree to provide my own DJ equipment if required.',
-    'I understand I must arrive at least 30 minutes before my set.'
+    'I agree to conduct myself in a professional manner and will not become intoxicated or otherwise impaired in a way that would prevent me from fulfilling my hired duties.',
+    "I agree to optionally provide my guest list of up to five (5) individuals no later than 24 hours prior to my scheduled start time.",
   ],
   'Drag Queen': [
-    'I confirm I am legally allowed to perform as a Drag Queen in the USA.',
-    'I agree to provide my own costumes and makeup.',
-    'I understand I must attend the rehearsal if scheduled.'
+    'I agree to conduct myself in a professional manner and will not become intoxicated or otherwise impaired in a way that would prevent me from fulfilling my hired duties.',
+    "I agree to have only one designated helper accompany me in the green room.",
   ],
   Dancer: [
-    'I confirm I am legally allowed to perform as a Dancer in the USA.',
-    'I agree to provide my own costumes and props.',
-    'I understand I must follow the choreography as directed.'
+    'I agree to conduct myself in a professional manner and will not become intoxicated or otherwise impaired in a way that would prevent me from fulfilling my hired duties.',
+    "I agree to have only one designated helper accompany me in the green room.",
   ],
   Host: [
-    'I confirm I am legally allowed to work as a Host in the USA.',
-    'I agree to follow the event script and schedule.',
-    'I understand I am responsible for guest engagement.'
+    'I agree to conduct myself in a professional manner and will not become intoxicated or otherwise impaired in a way that would prevent me from fulfilling my hired duties.',
+    "I agree to have only one designated helper accompany me in the green room.",
   ]
 };
 import React, { useState, useEffect } from "react";

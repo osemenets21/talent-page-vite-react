@@ -48,7 +48,7 @@ $plainBody =
     "When creating your account, you agreed to the following:\n\n" .
     $agreementsText .
     "\nIf you have any questions, suggestions, or feedback about our website, please don’t hesitate to reach out at oleg@luckyhospitality.com\n\n" .
-    "We look forward to working with you and building a great experience together.\n\n" .
+    "We look forward to working with you \n\n" .
 
     "Warm regards,\nLucky Hospitality Group";
 

@@ -434,13 +434,14 @@ export default function TalentForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 mt-4 mb-4">
+    <div className="flex min-h-screen items-center justify-center px-2 sm:px-4 mt-4 mb-4">
       <form
         onSubmit={handleSubmit}
         className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
       >
-        <div className="absolute top-3 right-3 z-10">
-          <button onClick={handleLogout} title="Logout" type="button">
+        {/* Responsive absolute logout button, always at top right of form */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
+          <button onClick={handleLogout} title="Logout" type="button" className="focus:outline-none">
             <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
           </button>
         </div>

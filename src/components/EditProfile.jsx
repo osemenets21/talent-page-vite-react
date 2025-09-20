@@ -211,16 +211,6 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
             {/* Public fields */}
             <div>
-              <label className="block text-sm font-semibold text-gray-600">First Name:</label>
-              <input
-                type="text"
-                name="firstName"
-                value={form.firstName ?? ""}
-                onChange={handleInputChange}
-                className="w-full border rounded px-2 py-1 mt-1"
-              />
-            </div>
-            <div>
               <label className="block text-sm font-semibold text-gray-600">First Name:<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
@@ -229,14 +219,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
                 required
-              />
-              <label className="block text-sm font-semibold text-gray-600">Last Name:</label>
-              <input
-                type="text"
-                name="lastName"
-                value={form.lastName ?? ""}
-                onChange={handleInputChange}
-                className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={100}
               />
             </div>
             <div>
@@ -248,7 +231,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
                 required
+                maxLength={100}
               />
+            </div>
+            <div>
               <label className="block text-sm font-semibold text-gray-600">Stage / Performer Name:</label>
               <input
                 type="text"
@@ -256,6 +242,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.performerName ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={150}
               />
             </div>
             <div>
@@ -267,7 +254,10 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
                 required
+                maxLength={20}
               />
+            </div>
+            <div>
               <label className="block text-sm font-semibold text-gray-600">Your Role:</label>
               <input
                 type="text"
@@ -275,6 +265,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.role ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={100}
               />
             </div>
             {form.roleOther && (
@@ -287,6 +278,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                   onChange={handleInputChange}
                   className="w-full border rounded px-2 py-1 mt-1"
                   required
+                  maxLength={100}
                 />
                 <div>
                   <label className="block text-sm font-semibold text-gray-600">Role (Other):</label>
@@ -296,6 +288,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                     value={form.roleOther ?? ""}
                     onChange={handleInputChange}
                     className="w-full border rounded px-2 py-1 mt-1"
+                    maxLength={100}
                   />
                 </div>
                 <label className="block text-sm font-semibold text-gray-600">Current City of Residence:<span className="text-red-500 ml-1">*</span></label>
@@ -306,6 +299,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                   onChange={handleInputChange}
                   className="w-full border rounded px-2 py-1 mt-1"
                   required
+                  maxLength={100}
                 />
               </div>
             )}
@@ -317,6 +311,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.instagram ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={30}
               />
               <label className="block text-sm font-semibold text-gray-600">Country:<span className="text-red-500 ml-1">*</span></label>
               <input
@@ -326,6 +321,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
                 required
+                maxLength={100}
               />
             </div>
             <div>
@@ -336,6 +332,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.facebook ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={50}
               />
             </div>
             <div>
@@ -346,6 +343,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.soundcloud ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={50}
               />
             </div>
             <div>
@@ -356,6 +354,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.spotify ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={50}
               />
             </div>
             <div>
@@ -366,6 +365,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.youtube ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={50}
               />
             </div>
             <div>
@@ -376,6 +376,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.tiktok ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                maxLength={50}
               />
             </div>
             <div>

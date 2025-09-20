@@ -29,7 +29,7 @@ if ($email === '' || $firstName === '' || !is_array($agreements)) {
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
-$fromEmail = 'contact@bunkerdc.com';
+$fromEmail = 'zach@bunkerdc.com';
 $fromName  = 'Lucky Hospitality Group';
 $awsRegion = 'us-east-2';
 $awsKey    = getenv('AWS_ACCESS_KEY_ID');
@@ -49,6 +49,7 @@ $plainBody =
     $agreementsText .
     "\nIf you have any questions, suggestions, or feedback about our website, please don’t hesitate to reach out at oleg@luckyhospitality.com\n\n" .
     "We look forward to working with you and building a great experience together.\n\n" .
+
     "Warm regards,\nLucky Hospitality Group";
 
 $SesClient = new SesClient([

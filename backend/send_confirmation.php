@@ -29,7 +29,7 @@ if ($email === '' || $firstName === '' || !is_array($agreements)) {
 use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
-$fromEmail = 'zach@bunkerdc.com';
+$fromEmail = 'contact@bunkerdc.com';
 $fromName  = 'Lucky Hospitality Group';
 $awsRegion = 'us-east-2';
 $awsKey    = getenv('AWS_ACCESS_KEY_ID');

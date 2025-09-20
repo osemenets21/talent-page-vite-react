@@ -752,6 +752,7 @@ export default function TalentForm() {
                 value={form.email}
                 onChange={(v) => setForm({ ...form, email: v })}
                 required
+                className="sm:col-span-3 w-full"
                 error={inputErrors.email}
                 valid={form.email && !inputErrors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())}
               />

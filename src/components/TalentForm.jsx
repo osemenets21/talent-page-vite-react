@@ -391,6 +391,28 @@ export default function TalentForm() {
       const result = await response.json();
 
       if (result.status === "success") {
+        // Send confirmation email to user
+        const agreementsList = ROLE_AGREEMENTS[form.role] || [];
+        let acceptedAgreements = agreementsList.filter((_, idx) => roleAgreementsChecked[idx]);
+        if (form.role === "DJ" && isFromDC === false) {
+          acceptedAgreements = [
+            ...acceptedAgreements,
+            "I agree not to DJ within a 20-mile radius of Washington, DC for 45 days before and 45 days after any scheduled performance dates, unless otherwise agreed upon in advance."
+          ];
+        }
+        // Always add the general agreement
+        acceptedAgreements.push("I agree to the Terms & Conditions and Privacy Policy and understand that my data will be collected for profile submission purposes.");
+
+        await fetch("/backend/send_confirmation.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: form.email,
+            firstName: form.firstName,
+            agreements: acceptedAgreements
+          })
+        });
+
         setModalTitle("Submission Successful");
         setModalMessage(
           "Your talent profile has been submitted successfully! You will be redirected to your profile page when you close this message."

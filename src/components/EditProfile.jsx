@@ -221,6 +221,15 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
               />
             </div>
             <div>
+              <label className="block text-sm font-semibold text-gray-600">First Name:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="firstName"
+                value={form.firstName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
+              />
               <label className="block text-sm font-semibold text-gray-600">Last Name:</label>
               <input
                 type="text"
@@ -231,6 +240,15 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
               />
             </div>
             <div>
+              <label className="block text-sm font-semibold text-gray-600">Last Name:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="lastName"
+                value={form.lastName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
+              />
               <label className="block text-sm font-semibold text-gray-600">Stage / Performer Name:</label>
               <input
                 type="text"
@@ -241,6 +259,15 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
               />
             </div>
             <div>
+              <label className="block text-sm font-semibold text-gray-600">Phone:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="phone"
+                value={form.phone ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
+              />
               <label className="block text-sm font-semibold text-gray-600">Your Role:</label>
               <input
                 type="text"
@@ -252,13 +279,33 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
             </div>
             {form.roleOther && (
               <div>
-                <label className="block text-sm font-semibold text-gray-600">Role (Other):</label>
+                <label className="block text-sm font-semibold text-gray-600">Email:<span className="text-red-500 ml-1">*</span></label>
                 <input
-                  type="text"
-                  name="roleOther"
-                  value={form.roleOther ?? ""}
+                  type="email"
+                  name="email"
+                  value={form.email ?? ""}
                   onChange={handleInputChange}
                   className="w-full border rounded px-2 py-1 mt-1"
+                  required
+                />
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600">Role (Other):</label>
+                  <input
+                    type="text"
+                    name="roleOther"
+                    value={form.roleOther ?? ""}
+                    onChange={handleInputChange}
+                    className="w-full border rounded px-2 py-1 mt-1"
+                  />
+                </div>
+                <label className="block text-sm font-semibold text-gray-600">Current City of Residence:<span className="text-red-500 ml-1">*</span></label>
+                <input
+                  type="text"
+                  name="city"
+                  value={form.city ?? ""}
+                  onChange={handleInputChange}
+                  className="w-full border rounded px-2 py-1 mt-1"
+                  required
                 />
               </div>
             )}
@@ -270,6 +317,15 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 value={form.instagram ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+              />
+              <label className="block text-sm font-semibold text-gray-600">Country:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="country"
+                value={form.country ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
               />
             </div>
             <div>
@@ -370,123 +426,72 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
             </div>
 
             {/* Profile Photo */}
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-semibold text-gray-600">Profile Photo:</label>
-              {photoUrl && (
-                <div className="relative inline-block">
-                  <img
-                    src={photoUrl}
-                    alt="Profile"
-                    className="w-36 h-36 rounded-full object-cover ring-4 ring-indigo-300 mb-2"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleFileDelete("photo")}
-                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-colors"
-                    title="Delete photo"
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-              <FileUpload
-                label="Profile Photo"
-                accept="image/*"
-                setFile={(file) => {
-                  setRawPhotoFile(file);
-                  setShowCropModal(true);
-                  setFilesChanged(prev => ({ ...prev, photo: true }));
-                }}
-                required={false}
-              />
-            </div>
-
-            {/* Performer Images */}
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-semibold text-gray-600">Performer Images / LOGO:</label>
-              {Array.isArray(profile.files?.performerImages) && profile.files.performerImages.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {profile.files.performerImages.map((img, idx) => (
-                    <div key={idx} className="relative">
-                      <img
-                        src={`${backendBase}/uploads/${profile.submissionId}/${img}`}
-                        alt={`Performer ${idx + 1}`}
-                        className="w-16 h-16 object-cover rounded-lg ring-1 ring-indigo-200"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleFileDelete("performerImage", img)}
-                        className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-lg transition-colors"
-                        title="Delete image"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <FileUpload
-                label="Performer Images"
-                accept="image/*"
-                setFile={(files) => {
-                  setFileInputs((prev) => ({ ...prev, performerImages: files }));
-                  setFilesChanged(prev => ({ ...prev, performerImages: true }));
-                }}
-                multiple={true}
-                required={false}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Private Information Section */}
-        <div className="bg-gray-200 rounded-lg p-6 mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-300 pb-2">
-            Edit Private Information
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
             <div>
-              <label className="block text-sm font-semibold text-gray-600">Phone:</label>
+              <label className="block text-sm font-semibold text-gray-600">First Name:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="firstName"
+                value={form.firstName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Last Name:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="lastName"
+                value={form.lastName ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Phone:<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
                 name="phone"
                 value={form.phone ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-600">Email:</label>
+              <label className="block text-sm font-semibold text-gray-600">Email:<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="email"
                 name="email"
                 value={form.email ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-600">Form of Payment:</label>
+              <label className="block text-sm font-semibold text-gray-600">Current City of Residence:<span className="text-red-500 ml-1">*</span></label>
               <input
                 type="text"
-                name="paymentMethod"
-                value={form.paymentMethod ?? ""}
+                name="city"
+                value={form.city ?? ""}
                 onChange={handleInputChange}
                 className="w-full border rounded px-2 py-1 mt-1"
+                required
               />
             </div>
-            {form.paymentMethod === "Venmo" && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-600">Venmo Name:</label>
-                <input
-                  type="text"
-                  name="venmo"
-                  value={form.venmo ?? ""}
-                  onChange={handleInputChange}
-                  className="w-full border rounded px-2 py-1 mt-1"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-semibold text-gray-600">Country:<span className="text-red-500 ml-1">*</span></label>
+              <input
+                type="text"
+                name="country"
+                value={form.country ?? ""}
+                onChange={handleInputChange}
+                className="w-full border rounded px-2 py-1 mt-1"
+                required
+              />
+            </div>
             {form.paymentMethod === "Zelle" && (
               <div>
                 <label className="block text-sm font-semibold text-gray-600">Zelle:</label>

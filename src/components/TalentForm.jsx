@@ -735,6 +735,7 @@ export default function TalentForm() {
               <Input
                 label="Phone"
                 id="phone"
+                type="number"
                 value={form.phone}
                 onChange={(v) => setForm({ ...form, phone: v })}
                 required
@@ -745,6 +746,7 @@ export default function TalentForm() {
               <Input
                 label="Email"
                 id="email"
+                type="email"
                 value={form.email}
                 onChange={(v) => setForm({ ...form, email: v })}
                 required

@@ -441,7 +441,7 @@ export default function TalentForm() {
       >
         <div className="absolute top-3 right-3 z-10">
           <button onClick={handleLogout} title="Logout" type="button">
-            <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
+            <XMarkIcon className="text-gray-500 hover:text-red-600 transition duration-150" />
           </button>
         </div>
 

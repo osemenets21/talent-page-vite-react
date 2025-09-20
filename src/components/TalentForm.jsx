@@ -441,7 +441,13 @@ export default function TalentForm() {
       >
         {/* Responsive absolute logout button, always at top right of form */}
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
-          <button onClick={handleLogout} title="Logout" type="button" className="focus:outline-none">
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            type="button"
+            className="focus:outline-none bg-white rounded-full shadow-md border border-gray-200 p-1 hover:bg-gray-100 transition"
+            style={{ boxShadow: '0 2px 8px 0 rgba(0,0,0,0.07)' }}
+          >
             <XMarkIcon className="h-6 w-6 text-gray-500 hover:text-red-600 transition duration-150" />
           </button>
         </div>

@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                 alt="Lucky Hospitality"
               />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
               Admin Dashboard
             </h1>
             <button

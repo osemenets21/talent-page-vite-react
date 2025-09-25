@@ -1,9 +1,11 @@
+
 import React, { useState, useRef } from "react";
 import FileUpload from "./FileUpload";
 import getCroppedImg from "../utils/cropImage";
 import PhotoCropModal from "./PhotoCropModal";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { authenticatedPost } from "../utils/apiUtils";
+import { resizeImageFile } from "../utils/resizeImage";
 
 export default function EditProfile({ profile, onSave, onCancel, saving }) {
   const [form, setForm] = useState({ ...profile });
@@ -120,24 +122,30 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate bio text before submitting
     const bioValidation = validateBioText(form.bio);
     if (!bioValidation.isValid) {
       alert(bioValidation.error);
       return;
     }
-    
+
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => {
       formData.append(key, value);
     });
     formData.append("submissionId", form.submissionId);
-    
+
     // Only append files if they were actually selected/changed
     if (filesChanged.photo && (croppedPhotoFile || fileInputs.photo)) {
-      const photoFile = croppedPhotoFile || fileInputs.photo;
-      
+      let photoFile = croppedPhotoFile || fileInputs.photo;
+      // Resize profile photo before upload
+      try {
+        photoFile = await resizeImageFile(photoFile);
+      } catch (err) {
+        alert("Failed to resize profile photo: " + err.message);
+        return;
+      }
       // Ensure consistent naming for profile photo
       let renamedPhotoFile;
       if (photoFile.name === "profile_photo.jpg") {
@@ -150,33 +158,36 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
           type: photoFile.type
         });
       }
-      
-  // ...removed console.log
       formData.append("photo", renamedPhotoFile);
     }
-    
+
     if (filesChanged.taxForm && fileInputs.taxForm) {
       // Rename tax form to consistent format
       const taxFormExtension = fileInputs.taxForm.name.split('.').pop();
       const renamedTaxForm = new File([fileInputs.taxForm], `tax_form.${taxFormExtension}`, {
         type: fileInputs.taxForm.type
       });
-  // ...removed console.log
       formData.append("taxForm", renamedTaxForm);
     }
-    
+
     if (filesChanged.performerImages && fileInputs.performerImages && fileInputs.performerImages.length > 0) {
-  // ...removed console.log
-      // Rename performer images with consistent numbering
-      fileInputs.performerImages.forEach((file, index) => {
+      // Resize and rename performer images with consistent numbering
+      for (let index = 0; index < fileInputs.performerImages.length; index++) {
+        let file = fileInputs.performerImages[index];
+        try {
+          file = await resizeImageFile(file);
+        } catch (err) {
+          alert(`Failed to resize performer image ${index + 1}: ` + err.message);
+          return;
+        }
         const fileExtension = file.name.split('.').pop();
         const renamedFile = new File([file], `performer_${index + 1}.${fileExtension}`, {
           type: file.type
         });
         formData.append("performerImages[]", renamedFile);
-      });
+      }
     }
-    
+
     // Send to backend
     try {
       const res = await authenticatedPost(`${import.meta.env.VITE_API_DOMAIN}/talent/edit`, formData);
@@ -566,7 +577,15 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
         onCropDone={async (croppedBlob) => {
           // Convert cropped Blob to File with a name
           const fileName = rawPhotoFile?.name || "cropped_photo.jpg";
-          const croppedFile = new File([croppedBlob], fileName, { type: croppedBlob.type || "image/jpeg" });
+          let croppedFile = new File([croppedBlob], fileName, { type: croppedBlob.type || "image/jpeg" });
+          // Resize cropped photo before saving
+          try {
+            croppedFile = await resizeImageFile(croppedFile);
+          } catch (err) {
+            alert("Failed to resize cropped photo: " + err.message);
+            setShowCropModal(false);
+            return;
+          }
           setCroppedPhoto(croppedBlob);
           setCroppedPhotoFile(croppedFile);
           setFilesChanged(prev => ({ ...prev, photo: true }));

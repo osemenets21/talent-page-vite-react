@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { DocumentArrowUpIcon } from "@heroicons/react/24/outline";
+import { resizeImageFile } from "../utils/resizeImage";
 
 export default function FileUpload({
   label,
@@ -12,17 +13,37 @@ export default function FileUpload({
   const inputId = label.toLowerCase().replace(/\s+/g, "-");
   // test 4 
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length === 0) return;
 
+    // Only resize images (jpg, jpeg, png, webp, gif)
+    const isImage = (file) => /image\/(jpeg|png|webp|gif)/.test(file.type);
+    const resizeAll = async (files) => {
+      return Promise.all(
+        files.map(async (file) => {
+          if (isImage(file)) {
+            try {
+              // Resize to max 1200x1200, 85% quality
+              return await resizeImageFile(file, 1200, 1200, 0.85);
+            } catch {
+              return file; // fallback to original if resize fails
+            }
+          }
+          return file;
+        })
+      );
+    };
+
     if (multiple) {
-      setFile(selectedFiles);
-      setFileNames(selectedFiles.map((file) => file.name));
+      const resizedFiles = await resizeAll(selectedFiles);
+      setFile(resizedFiles);
+      setFileNames(resizedFiles.map((file) => file.name));
     } else {
       const file = selectedFiles[0];
-      setFile(file);
-      setFileNames([file.name]);
+      const resized = isImage(file) ? await resizeImageFile(file, 1200, 1200, 0.85).catch(() => file) : file;
+      setFile(resized);
+      setFileNames([resized.name]);
     }
   };
 

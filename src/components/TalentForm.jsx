@@ -47,7 +47,7 @@ export default function TalentForm() {
     phone: "",
     email: "",
     instagram: "",
-    facebook: "",
+  // facebook: "", // Facebook field removed
     soundcloud: "",
     spotify: "",
     youtube: "",
@@ -209,6 +209,14 @@ export default function TalentForm() {
     // Instagram
     if (form.instagram && !/^@[a-zA-Z0-9._]{1,30}$/.test(form.instagram.trim())) {
       errors.instagram = "Instagram must start with @ and be 1-30 letters, numbers, . or _.";
+    }
+    // SoundCloud
+    if (form.soundcloud && !/^.{1,255}$/.test(form.soundcloud)) {
+      errors.soundcloud = "SoundCloud link must be 1-255 characters.";
+    }
+    // Spotify
+    if (form.spotify && !/^.{1,255}$/.test(form.spotify)) {
+      errors.spotify = "Spotify link must be 1-255 characters.";
     }
     // Performer Name
     if (form.performerName && !/^.{0,150}$/.test(form.performerName)) {
@@ -613,38 +621,28 @@ export default function TalentForm() {
               error={inputErrors.instagram}
               valid={form.instagram && !inputErrors.instagram && /^@[a-zA-Z0-9._]{1,30}$/.test(form.instagram.trim())}
             />
-            <Input
-              label="Facebook"
-              id="facebook"
-              value={form.facebook}
-              onChange={(v) =>
-                setForm({ ...form, facebook: extractUsername(v) })
-              }
-              className="sm:col-span-2"
-              error={inputErrors.facebook}
-              valid={form.facebook && !inputErrors.facebook && /^.{1,50}$/.test(form.facebook)}
-            />
+            {/* Facebook field removed */}
             <Input
               label="SoundCloud"
               id="soundcloud"
               value={form.soundcloud}
               onChange={(v) =>
-                setForm({ ...form, soundcloud: extractUsername(v) })
+                setForm({ ...form, soundcloud: v })
               }
               className="sm:col-span-2"
               error={inputErrors.soundcloud}
-              valid={form.soundcloud && !inputErrors.soundcloud && /^.{1,50}$/.test(form.soundcloud)}
+              valid={form.soundcloud && !inputErrors.soundcloud && /^.{1,255}$/.test(form.soundcloud)}
             />
             <Input
               label="Spotify"
               id="spotify"
               value={form.spotify}
               onChange={(v) =>
-                setForm({ ...form, spotify: extractUsername(v) })
+                setForm({ ...form, spotify: v })
               }
               className="sm:col-span-2"
               error={inputErrors.spotify}
-              valid={form.spotify && !inputErrors.spotify && /^.{1,50}$/.test(form.spotify)}
+              valid={form.spotify && !inputErrors.spotify && /^.{1,255}$/.test(form.spotify)}
             />
             <Input
               label="Youtube"

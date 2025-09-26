@@ -54,7 +54,7 @@ try {
             'phone' => $talent['phone'],
             'email' => $talent['email'],
             'instagram' => $talent['instagram'],
-            'facebook' => $talent['facebook'],
+            // 'facebook' => $talent['facebook'],
             'soundcloud' => $talent['soundcloud'],
             'spotify' => $talent['spotify'],
             'youtube' => $talent['youtube'],

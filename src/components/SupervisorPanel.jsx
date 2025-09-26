@@ -370,7 +370,7 @@ export default function SupervisorPanel() {
                       {fieldErrors.email && <div className="text-xs text-red-500 mt-1">{fieldErrors.email}</div>}
                     </td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="instagram" value={editForm.instagram} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
-                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="facebook" value={editForm.facebook} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
+                    {/* Facebook field removed */}
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="soundcloud" value={editForm.soundcloud} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="spotify" value={editForm.spotify} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900"><input name="youtube" value={editForm.youtube} onChange={handleEditChange} className="border rounded px-2 py-1 w-full min-w-0" style={{width:'118px'}} /></td>

@@ -97,7 +97,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
     { name: "phone", label: "Phone" },
     { name: "email", label: "Email", type: "email" },
     { name: "instagram", label: "Instagram" },
-    { name: "facebook", label: "Facebook" },
+  // { name: "facebook", label: "Facebook" }, // Facebook field removed
     { name: "soundcloud", label: "SoundCloud" },
     { name: "spotify", label: "Spotify" },
     { name: "youtube", label: "YouTube" },
@@ -335,17 +335,7 @@ export default function EditProfile({ profile, onSave, onCancel, saving }) {
                 maxLength={100}
               />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-600">Facebook:</label>
-              <input
-                type="text"
-                name="facebook"
-                value={form.facebook ?? ""}
-                onChange={handleInputChange}
-                className="w-full border rounded px-2 py-1 mt-1"
-                maxLength={50}
-              />
-            </div>
+            {/* Facebook field removed */}
             <div>
               <label className="block text-sm font-semibold text-gray-600">SoundCloud:</label>
               <input

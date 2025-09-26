@@ -39,7 +39,7 @@ class TalentMysqlDB {
                 phone VARCHAR(20),
                 email VARCHAR(255) NOT NULL,
                 instagram VARCHAR(255),
-                facebook VARCHAR(255),
+                /* facebook VARCHAR(255), */
                 soundcloud VARCHAR(255),
                 spotify VARCHAR(255),
                 youtube VARCHAR(255),
@@ -133,11 +133,11 @@ class TalentMysqlDB {
     public function insert($data) {
         try {
             $sql = "INSERT INTO {$this->tableName} (
-                submission_id, first_name, last_name, phone, email, instagram, facebook, 
+                submission_id, first_name, last_name, phone, email, instagram, 
                 soundcloud, spotify, youtube, tiktok, performer_name, city, country, bio, 
                 role, role_other, payment_method, venmo, zelle, photo_filename, tax_form_filename, performer_images, additional_files, status, notes, agreements, music_genres
             ) VALUES (
-                :submission_id, :first_name, :last_name, :phone, :email, :instagram, :facebook,
+                :submission_id, :first_name, :last_name, :phone, :email, :instagram,
                 :soundcloud, :spotify, :youtube, :tiktok, :performer_name, :city, :country, :bio,
                 :role, :role_other, :payment_method, :venmo, :zelle, :photo_filename, :tax_form_filename, :performer_images, :additional_files, :status, :notes, :agreements, :music_genres
             )";
@@ -152,7 +152,7 @@ class TalentMysqlDB {
                 'phone' => $data['phone'] ?? '',
                 'email' => $data['email'] ?? '',
                 'instagram' => $data['instagram'] ?? '',
-                'facebook' => $data['facebook'] ?? '',
+                // 'facebook' => $data['facebook'] ?? '',
                 'soundcloud' => $data['soundcloud'] ?? '',
                 'spotify' => $data['spotify'] ?? '',
                 'youtube' => $data['youtube'] ?? '',

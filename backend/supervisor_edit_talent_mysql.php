@@ -42,7 +42,7 @@ try {
     // Prepare update data
     $updateData = [];
     $allowedFields = [
-        'first_name', 'last_name', 'phone', 'email', 'instagram', 'facebook',
+    'first_name', 'last_name', 'phone', 'email', 'instagram',
         'soundcloud', 'spotify', 'youtube', 'tiktok', 'performer_name', 
         'city', 'country', 'bio', 'role', 'role_other', 'payment_method',
         'venmo', 'zelle', 'paypal', 'bank_info', 'status', 'notes'
@@ -97,7 +97,7 @@ try {
                     if (isset($updateData['payment_method'])) $entry['paymentMethod'] = $updateData['payment_method'];
                     
                     // Direct field mappings
-                    $directFields = ['phone', 'email', 'instagram', 'facebook', 'soundcloud', 
+                    $directFields = ['phone', 'email', 'instagram', 'soundcloud', 
                                    'spotify', 'youtube', 'tiktok', 'city', 'country', 'bio', 
                                    'role', 'venmo', 'zelle'];
                     foreach ($directFields as $field) {

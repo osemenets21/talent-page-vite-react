@@ -236,7 +236,7 @@ export default function MyProfile() {
               <ProfileItem label="Stage / Performer Name" value={profile.performerName || "no data"} />
               <ProfileItem label="Your Role" value={profile.role || "no data"} />
               <ProfileItem label="Instagram" value={profile.instagram || "no data"} />
-              <ProfileItem label="Facebook" value={profile.facebook || "no data"} />
+              {/* Facebook field removed */}
               <ProfileItem label="SoundCloud" value={profile.soundcloud || "no data"} />
               <ProfileItem label="Spotify" value={profile.spotify || "no data"} />
               <ProfileItem label="Youtube" value={profile.youtube || "no data"} />

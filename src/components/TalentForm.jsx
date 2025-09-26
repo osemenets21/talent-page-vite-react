@@ -665,6 +665,7 @@ export default function TalentForm() {
               error={inputErrors.tiktok}
               valid={form.tiktok && !inputErrors.tiktok && /^.{1,50}$/.test(form.tiktok)}
             />
+            <br />
             <Input
               label="Current City of Residence"
               id="city"

@@ -665,13 +665,14 @@ export default function TalentForm() {
               error={inputErrors.tiktok}
               valid={form.tiktok && !inputErrors.tiktok && /^.{1,50}$/.test(form.tiktok)}
             />
-            <br />
+          </div>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
             <Input
               label="Current City of Residence"
               id="city"
               value={form.city}
               onChange={(v) => setForm({ ...form, city: v })}
-              className="sm:col-span-3"
+              className="sm:col-span-6"
               required
               error={inputErrors.city}
               valid={form.city && !inputErrors.city && /^.{2,100}$/.test(form.city.trim())}

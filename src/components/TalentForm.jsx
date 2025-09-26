@@ -672,7 +672,7 @@ export default function TalentForm() {
               id="city"
               value={form.city}
               onChange={(v) => setForm({ ...form, city: v })}
-              className="sm:col-span-6"
+              className="sm:col-span-3"
               required
               error={inputErrors.city}
               valid={form.city && !inputErrors.city && /^.{2,100}$/.test(form.city.trim())}

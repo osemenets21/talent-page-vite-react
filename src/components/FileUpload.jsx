@@ -25,7 +25,11 @@ export default function FileUpload({
           if (isImage(file)) {
             try {
               // Resize to max 1200x1200, 85% quality
-              return await resizeImageFile(file, 1200, 1200, 0.85);
+              const resized = await resizeImageFile(file, 1200, 1200, 0.85);
+              const originalMB = (file.size / (1024 * 1024)).toFixed(2);
+              const resizedKB = (resized.size / 1024).toFixed(2);
+              console.log(`${file.name} - was ${originalMB}MB - after resizing - ${resizedKB}KB`);
+              return resized;
             } catch {
               return file; // fallback to original if resize fails
             }
@@ -37,11 +41,33 @@ export default function FileUpload({
 
     if (multiple) {
       const resizedFiles = await resizeAll(selectedFiles);
-      setFile(resizedFiles);
-      setFileNames(resizedFiles.map((file) => file.name));
+      // If resizeImageFile returns a new File/Blob, copy the original name
+      const filesWithOriginalNames = resizedFiles.map((file, idx) => {
+        if (file.name !== selectedFiles[idx].name && file instanceof Blob) {
+          return new File([file], selectedFiles[idx].name, { type: file.type });
+        }
+        return file;
+      });
+      setFile(filesWithOriginalNames);
+      setFileNames(filesWithOriginalNames.map((file) => file.name));
     } else {
       const file = selectedFiles[0];
-      const resized = isImage(file) ? await resizeImageFile(file, 1200, 1200, 0.85).catch(() => file) : file;
+      let resized = file;
+      if (isImage(file)) {
+        const resizedBlob = await resizeImageFile(file, 1200, 1200, 0.85).catch(() => file);
+        if (resizedBlob instanceof Blob) {
+          const originalMB = (file.size / (1024 * 1024)).toFixed(2);
+          const resizedKB = (resizedBlob.size / 1024).toFixed(2);
+          console.log(`${file.name} - was ${originalMB}MB - after resizing - ${resizedKB}KB`);
+          if (resizedBlob.name !== file.name) {
+            resized = new File([resizedBlob], file.name, { type: resizedBlob.type });
+          } else {
+            resized = resizedBlob;
+          }
+        } else {
+          resized = resizedBlob;
+        }
+      }
       setFile(resized);
       setFileNames([resized.name]);
     }

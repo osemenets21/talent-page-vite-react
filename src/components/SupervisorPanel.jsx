@@ -302,7 +302,6 @@ export default function SupervisorPanel() {
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Phone</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Email</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Instagram</th>
-              <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Facebook</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">SoundCloud</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">Spotify</th>
               <th style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-left text-xs font-bold text-orange-400 uppercase tracking-wider">YouTube</th>
@@ -436,7 +435,7 @@ export default function SupervisorPanel() {
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.phone || <span className="text-gray-400">no data</span>}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.email || <span className="text-gray-400">no data</span>}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.instagram || <span className="text-gray-400">no data</span>}</td>
-                    <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.facebook || <span className="text-gray-400">no data</span>}</td>
+                    {/* Facebook column removed */}
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.soundcloud || <span className="text-gray-400">no data</span>}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.spotify || <span className="text-gray-400">no data</span>}</td>
                     <td style={{width:'150px', minWidth:'150px'}} className="px-4 py-2 text-xs text-gray-900">{talent.youtube || <span className="text-gray-400">no data</span>}</td>

@@ -41,15 +41,13 @@ export default function FileUpload({
 
     if (multiple) {
       const resizedFiles = await resizeAll(selectedFiles);
-      // If resizeImageFile returns a new File/Blob, copy the original name
-      const filesWithOriginalNames = resizedFiles.map((file, idx) => {
-        if (file.name !== selectedFiles[idx].name && file instanceof Blob) {
-          return new File([file], selectedFiles[idx].name, { type: file.type });
-        }
-        return file;
+      // Rename all performer images to performer_1, performer_2, etc.
+      const renamedFiles = resizedFiles.map((file, idx) => {
+        const ext = file.name.split('.').pop();
+        return new File([file], `performer_${idx + 1}.${ext}`, { type: file.type });
       });
-      setFile(filesWithOriginalNames);
-      setFileNames(filesWithOriginalNames.map((file) => file.name));
+      setFile(renamedFiles);
+      setFileNames(renamedFiles.map((file) => file.name));
     } else {
       const file = selectedFiles[0];
       let resized = file;

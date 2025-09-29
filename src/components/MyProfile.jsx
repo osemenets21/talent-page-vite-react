@@ -155,8 +155,15 @@ export default function MyProfile() {
         return res.json();
       })
       .then((res) => {
-        if (!res || res.status === "error" || !res.data.submissionId) {
-          setError(res.data.message || "Profile not found.");
+        if (!res || res.status === "error" || !res.data || !res.data.submissionId) {
+          // Defensive: handle missing res.data or res.data.message
+          let errorMsg = "Profile not found.";
+          if (res && res.data && typeof res.data.message === "string") {
+            errorMsg = res.data.message;
+          } else if (res && typeof res.message === "string") {
+            errorMsg = res.message;
+          }
+          setError(errorMsg);
         } else {
           setProfile(res.data);
         }

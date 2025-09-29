@@ -31,6 +31,9 @@ import PhotoCropModal from "./PhotoCropModal";
 import Modal from "./Modal";
 
 export default function TalentForm() {
+  // Progress bar state
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [hasW9, setHasW9] = useState(null); // null, true, or false
   const [isRequestingW9, setIsRequestingW9] = useState(false);
   const [showW9Modal, setShowW9Modal] = useState(false);
@@ -176,6 +179,8 @@ export default function TalentForm() {
   const handleSubmit = async (e) => {
     e?.preventDefault();
     e?.stopPropagation();
+    // Block submission if uploading
+    if (isUploading) return;
     await submitTalentProfile();
   };
 
@@ -267,84 +272,52 @@ export default function TalentForm() {
 
   const submitTalentProfile = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
-
-    function Input({
-      label,
-      id,
-      value,
-      onChange,
-      className = "",
-      required = false,
-      type = "text",
-      hint,
-      error,
-      valid
-    }) {
-      const [showHint, setShowHint] = useState(false);
-
-      // Use box-shadow for validation feedback
-      let validationClass = '';
-      if (error) {
-        validationClass = 'border-5 border-red-500 focus:ring-red-500';
-      } else if (valid) {
-        validationClass = 'border-5 border-green-500 focus:ring-green-500';
-      } else {
-        validationClass = 'border border-gray-300 focus:ring-indigo-600';
-      }
-
-      return (
-        <div className={className}>
-          <label
-            htmlFor={id}
-            className="block text-sm font-medium text-gray-900 flex items-center gap-1"
-          >
-            {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
-            {hint && (
-              <button
-                type="button"
-                onClick={() => setShowHint(!showHint)}
-                className="ml-1 w-5 h-3 p-2 flex items-center justify-center rounded-full bg-red-200 text-xs font-bold text-gray-700 hover:bg-gray-300"
-                title="Show hint"
-              >
-                ?
-              </button>
-            )}
-          </label>
-          <div className="mt-2">
-            <input
-              type={type}
-              id={id}
-              required={required}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              className={`block w-full rounded-md px-3 py-2 text-sm text-black shadow-sm focus:ring-2 placeholder-gray-400 ${validationClass}`}
-            />
-            {showHint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
-          </div>
-        </div>
-      );
-    }
-
     setIsSubmitting(true);
 
-    if (!photo) {
-      setModalTitle("Files Required");
-      setModalMessage("Upload your profile photo and tax form W9");
-      setIsSuccessModal(false);
-      setShowModal(true);
-      setIsSubmitting(false);
-      return;
+    // Block UI and show progress bar
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Resize images before upload
+    const resizeImageFile = (await import('../utils/resizeImage')).resizeImageFile;
+    const totalImages = (performerImages?.length || 0) + (photo ? 1 : 0);
+    let resizedPhoto = photo;
+    let resizedPerformerImages = [];
+
+    let completed = 0;
+    const updateProgress = () => {
+      completed++;
+      setUploadProgress(Math.round((completed / totalImages) * 100));
+    };
+
+    // Resize main photo
+    if (photo) {
+      if (photo instanceof File && /image\/(jpeg|png|webp|gif)/.test(photo.type)) {
+        resizedPhoto = await resizeImageFile(photo, 1200, 1200, 0.85);
+      }
+      updateProgress();
     }
 
-    const formData = new FormData();
+    // Resize performer images
+    if (performerImages && performerImages.length > 0) {
+      for (let i = 0; i < performerImages.length; i++) {
+        const img = performerImages[i];
+        let resizedImg = img;
+        if (img instanceof File && /image\/(jpeg|png|webp|gif)/.test(img.type)) {
+          resizedImg = await resizeImageFile(img, 1200, 1200, 0.85);
+        }
+        resizedPerformerImages.push(resizedImg);
+        updateProgress();
+      }
+    }
 
-    // Append form fields
+    // Prepare FormData
+    const formData = new FormData();
     for (const [key, value] of Object.entries(form)) {
       formData.append(key, value);
     }
 
-    // Add checked agreements as an array
+    // Agreements
     let agreementsList = ROLE_AGREEMENTS[form.role] || [];
     if (form.role === "DJ" && isFromDC === false) {
       agreementsList = [
@@ -355,7 +328,7 @@ export default function TalentForm() {
     const checkedAgreements = agreementsList.filter((_, idx) => roleAgreementsChecked[idx]);
     formData.append('agreements', JSON.stringify(checkedAgreements));
 
-    // Add NYC Eastern Time formatted timestamp
+    // Timestamp
     const usaTimestamp = new Date().toLocaleString("en-US", {
       timeZone: "America/New_York",
       month: "2-digit",
@@ -368,10 +341,8 @@ export default function TalentForm() {
     });
     formData.append("timestamp", usaTimestamp);
 
-    // Append files with proper naming
-    formData.append("photo", photo);
-    
-    // Rename tax form to have consistent naming
+    // Files
+    formData.append("photo", resizedPhoto);
     if (taxForm) {
       const taxFormExtension = taxForm.name.split('.').pop();
       const renamedTaxForm = new File([taxForm], `tax_form.${taxFormExtension}`, {
@@ -379,9 +350,7 @@ export default function TalentForm() {
       });
       formData.append("taxForm", renamedTaxForm);
     }
-
-    // Rename performer images with consistent numbering
-    performerImages.forEach((file, index) => {
+    resizedPerformerImages.forEach((file, index) => {
       const fileExtension = file.name.split('.').pop();
       const renamedFile = new File([file], `performer_${index + 1}.${fileExtension}`, {
         type: file.type
@@ -389,14 +358,18 @@ export default function TalentForm() {
       formData.append("performerImages[]", renamedFile);
     });
 
+    // Simulate upload progress (for demo, real upload progress requires XHR)
+    setUploadProgress(100);
+
     try {
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
       const response = await fetch(`${apiDomain}/talent/submit`, {
         method: "POST",
         body: formData,
       });
-
       const result = await response.json();
+
+      setIsUploading(false);
 
       if (result.status === "success") {
         // Send confirmation email to user
@@ -408,7 +381,6 @@ export default function TalentForm() {
             "I agree not to DJ within a 20-mile radius of Washington, DC for 45 days before and 45 days after any scheduled performance dates, unless otherwise agreed upon in advance."
           ];
         }
-        // Always add the general agreement
         acceptedAgreements.push("I agree to the Terms & Conditions and Privacy Policy and understand that my data will be collected for profile submission purposes.");
 
         await fetch("/backend/send_confirmation.php", {
@@ -436,6 +408,7 @@ export default function TalentForm() {
         setIsSubmitting(false);
       }
     } catch (err) {
+      setIsUploading(false);
       alert("Something went wrong: " + err.message);
       setIsSubmitting(false);
     }
@@ -447,6 +420,18 @@ export default function TalentForm() {
         onSubmit={handleSubmit}
         className="relative w-full max-w-3xl bg-white shadow ring-1 ring-gray-900/5 sm:rounded-xl"
       >
+        {/* Progress Bar for resizing/uploading */}
+        {isUploading && (
+          <div className="w-full mb-4">
+            <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-500 transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <div className="text-xs text-gray-700 mt-1 text-center">Resizing & Uploading images... {uploadProgress}%</div>
+          </div>
+        )}
         {/* Responsive absolute logout button, always at top right of form */}
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
           <button

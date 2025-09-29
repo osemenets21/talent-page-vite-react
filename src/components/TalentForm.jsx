@@ -44,28 +44,31 @@ export default function TalentForm() {
     phone: ''
   });
   const [w9Error, setW9Error] = useState('');
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    instagram: "",
-  // facebook: "", // Facebook field removed
-    soundcloud: "",
-    spotify: "",
-    youtube: "",
-    tiktok: "",
-    performerName: "",
-    city: "",
-    country: "USA",
-    bio: "",
-    role: "DJ",
-    roleOther: "",
-    paymentMethod: "Venmo",
-    venmo: "",
-    zelle: "",
-    submissionId: generateId(),
-    music_genres: ""
+  const [form, setForm] = useState(() => {
+    // Pre-fill email from localStorage if available
+    const savedEmail = localStorage.getItem("talentFormEmail") || "";
+    return {
+      firstName: "",
+      lastName: "",
+      phone: "",
+      email: savedEmail,
+      instagram: "",
+      soundcloud: "",
+      spotify: "",
+      youtube: "",
+      tiktok: "",
+      performerName: "",
+      city: "",
+      country: "USA",
+      bio: "",
+      role: "DJ",
+      roleOther: "",
+      paymentMethod: "Venmo",
+      venmo: "",
+      zelle: "",
+      submissionId: generateId(),
+      music_genres: ""
+    };
   });
 
 

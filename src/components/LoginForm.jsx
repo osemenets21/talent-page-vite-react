@@ -18,34 +18,25 @@ export default function LoginForm() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const tokenResponse = userCredential._tokenResponse;
-      
+
       await saveTokensToLocalStorage(tokenResponse);
-      
+
+      // Save email to localStorage for TalentForm
+      localStorage.setItem("talentFormEmail", email);
+
       // Check if user is admin
       if (isAdmin(user.email)) {
-        // Admin user - redirect to admin dashboard
         navigate("/admin-dashboard");
         return;
       }
-      
-  // ...removed console.log
-      // Wait for auth state to be properly established
-      //await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Regular user - check if profile exists in backend
+
       const apiDomain = import.meta.env.VITE_API_DOMAIN;
 
       try {
-  // ...removed console.log
-        
-        // Use a custom fetch approach to avoid 404 errors in console
         let token = null;
-        
-        // Get the current user's token
         if (user) {
           token = await user.getIdToken();
         }
-        
         const response = await fetch(`${apiDomain}/talent/get`, {
           method: 'GET',
           headers: {
@@ -53,32 +44,23 @@ export default function LoginForm() {
             'Content-Type': 'application/json'
           }
         });
-        
         if (response.ok) {
           const result = await response.json();
           if (result.status === "success" && result.data) {
-            // Store submissionId for MyProfile to use
             localStorage.setItem("submissionId", result.data.submissionId);
-            // ...removed console.log
             navigate("/my-profile");
           } else {
-            // No alert, just redirect
             navigate("/register-talent");
           }
         } else if (response.status === 404) {
-          // Expected case - user hasn't created a profile yet
           navigate("/register-talent");
         } else {
-          // For any other error, also just redirect
           navigate("/register-talent");
         }
       } catch (apiError) {
-  // ...removed console.log
-        // If API call fails, assume profile doesn't exist and go to talent form
         navigate("/register-talent");
       }
     } catch (error) {
-  // ...removed console.error
       alert("Login failed: " + error.message);
     }
   };

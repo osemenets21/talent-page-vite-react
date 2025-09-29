@@ -745,14 +745,12 @@ export default function TalentForm() {
                 id="email"
                 type="email"
                 value={form.email}
-                  onChange={(v) => {
-                    setForm({ ...form, email: v });
-                    localStorage.setItem("talentFormEmail", v);
-                  }}
+                onChange={() => {}}
                 required
                 className="sm:col-span-3 w-full"
                 error={inputErrors.email}
                 valid={form.email && !inputErrors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())}
+                readOnly
               />
               {inputErrors.email && <p className="text-xs text-red-500 mt-1 ml-1">{inputErrors.email}</p>}
 

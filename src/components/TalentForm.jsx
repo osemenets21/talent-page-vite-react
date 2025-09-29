@@ -422,7 +422,7 @@ export default function TalentForm() {
       >
         {/* Centered circular spinner during upload */}
         {isUploading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(220,220,220,0.6)' }}>
             <div className="flex flex-col items-center">
               <svg className="animate-spin h-16 w-16 text-indigo-500" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

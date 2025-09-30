@@ -31,7 +31,7 @@ use Aws\Ses\SesClient;
 use Aws\Exception\AwsException;
 
 $toEmail  = 'oleg@luckyhospitality.com';
-$fromEmail = 'zach@bunkerdc.com';
+$fromEmail = 'contact@bunkerdc.com';
 $fromName  = 'Lucky Hospitality';
 $awsRegion = 'us-east-2';
 $awsKey    = getenv('AWS_ACCESS_KEY_ID');

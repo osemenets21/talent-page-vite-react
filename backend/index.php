@@ -6,11 +6,6 @@
 $allowed_origins = [
     'https://luckyhospitality.com',
     'https://www.luckyhospitality.com',
-    'http://localhost:5173', 
-    'http://localhost:5174', 
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174'
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
@@ -38,10 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit(0);
 }
-
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -78,8 +69,12 @@ if (preg_match('/\.(png|jpg|jpeg|gif|css|js|ico|svg)$/i', $path)) {
             'js' => 'application/javascript',
             'ico' => 'image/x-icon'
         ];
-        
         $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
+        // Set CORS headers for static files too
+        header('Access-Control-Allow-Origin: ' . ($origin ?: '*'));
+        header('Access-Control-Allow-Methods: GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+        header('Access-Control-Allow-Credentials: true');
         header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . filesize($filePath));
         readfile($filePath);

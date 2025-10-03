@@ -2,7 +2,7 @@
 // Unified Backend Router
 // Routes all requests to appropriate handlers
 
-// Handle CORS for production and development
+// --- GLOBAL CORS HEADERS ---
 $allowed_origins = [
     'https://luckyhospitality.com',
     'https://www.luckyhospitality.com',
@@ -23,6 +23,20 @@ if (in_array($origin, $allowed_origins)) {
     } else {
         header('Access-Control-Allow-Origin: *');
     }
+}
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
+
+// Always set Content-Type for JSON responses
+if (!preg_match('/\.(png|jpg|jpeg|gif|css|js|ico|svg)$/i', $_SERVER['REQUEST_URI'])) {
+    header('Content-Type: application/json');
+}
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit(0);
 }
 
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');

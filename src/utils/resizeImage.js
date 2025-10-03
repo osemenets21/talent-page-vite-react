@@ -27,7 +27,7 @@ export async function resizeImageFile(file, maxWidth = 1200, maxHeight = 1200, q
           (blob) => {
             if (!blob) return reject(new Error('Resize failed'));
             const ext = file.name.split('.').pop() || 'jpg';
-            const resizedFile = new File([blob], file.name.replace(/\.[^.]+$/, '') + '_resized.' + ext, {
+            const resizedFile = new File([blob], file.name.replace(/\.[^.]+$/, '') + ext, {
               type: blob.type || 'image/jpeg',
             });
             resolve(resizedFile);
